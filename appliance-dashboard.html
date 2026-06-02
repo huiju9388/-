@@ -719,7 +719,7 @@
         responsive:true, maintainAspectRatio:false,
         plugins:{
           legend:{display:false},
-          tooltip:{ backgroundColor:'#1e2433', borderColor:'rgba(255,255,255,0.1)', borderWidth:1, titleColor:'#8b93a8', bodyColor:'#f0f2f7', callbacks:{ label:(ctx)=>\` \${ctx.dataset.label}: \${ctx.parsed.y}억원\` } }
+          tooltip:{ backgroundColor:'#1e2433', borderColor:'rgba(255,255,255,0.1)', borderWidth:1, titleColor:'#8b93a8', bodyColor:'#f0f2f7', callbacks:{ label:(ctx)=>`${ctx.dataset.label}: ${ctx.parsed.y}억원` } }
         },
         scales:{
           x:{ grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#8b93a8',font:{family:'IBM Plex Mono',size:11}}, stacked:false },
