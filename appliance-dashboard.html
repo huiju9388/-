@@ -588,6 +588,191 @@
   </div>
 </div>
 
+
+  <div class="divider"></div>
+
+  <!-- 월 누적 실적 -->
+  <div class="section">
+    <div class="section-title">월별 누적 실적 상세 (VAT포함)</div>
+
+    <!-- 탭 버튼 -->
+    <div style="display:flex;gap:6px;margin-bottom:14px;" id="monthTabs">
+      <button onclick="showMonth('all')" id="tab-all" class="tab-btn active-tab">전체</button>
+      <button onclick="showMonth('1')" id="tab-1" class="tab-btn">1월</button>
+      <button onclick="showMonth('2')" id="tab-2" class="tab-btn">2월</button>
+      <button onclick="showMonth('3')" id="tab-3" class="tab-btn">3월</button>
+      <button onclick="showMonth('4')" id="tab-4" class="tab-btn">4월</button>
+      <button onclick="showMonth('5')" id="tab-5" class="tab-btn">5월</button>
+    </div>
+
+    <!-- 전체 요약 테이블 -->
+    <div id="view-all">
+      <table class="diff-table" style="margin-bottom:14px;">
+        <thead>
+          <tr>
+            <th>월</th>
+            <th>가중분</th>
+            <th>취급고 (VAT포함)</th>
+            <th>분당취급고</th>
+            <th>매출 (V-)</th>
+            <th>한계이익</th>
+            <th>분당한계이익</th>
+            <th>누적취급고</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>1월</td><td>6,437분</td><td class="mono" style="color:#4d8fff;">92.3억</td><td class="mono" style="color:#8b93a8;">143.3만</td><td>34.4억</td><td>29.8억</td><td class="mono" style="color:#22c87a;">46.3만</td><td class="mono" style="color:#8b93a8;">92.3억</td></tr>
+          <tr><td>2월</td><td>6,358분</td><td class="mono" style="color:#4d8fff;">87.8억</td><td class="mono" style="color:#8b93a8;">138.0만</td><td>32.8억</td><td>28.2억</td><td class="mono" style="color:#22c87a;">44.3만</td><td class="mono" style="color:#8b93a8;">180.0억</td></tr>
+          <tr><td>3월</td><td>6,089분</td><td class="mono" style="color:#4d8fff;">82.2억</td><td class="mono" style="color:#8b93a8;">134.9만</td><td>30.4억</td><td>25.7억</td><td class="mono" style="color:#22c87a;">42.1만</td><td class="mono" style="color:#8b93a8;">262.2억</td></tr>
+          <tr><td>4월</td><td>5,071분</td><td class="mono" style="color:#ff4d6a;">67.5억</td><td class="mono" style="color:#8b93a8;">133.1만</td><td>25.3억</td><td>21.4억</td><td class="mono" style="color:#f5a623;">42.3만</td><td class="mono" style="color:#8b93a8;">329.7억</td></tr>
+          <tr><td>5월</td><td>6,098분</td><td class="mono" style="color:#4d8fff;">83.9억</td><td class="mono" style="color:#8b93a8;">137.6만</td><td>30.5억</td><td>25.6억</td><td class="mono" style="color:#22c87a;">42.0만</td><td class="mono" style="color:#8b93a8;">413.6억</td></tr>
+          <tr style="border-top:1px solid rgba(255,255,255,0.15);">
+            <td style="font-weight:700;color:#f0f2f7;">YTD 합계</td>
+            <td style="font-weight:700;">30,053분</td>
+            <td class="mono" style="color:#4d8fff;font-weight:700;">413.6억</td>
+            <td class="mono" style="color:#8b93a8;font-weight:700;">137.7만</td>
+            <td style="font-weight:700;">153.3억</td>
+            <td style="font-weight:700;">130.6억</td>
+            <td class="mono" style="color:#22c87a;font-weight:700;">43.4만</td>
+            <td class="mono" style="color:#4d8fff;font-weight:700;">413.6억</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- 월별 카테고리 상세 -->
+    <div id="view-month" style="display:none;">
+      <div id="month-detail"></div>
+    </div>
+  </div>
+
+  <style>
+    .tab-btn {
+      padding: 5px 14px;
+      font-size: 11px;
+      font-family: 'IBM Plex Mono', monospace;
+      background: var(--bg2);
+      border: 1px solid var(--border2);
+      border-radius: 6px;
+      color: var(--text2);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .tab-btn:hover { background: var(--bg3); color: var(--text1); }
+    .active-tab { background: var(--blue-bg) !important; border-color: rgba(77,143,255,0.5) !important; color: var(--blue) !important; }
+  </style>
+
+  <script>
+    const monthData = {
+      '1': {
+        label: '1월',
+        total: { weight:'6,437분', sales:'92.3억', perMin:'143.3만', revenue:'34.4억', margin:'29.8억', perMargin:'46.3만' },
+        cats: [
+          { name:'🏠 생활가전', weight:'1,856분', sales:'24.6억', perMin:'132.7만', margin:'8.3억', perMargin:'44.9만' },
+          { name:'🍳 주방가전', weight:'2,630분', sales:'36.9억', perMin:'140.3만', margin:'11.9억', perMargin:'45.4만' },
+          { name:'🍳 주방용품', weight:'1,733분', sales:'26.2억', perMin:'151.1만', margin:'8.5억', perMargin:'48.8만' },
+          { name:'📦 대형가전', weight:'218분',   sales:'4.6억',  perMin:'209.9만', margin:'1.1억', perMargin:'48.3만' },
+        ]
+      },
+      '2': {
+        label: '2월',
+        total: { weight:'6,358분', sales:'87.8억', perMin:'138.0만', revenue:'32.8억', margin:'28.2억', perMargin:'44.3만' },
+        cats: [
+          { name:'🏠 생활가전', weight:'1,827분', sales:'26.3억', perMin:'143.8만', margin:'8.3억', perMargin:'45.2만' },
+          { name:'🍳 주방가전', weight:'2,351분', sales:'31.7억', perMin:'134.7만', margin:'10.6억', perMargin:'45.3만' },
+          { name:'🍳 주방용품', weight:'1,563분', sales:'21.3억', perMin:'136.4만', margin:'7.0억', perMargin:'44.8만' },
+          { name:'📦 대형가전', weight:'617분',   sales:'8.5억',  perMin:'137.7만', margin:'2.2억', perMargin:'36.3만' },
+        ]
+      },
+      '3': {
+        label: '3월',
+        total: { weight:'6,089분', sales:'82.2억', perMin:'134.9만', revenue:'30.4억', margin:'25.7억', perMargin:'42.1만' },
+        cats: [
+          { name:'🏠 생활가전', weight:'2,651분', sales:'34.5억', perMin:'130.1만', margin:'11.5억', perMargin:'43.3만' },
+          { name:'🍳 주방가전', weight:'1,681분', sales:'24.6억', perMin:'146.4만', margin:'7.3억', perMargin:'43.4만' },
+          { name:'🍳 주방용품', weight:'1,356분', sales:'16.7억', perMin:'123.1만', margin:'5.1억', perMargin:'37.8만' },
+          { name:'📦 대형가전', weight:'401분',   sales:'6.4억',  perMin:'158.8만', margin:'1.8억', perMargin:'43.8만' },
+        ]
+      },
+      '4': {
+        label: '4월',
+        total: { weight:'5,071분', sales:'67.5억', perMin:'133.1만', revenue:'25.3억', margin:'21.4억', perMargin:'42.3만' },
+        cats: [
+          { name:'🏠 생활가전', weight:'2,891분', sales:'35.4억', perMin:'122.3만', margin:'11.9억', perMargin:'41.2만' },
+          { name:'🍳 주방가전', weight:'890분',   sales:'12.0억', perMin:'134.6만', margin:'3.9억', perMargin:'43.7만' },
+          { name:'🍳 주방용품', weight:'1,064분', sales:'16.9억', perMin:'158.8만', margin:'4.7억', perMargin:'44.5만' },
+          { name:'📦 대형가전', weight:'227분',   sales:'3.3억',  perMin:'145.1만', margin:'0.9억', perMargin:'40.8만' },
+        ]
+      },
+      '5': {
+        label: '5월',
+        total: { weight:'6,098분', sales:'83.9억', perMin:'137.6만', revenue:'30.5억', margin:'25.6억', perMargin:'42.0만' },
+        cats: [
+          { name:'🏠 생활가전', weight:'2,891분', sales:'38.0억', perMin:'131.4만', margin:'12.2억', perMargin:'42.1만' },
+          { name:'🍳 주방가전', weight:'1,301분', sales:'18.0억', perMin:'138.1만', margin:'5.7억', perMargin:'43.5만' },
+          { name:'🍳 주방용품', weight:'1,768분', sales:'25.8억', perMin:'146.1만', margin:'7.4억', perMargin:'41.7만' },
+          { name:'📦 대형가전', weight:'138분',   sales:'2.1억',  perMin:'153.0만', margin:'0.4억', perMargin:'29.6만' },
+        ]
+      }
+    };
+
+    function showMonth(key) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active-tab'));
+      document.getElementById('tab-' + key).classList.add('active-tab');
+
+      if (key === 'all') {
+        document.getElementById('view-all').style.display = 'block';
+        document.getElementById('view-month').style.display = 'none';
+        return;
+      }
+      document.getElementById('view-all').style.display = 'none';
+      document.getElementById('view-month').style.display = 'block';
+
+      const d = monthData[key];
+      let html = `
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;">
+          <div class="kpi-card" style="border-color:rgba(77,143,255,0.2);">
+            <div class="kpi-name">${d.label} 취급고 (VAT포함)</div>
+            <div class="kpi-actual" style="font-size:22px;color:#4d8fff;">${d.total.sales}</div>
+            <div class="kpi-target" style="margin-top:4px;">분당 ${d.total.perMin} · 매출 ${d.total.revenue}</div>
+          </div>
+          <div class="kpi-card" style="border-color:rgba(34,200,122,0.2);">
+            <div class="kpi-name">${d.label} 한계이익</div>
+            <div class="kpi-actual" style="font-size:22px;color:#22c87a;">${d.total.margin}</div>
+            <div class="kpi-target" style="margin-top:4px;">분당 ${d.total.perMargin}</div>
+          </div>
+          <div class="kpi-card" style="border-color:rgba(255,255,255,0.08);">
+            <div class="kpi-name">${d.label} 가중분</div>
+            <div class="kpi-actual" style="font-size:22px;color:#8b93a8;">${d.total.weight}</div>
+          </div>
+        </div>
+        <table class="diff-table">
+          <thead>
+            <tr>
+              <th>카테고리</th>
+              <th>가중분</th>
+              <th>취급고 (VAT포함)</th>
+              <th>분당취급고</th>
+              <th>한계이익</th>
+              <th>분당한계이익</th>
+            </tr>
+          </thead>
+          <tbody>`;
+      d.cats.forEach(c => {
+        html += `<tr>
+          <td>${c.name}</td>
+          <td class="mono" style="color:#555e73;">${c.weight}</td>
+          <td class="mono" style="color:#4d8fff;">${c.sales}</td>
+          <td class="mono" style="color:#8b93a8;">${c.perMin}</td>
+          <td class="mono" style="color:#f0f2f7;">${c.margin}</td>
+          <td class="mono" style="color:#22c87a;">${c.perMargin}</td>
+        </tr>`;
+      });
+      html += `</tbody></table>`;
+      document.getElementById('month-detail').innerHTML = html;
+    }
+  </script>
+
 <div class="footer">SK스토아 가전팀 · 구글시트 PGM 실적 기준 · VAT포함 · 자동 생성</div>
 
 <script>
