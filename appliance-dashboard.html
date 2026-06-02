@@ -8,296 +8,119 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
   :root {
-    --bg: #0f1117;
-    --bg2: #161b26;
-    --bg3: #1e2433;
-    --border: rgba(255,255,255,0.07);
-    --border2: rgba(255,255,255,0.13);
-    --text1: #f0f2f7;
-    --text2: #8b93a8;
-    --text3: #555e73;
-    --green: #22c87a;
-    --green-bg: rgba(34,200,122,0.1);
-    --amber: #f5a623;
-    --amber-bg: rgba(245,166,35,0.1);
-    --red: #ff4d6a;
-    --red-bg: rgba(255,77,106,0.1);
-    --blue: #4d8fff;
-    --blue-bg: rgba(77,143,255,0.1);
-    --purple: #9b7fff;
+    --bg:#0f1117; --bg2:#161b26; --bg3:#1e2433;
+    --border:rgba(255,255,255,0.07); --border2:rgba(255,255,255,0.13);
+    --text1:#f0f2f7; --text2:#8b93a8; --text3:#555e73;
+    --green:#22c87a; --green-bg:rgba(34,200,122,0.1);
+    --amber:#f5a623; --amber-bg:rgba(245,166,35,0.1);
+    --red:#ff4d6a; --red-bg:rgba(255,77,106,0.1);
+    --blue:#4d8fff; --blue-bg:rgba(77,143,255,0.1);
+    --purple:#9b7fff;
   }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: var(--bg);
-    color: var(--text1);
-    font-family: 'Noto Sans KR', sans-serif;
-    font-size: 13px;
-    line-height: 1.6;
-    min-height: 100vh;
-    padding: 28px 24px 60px;
-  }
-  .mono { font-family: 'IBM Plex Mono', monospace; }
-
-  /* Header */
-  .header {
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    margin-bottom: 32px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid var(--border2);
-  }
-  .header-left h1 {
-    font-size: 22px;
-    font-weight: 700;
-    letter-spacing: -0.5px;
-    color: var(--text1);
-  }
-  .header-left .sub {
-    font-size: 12px;
-    color: var(--text3);
-    margin-top: 4px;
-    font-family: 'IBM Plex Mono', monospace;
-  }
-  .header-right {
-    display: flex;
-    gap: 8px;
-    align-items: center;
-  }
-  .tag {
-    font-size: 10px;
-    font-family: 'IBM Plex Mono', monospace;
-    padding: 3px 9px;
-    border-radius: 4px;
-    border: 1px solid var(--border2);
-    color: var(--text2);
-    letter-spacing: 0.03em;
-  }
-  .tag.vat { border-color: rgba(77,143,255,0.4); color: var(--blue); background: var(--blue-bg); }
-
-  /* Section */
-  .section { margin-bottom: 36px; }
-  .section-title {
-    font-size: 10px;
-    font-weight: 500;
-    color: var(--text3);
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    margin-bottom: 14px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .section-title::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border);
-  }
-
-  /* KPI Cards */
-  .kpi-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
-  .kpi-card {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 18px 20px;
-    position: relative;
-    overflow: hidden;
-    transition: border-color 0.2s;
-  }
-  .kpi-card:hover { border-color: var(--border2); }
-  .kpi-card::before {
-    content: '';
-    position: absolute;
-    top: 0; left: 0; right: 0;
-    height: 2px;
-  }
-  .kpi-card.red::before { background: var(--red); }
-  .kpi-card.amber::before { background: var(--amber); }
-  .kpi-card.green::before { background: var(--green); }
-  .kpi-name { font-size: 11px; color: var(--text3); margin-bottom: 10px; font-family: 'IBM Plex Mono', monospace; }
-  .kpi-row { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 12px; }
-  .kpi-actual { font-size: 26px; font-weight: 700; letter-spacing: -1px; }
-  .kpi-card.red .kpi-actual { color: var(--red); }
-  .kpi-card.amber .kpi-actual { color: var(--amber); }
-  .kpi-card.green .kpi-actual { color: var(--green); }
-  .kpi-pct {
-    font-size: 11px;
-    font-family: 'IBM Plex Mono', monospace;
-    padding: 3px 8px;
-    border-radius: 4px;
-    font-weight: 500;
-    margin-bottom: 4px;
-  }
-  .kpi-card.red .kpi-pct { background: var(--red-bg); color: var(--red); }
-  .kpi-card.amber .kpi-pct { background: var(--amber-bg); color: var(--amber); }
-  .kpi-card.green .kpi-pct { background: var(--green-bg); color: var(--green); }
-  .kpi-target { font-size: 11px; color: var(--text3); }
-
-  /* Progress bar */
-  .prog-track {
-    width: 100%;
-    height: 4px;
-    background: rgba(255,255,255,0.06);
-    border-radius: 2px;
-    margin-bottom: 12px;
-    overflow: hidden;
-  }
-  .prog-fill { height: 100%; border-radius: 2px; }
-  .kpi-card.red .prog-fill { background: var(--red); }
-  .kpi-card.amber .prog-fill { background: var(--amber); }
-  .kpi-card.green .prog-fill { background: var(--green); }
-
-  .need-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 8px 10px;
-    background: rgba(255,255,255,0.03);
-    border-radius: 6px;
-    border: 1px solid var(--border);
-  }
-  .need-label { font-size: 10px; color: var(--text3); }
-  .need-val { font-size: 11px; font-weight: 500; font-family: 'IBM Plex Mono', monospace; }
-  .kpi-card.red .need-val { color: var(--red); }
-  .kpi-card.amber .need-val { color: var(--amber); }
-  .kpi-card.green .need-val { color: var(--green); }
-
-  /* Monthly Chart */
-  .chart-wrap {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 20px;
-  }
-  .chart-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-  }
-  .chart-title-text { font-size: 13px; font-weight: 500; }
-  .legend {
-    display: flex;
-    gap: 14px;
-    font-size: 10px;
-    color: var(--text3);
-    font-family: 'IBM Plex Mono', monospace;
-  }
-  .legend span { display: flex; align-items: center; gap: 5px; }
-  .legend-dot { width: 8px; height: 8px; border-radius: 2px; display: inline-block; }
-
-  /* Divider */
-  .divider {
-    height: 1px;
-    background: var(--border);
-    margin: 36px 0;
-  }
-
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text1); font-family:'Noto Sans KR',sans-serif; font-size:13px; line-height:1.6; padding:28px 24px 60px; }
+  .mono { font-family:'IBM Plex Mono',monospace; }
+  .header { display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:32px; padding-bottom:20px; border-bottom:1px solid var(--border2); }
+  .header h1 { font-size:22px; font-weight:700; letter-spacing:-0.5px; }
+  .header .sub { font-size:12px; color:var(--text3); margin-top:4px; font-family:'IBM Plex Mono',monospace; }
+  .header-right { display:flex; gap:8px; }
+  .tag { font-size:10px; font-family:'IBM Plex Mono',monospace; padding:3px 9px; border-radius:4px; border:1px solid var(--border2); color:var(--text2); }
+  .tag.vat { border-color:rgba(77,143,255,0.4); color:var(--blue); background:var(--blue-bg); }
+  .section { margin-bottom:36px; }
+  .section-title { font-size:10px; font-weight:500; color:var(--text3); text-transform:uppercase; letter-spacing:.12em; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
+  .section-title::after { content:''; flex:1; height:1px; background:var(--border); }
+  /* KPI cards */
+  .kpi-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
+  .kpi-card { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:18px 20px; position:relative; overflow:hidden; }
+  .kpi-card::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; }
+  .kpi-card.red::before { background:var(--red); }
+  .kpi-card.amber::before { background:var(--amber); }
+  .kpi-card.green::before { background:var(--green); }
+  .kpi-name { font-size:11px; color:var(--text3); margin-bottom:10px; font-family:'IBM Plex Mono',monospace; }
+  .kpi-row { display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:12px; }
+  .kpi-actual { font-size:26px; font-weight:700; letter-spacing:-1px; }
+  .kpi-card.red .kpi-actual { color:var(--red); }
+  .kpi-card.amber .kpi-actual { color:var(--amber); }
+  .kpi-card.green .kpi-actual { color:var(--green); }
+  .kpi-pct { font-size:11px; font-family:'IBM Plex Mono',monospace; padding:3px 8px; border-radius:4px; font-weight:500; }
+  .kpi-card.red .kpi-pct { background:var(--red-bg); color:var(--red); }
+  .kpi-card.amber .kpi-pct { background:var(--amber-bg); color:var(--amber); }
+  .kpi-card.green .kpi-pct { background:var(--green-bg); color:var(--green); }
+  .kpi-target { font-size:11px; color:var(--text3); }
+  .prog-track { width:100%; height:4px; background:rgba(255,255,255,0.06); border-radius:2px; margin-bottom:12px; overflow:hidden; }
+  .prog-fill { height:100%; border-radius:2px; }
+  .kpi-card.red .prog-fill { background:var(--red); }
+  .kpi-card.amber .prog-fill { background:var(--amber); }
+  .kpi-card.green .prog-fill { background:var(--green); }
+  .need-row { display:flex; justify-content:space-between; padding:8px 10px; background:rgba(255,255,255,0.03); border-radius:6px; border:1px solid var(--border); }
+  .need-label { font-size:10px; color:var(--text3); }
+  .need-val { font-size:11px; font-weight:500; font-family:'IBM Plex Mono',monospace; }
+  .kpi-card.red .need-val { color:var(--red); }
+  .kpi-card.amber .need-val { color:var(--amber); }
+  .kpi-card.green .need-val { color:var(--green); }
+  /* Chart */
+  .chart-wrap { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:20px; }
+  .chart-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+  .chart-title-text { font-size:13px; font-weight:500; }
+  .legend { display:flex; gap:14px; font-size:10px; color:var(--text3); font-family:'IBM Plex Mono',monospace; }
+  .legend span { display:flex; align-items:center; gap:5px; }
+  .legend-dot { width:8px; height:8px; border-radius:2px; display:inline-block; }
+  .divider { height:1px; background:var(--border); margin:36px 0; }
   /* Week compare */
-  .compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
-  .compare-card {
-    background: var(--bg2);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 16px 18px;
-  }
-  .compare-week {
-    font-size: 10px;
-    color: var(--text3);
-    font-family: 'IBM Plex Mono', monospace;
-    margin-bottom: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-  }
-  .compare-metric { margin-bottom: 10px; }
-  .compare-metric-row { display: flex; justify-content: space-between; align-items: center; }
-  .compare-metric-name { font-size: 11px; color: var(--text2); }
-  .compare-metric-val { font-size: 15px; font-weight: 700; font-family: 'IBM Plex Mono', monospace; }
-
-  /* Diff table */
-  .diff-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: var(--bg2);
-    border-radius: 10px;
-    overflow: hidden;
-    border: 1px solid var(--border);
-  }
-  .diff-table th {
-    text-align: left;
-    padding: 10px 14px;
-    font-size: 10px;
-    font-weight: 500;
-    color: var(--text3);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-    border-bottom: 1px solid var(--border);
-    background: rgba(255,255,255,0.02);
-    font-family: 'IBM Plex Mono', monospace;
-  }
-  .diff-table td {
-    padding: 10px 14px;
-    font-size: 12px;
-    border-bottom: 1px solid var(--border);
-  }
-  .diff-table tr:last-child td { border-bottom: none; }
-  .diff-table tr:hover td { background: rgba(255,255,255,0.02); }
-  .up { color: var(--green); font-family: 'IBM Plex Mono', monospace; font-size: 11px; }
-  .down { color: var(--red); font-family: 'IBM Plex Mono', monospace; font-size: 11px; }
-  .neutral { color: var(--blue); font-family: 'IBM Plex Mono', monospace; font-size: 11px; }
-
-  /* Insights */
-  .insight-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 16px; }
-  .insight {
-    padding: 12px 14px;
-    border-radius: 8px;
-    border-left: 3px solid;
-  }
-  .insight.good { background: var(--green-bg); border-color: var(--green); }
-  .insight.bad  { background: var(--red-bg);   border-color: var(--red);   }
-  .insight.warn { background: var(--amber-bg); border-color: var(--amber); }
-  .insight-title { font-size: 11px; font-weight: 700; margin-bottom: 6px; }
-  .insight.good .insight-title { color: var(--green); }
-  .insight.bad  .insight-title { color: var(--red);   }
-  .insight.warn .insight-title { color: var(--amber); }
-  .insight-body { font-size: 11px; color: var(--text2); line-height: 1.6; }
-  .insight-body li { margin-bottom: 3px; list-style: none; padding-left: 0; }
-  .insight-body li::before { content: '— '; opacity: 0.5; }
-
+  .compare-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px; }
+  .compare-card { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:16px 18px; }
+  .compare-week { font-size:10px; color:var(--text3); font-family:'IBM Plex Mono',monospace; margin-bottom:12px; text-transform:uppercase; letter-spacing:.08em; }
+  .compare-metric-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+  .compare-metric-name { font-size:11px; color:var(--text2); }
+  .compare-metric-val { font-size:15px; font-weight:700; font-family:'IBM Plex Mono',monospace; }
+  /* Tables */
+  .diff-table { width:100%; border-collapse:collapse; background:var(--bg2); border-radius:10px; overflow:hidden; border:1px solid var(--border); }
+  .diff-table th { text-align:left; padding:10px 14px; font-size:10px; font-weight:500; color:var(--text3); text-transform:uppercase; letter-spacing:.08em; border-bottom:1px solid var(--border); background:rgba(255,255,255,0.02); font-family:'IBM Plex Mono',monospace; }
+  .diff-table td { padding:10px 14px; font-size:12px; border-bottom:1px solid var(--border); }
+  .diff-table tr:last-child td { border-bottom:none; }
+  .diff-table tr:hover td { background:rgba(255,255,255,0.02); }
+  .up { color:var(--green); font-family:'IBM Plex Mono',monospace; font-size:11px; }
+  .down { color:var(--red); font-family:'IBM Plex Mono',monospace; font-size:11px; }
+  .neutral { color:var(--blue); font-family:'IBM Plex Mono',monospace; font-size:11px; }
   /* Cat bars */
-  .cat-section { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 18px 20px; margin-bottom: 12px; }
-  .cat-title { font-size: 11px; color: var(--text2); font-weight: 500; margin-bottom: 14px; }
-  .cat-row { display: flex; align-items: center; gap: 10px; margin-bottom: 9px; }
-  .cat-name { font-size: 11px; color: var(--text2); width: 64px; flex-shrink: 0; text-align: right; }
-  .cat-bars { flex: 1; display: flex; flex-direction: column; gap: 3px; }
-  .cat-bar-wrap { display: flex; align-items: center; gap: 6px; }
-  .cat-bar-track { flex: 1; height: 14px; background: rgba(255,255,255,0.04); border-radius: 3px; overflow: hidden; }
-  .cat-bar-fill { height: 100%; border-radius: 3px; display: flex; align-items: center; padding: 0 5px; transition: width 0.8s ease; }
-  .cat-bar-label { font-size: 9px; font-family: 'IBM Plex Mono', monospace; white-space: nowrap; }
-  .cat-diff { font-size: 10px; font-family: 'IBM Plex Mono', monospace; width: 68px; text-align: right; flex-shrink: 0; }
-
-  .footer {
-    text-align: center;
-    font-size: 10px;
-    color: var(--text3);
-    font-family: 'IBM Plex Mono', monospace;
-    margin-top: 40px;
-    padding-top: 20px;
-    border-top: 1px solid var(--border);
-  }
+  .cat-section { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:18px 20px; margin-bottom:12px; }
+  .cat-title { font-size:11px; color:var(--text2); font-weight:500; margin-bottom:14px; }
+  .cat-row { display:flex; align-items:center; gap:10px; margin-bottom:9px; }
+  .cat-name { font-size:11px; color:var(--text2); width:64px; flex-shrink:0; text-align:right; }
+  .cat-bars { flex:1; display:flex; flex-direction:column; gap:3px; }
+  .cat-bar-wrap { display:flex; align-items:center; gap:6px; }
+  .cat-bar-track { flex:1; height:14px; background:rgba(255,255,255,0.04); border-radius:3px; overflow:hidden; }
+  .cat-bar-fill { height:100%; border-radius:3px; display:flex; align-items:center; padding:0 5px; }
+  .cat-bar-label { font-size:9px; font-family:'IBM Plex Mono',monospace; white-space:nowrap; }
+  .cat-diff { font-size:10px; font-family:'IBM Plex Mono',monospace; width:68px; text-align:right; flex-shrink:0; }
+  /* Insights */
+  .insight-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:16px; }
+  .insight { padding:12px 14px; border-radius:8px; border-left:3px solid; }
+  .insight.good { background:var(--green-bg); border-color:var(--green); }
+  .insight.bad  { background:var(--red-bg);   border-color:var(--red); }
+  .insight-title { font-size:11px; font-weight:700; margin-bottom:6px; }
+  .insight.good .insight-title { color:var(--green); }
+  .insight.bad  .insight-title { color:var(--red); }
+  .insight-body { font-size:11px; color:var(--text2); line-height:1.6; }
+  .insight-body li { margin-bottom:3px; list-style:none; }
+  .insight-body li::before { content:'— '; opacity:.5; }
+  /* Tabs */
+  .tab-btn { padding:5px 14px; font-size:11px; font-family:'IBM Plex Mono',monospace; background:var(--bg2); border:1px solid var(--border2); border-radius:6px; color:var(--text2); cursor:pointer; transition:all .15s; }
+  .tab-btn:hover { background:var(--bg3); color:var(--text1); }
+  .active-tab { background:var(--blue-bg) !important; border-color:rgba(77,143,255,0.5) !important; color:var(--blue) !important; }
+  .footer { text-align:center; font-size:10px; color:var(--text3); font-family:'IBM Plex Mono',monospace; margin-top:40px; padding-top:20px; border-top:1px solid var(--border); }
 </style>
 </head>
 <body>
 
 <div class="header">
-  <div class="header-left">
+  <div>
     <h1>가전팀 대시보드</h1>
-    <div class="sub">SK스토아 · 2026년 · 구글시트 PGM 실적 기준</div>
+    <div class="sub">SK스토아 · 2026년 · 구글시트 PGM 실적 기준 · 월 컬럼 기준 집계</div>
   </div>
   <div class="header-right">
     <span class="tag vat">VAT INCLUDED</span>
-    <span class="tag">21W YTD</span>
+    <span class="tag">1~5월 YTD</span>
     <span class="tag">2026.06.02</span>
   </div>
 </div>
@@ -309,52 +132,46 @@
     <div class="kpi-card red">
       <div class="kpi-name">취급고 (VAT포함)</div>
       <div class="kpi-row">
-        <div class="kpi-actual">413.6억</div>
-        <div>
-          <div class="kpi-pct">33.5%</div>
-        </div>
+        <div class="kpi-actual">432.1억</div>
+        <div class="kpi-pct">35.0%</div>
       </div>
-      <div class="prog-track"><div class="prog-fill" style="width:33.5%"></div></div>
-      <div class="kpi-target" style="margin-bottom:10px;">목표 1,235억 · 연말 추정 993억 · 부족 242억</div>
+      <div class="prog-track"><div class="prog-fill" style="width:35%"></div></div>
+      <div class="kpi-target" style="margin-bottom:10px;">목표 1,235억 · 연말 추정 1,037억 · 부족 198억</div>
       <div class="need-row">
         <span class="need-label">월 필요 취급고</span>
-        <span class="need-val">117.3억 <span style="color:#555e73;font-size:10px;">/ 현재 82.7억</span></span>
+        <span class="need-val">114.7억 <span style="color:#555e73;font-size:10px;">/ 현재 86.4억</span></span>
       </div>
     </div>
     <div class="kpi-card amber">
       <div class="kpi-name">매출 (V-)</div>
       <div class="kpi-row">
-        <div class="kpi-actual">153.3억</div>
-        <div>
-          <div class="kpi-pct">38.0%</div>
-        </div>
+        <div class="kpi-actual">160.2억</div>
+        <div class="kpi-pct">39.8%</div>
       </div>
-      <div class="prog-track"><div class="prog-fill" style="width:38%"></div></div>
-      <div class="kpi-target" style="margin-bottom:10px;">목표 403억 · 연말 추정 368억 · 부족 35억</div>
+      <div class="prog-track"><div class="prog-fill" style="width:39.8%"></div></div>
+      <div class="kpi-target" style="margin-bottom:10px;">목표 403억 · 연말 추정 385억 · 부족 18억</div>
       <div class="need-row">
         <span class="need-label">월 필요 매출</span>
-        <span class="need-val">35.7억 <span style="color:#555e73;font-size:10px;">/ 현재 30.7억</span></span>
+        <span class="need-val">34.7억 <span style="color:#555e73;font-size:10px;">/ 현재 32.0억</span></span>
       </div>
     </div>
     <div class="kpi-card green">
       <div class="kpi-name">한계이익</div>
       <div class="kpi-row">
-        <div class="kpi-actual">130.6억</div>
-        <div>
-          <div class="kpi-pct">40.4%</div>
-        </div>
+        <div class="kpi-actual">136.5억</div>
+        <div class="kpi-pct">42.3%</div>
       </div>
-      <div class="prog-track"><div class="prog-fill" style="width:40.4%"></div></div>
-      <div class="kpi-target" style="margin-bottom:10px;">목표 323억 · 연말 추정 314억 · 부족 9억</div>
+      <div class="prog-track"><div class="prog-fill" style="width:42.3%"></div></div>
+      <div class="kpi-target" style="margin-bottom:10px;">목표 323억 · 연말 추정 328억 · 초과 달성 예상 ✅</div>
       <div class="need-row">
         <span class="need-label">월 필요 한계이익</span>
-        <span class="need-val">27.5억 <span style="color:#555e73;font-size:10px;">/ 현재 26.1억</span></span>
+        <span class="need-val">26.6억 <span style="color:#22c87a;font-size:10px;">/ 현재 27.3억 충족!</span></span>
       </div>
     </div>
   </div>
 </div>
 
-<!-- 월별 추이 차트 -->
+<!-- 월별 차트 -->
 <div class="section">
   <div class="section-title">월별 취급고 · 한계이익 추이</div>
   <div class="chart-wrap">
@@ -363,11 +180,11 @@
       <div class="legend">
         <span><span class="legend-dot" style="background:#4d8fff"></span>취급고</span>
         <span><span class="legend-dot" style="background:#22c87a"></span>한계이익</span>
-        <span style="border-left:1px solid #333;padding-left:14px;"><span class="legend-dot" style="background:#ff4d6a;border-radius:0;width:2px;height:12px;"></span>목표 월평균 117.3억</span>
+        <span style="border-left:1px solid #333;padding-left:14px;"><span class="legend-dot" style="background:#ff4d6a;border-radius:0;width:2px;height:12px;"></span>목표 월평균 114.7억</span>
       </div>
     </div>
     <div style="position:relative;height:220px;">
-      <canvas id="monthlyChart" role="img" aria-label="월별 취급고와 한계이익 추이 차트">1월 92.3억, 2월 87.8억, 3월 82.2억, 4월 67.5억, 5월 83.9억</canvas>
+      <canvas id="monthlyChart" role="img" aria-label="월별 취급고와 한계이익 추이">1월 105.6억, 2월 88.8억, 3월 74.4억, 4월 65.8억, 5월 97.5억</canvas>
     </div>
   </div>
 </div>
@@ -377,193 +194,44 @@
 <!-- 주간 비교 -->
 <div class="section">
   <div class="section-title">주간 실적 비교 리뷰 — 5월3주차 vs 5월4주차</div>
-
-  <!-- 전체 지표 카드 -->
   <div class="compare-grid">
     <div class="compare-card">
       <div class="compare-week">◀ 5월3주차 (지지난 주)</div>
-      <div class="compare-metric">
-        <div class="compare-metric-row">
-          <span class="compare-metric-name">취급고 (VAT포함)</span>
-          <span class="compare-metric-val" style="color:#8b93a8;">22.8억</span>
-        </div>
-      </div>
-      <div class="compare-metric">
-        <div class="compare-metric-row">
-          <span class="compare-metric-name">분당취급고</span>
-          <span class="compare-metric-val" style="color:#8b93a8;">129.1만</span>
-        </div>
-      </div>
-      <div class="compare-metric">
-        <div class="compare-metric-row">
-          <span class="compare-metric-name">한계이익</span>
-          <span class="compare-metric-val" style="color:#8b93a8;">7.3억</span>
-        </div>
-      </div>
-      <div class="compare-metric">
-        <div class="compare-metric-row">
-          <span class="compare-metric-name">분당한계이익</span>
-          <span class="compare-metric-val" style="color:#8b93a8;">41.4만</span>
-        </div>
-      </div>
-      <div class="compare-metric">
-        <div class="compare-metric-row">
-          <span class="compare-metric-name">가중분</span>
-          <span class="compare-metric-val" style="color:#8b93a8;">1,766분</span>
-        </div>
-      </div>
+      <div class="compare-metric-row"><span class="compare-metric-name">취급고 (VAT포함)</span><span class="compare-metric-val" style="color:#8b93a8;">22.8억</span></div>
+      <div class="compare-metric-row"><span class="compare-metric-name">분당취급고</span><span class="compare-metric-val" style="color:#8b93a8;">129.1만</span></div>
+      <div class="compare-metric-row"><span class="compare-metric-name">한계이익</span><span class="compare-metric-val" style="color:#8b93a8;">7.3억</span></div>
+      <div class="compare-metric-row"><span class="compare-metric-name">분당한계이익</span><span class="compare-metric-val" style="color:#8b93a8;">41.4만</span></div>
+      <div class="compare-metric-row"><span class="compare-metric-name">가중분</span><span class="compare-metric-val" style="color:#8b93a8;">1,766분</span></div>
     </div>
     <div class="compare-card" style="border-color:rgba(77,143,255,0.25);">
       <div class="compare-week" style="color:#4d8fff;">▶ 5월4주차 (지난 주)</div>
-      <div class="compare-metric">
-        <div class="compare-metric-row">
-          <span class="compare-metric-name">취급고 (VAT포함)</span>
-          <span class="compare-metric-val" style="color:#f0f2f7;">20.7억 <span class="down" style="font-size:10px;">▼9.0%</span></span>
-        </div>
-      </div>
-      <div class="compare-metric">
-        <div class="compare-metric-row">
-          <span class="compare-metric-name">분당취급고</span>
-          <span class="compare-metric-val" style="color:#22c87a;">141.9만 <span class="up" style="font-size:10px;">▲9.9%</span></span>
-        </div>
-      </div>
-      <div class="compare-metric">
-        <div class="compare-metric-row">
-          <span class="compare-metric-name">한계이익</span>
-          <span class="compare-metric-val" style="color:#f0f2f7;">6.2억 <span class="down" style="font-size:10px;">▼15.0%</span></span>
-        </div>
-      </div>
-      <div class="compare-metric">
-        <div class="compare-metric-row">
-          <span class="compare-metric-name">분당한계이익</span>
-          <span class="compare-metric-val" style="color:#22c87a;">42.5만 <span class="up" style="font-size:10px;">▲2.7%</span></span>
-        </div>
-      </div>
-      <div class="compare-metric">
-        <div class="compare-metric-row">
-          <span class="compare-metric-name">가중분</span>
-          <span class="compare-metric-val" style="color:#f5a623;">1,462분 <span class="down" style="font-size:10px;">▼17.2%</span></span>
-        </div>
-      </div>
+      <div class="compare-metric-row"><span class="compare-metric-name">취급고 (VAT포함)</span><span class="compare-metric-val">20.7억 <span class="down" style="font-size:10px;">▼9.0%</span></span></div>
+      <div class="compare-metric-row"><span class="compare-metric-name">분당취급고</span><span class="compare-metric-val" style="color:#22c87a;">141.9만 <span class="up" style="font-size:10px;">▲9.9%</span></span></div>
+      <div class="compare-metric-row"><span class="compare-metric-name">한계이익</span><span class="compare-metric-val">6.2억 <span class="down" style="font-size:10px;">▼15.0%</span></span></div>
+      <div class="compare-metric-row"><span class="compare-metric-name">분당한계이익</span><span class="compare-metric-val" style="color:#22c87a;">42.5만 <span class="up" style="font-size:10px;">▲2.7%</span></span></div>
+      <div class="compare-metric-row"><span class="compare-metric-name">가중분</span><span class="compare-metric-val" style="color:#f5a623;">1,462분 <span class="down" style="font-size:10px;">▼17.2%</span></span></div>
     </div>
   </div>
 
-  <!-- 카테고리 분당취급고 바 -->
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
     <div class="cat-section">
       <div class="cat-title">카테고리별 분당취급고 (VAT포함)</div>
-      <div class="cat-row">
-        <div class="cat-name">주방가전</div>
-        <div class="cat-bars">
-          <div class="cat-bar-wrap">
-            <div class="cat-bar-track"><div class="cat-bar-fill" style="width:79%;background:#555e73;"><span class="cat-bar-label" style="color:#aaa;">129.3만</span></div></div>
-          </div>
-          <div class="cat-bar-wrap">
-            <div class="cat-bar-track"><div class="cat-bar-fill" style="width:100%;background:#4d8fff;"><span class="cat-bar-label" style="color:#fff;">164.2만</span></div></div>
-          </div>
-        </div>
-        <div class="cat-diff up">▲+26.9%</div>
-      </div>
-      <div class="cat-row">
-        <div class="cat-name">생활가전</div>
-        <div class="cat-bars">
-          <div class="cat-bar-wrap">
-            <div class="cat-bar-track"><div class="cat-bar-fill" style="width:72%;background:#555e73;"><span class="cat-bar-label" style="color:#aaa;">118.1만</span></div></div>
-          </div>
-          <div class="cat-bar-wrap">
-            <div class="cat-bar-track"><div class="cat-bar-fill" style="width:87%;background:#4d8fff;"><span class="cat-bar-label" style="color:#fff;">142.3만</span></div></div>
-          </div>
-        </div>
-        <div class="cat-diff up">▲+20.5%</div>
-      </div>
-      <div class="cat-row">
-        <div class="cat-name">대형가전</div>
-        <div class="cat-bars">
-          <div class="cat-bar-wrap">
-            <div class="cat-bar-track"><div class="cat-bar-fill" style="width:0%;background:#555e73;"></div></div>
-          </div>
-          <div class="cat-bar-wrap">
-            <div class="cat-bar-track"><div class="cat-bar-fill" style="width:70%;background:#9b7fff;"><span class="cat-bar-label" style="color:#fff;">115.4만</span></div></div>
-          </div>
-        </div>
-        <div class="cat-diff neutral">신규편성</div>
-      </div>
-      <div class="cat-row">
-        <div class="cat-name">주방용품</div>
-        <div class="cat-bars">
-          <div class="cat-bar-wrap">
-            <div class="cat-bar-track"><div class="cat-bar-fill" style="width:89%;background:#555e73;"><span class="cat-bar-label" style="color:#aaa;">145.3만</span></div></div>
-          </div>
-          <div class="cat-bar-wrap">
-            <div class="cat-bar-track"><div class="cat-bar-fill" style="width:82%;background:#ff4d6a;"><span class="cat-bar-label" style="color:#fff;">135.2만</span></div></div>
-          </div>
-        </div>
-        <div class="cat-diff down">▼-7.0%</div>
-      </div>
-      <div style="display:flex;gap:12px;margin-top:10px;font-size:10px;color:var(--text3);">
-        <span style="display:flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;background:#555e73;border-radius:2px;display:inline-block;"></span>5월3주차</span>
-        <span style="display:flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;background:#4d8fff;border-radius:2px;display:inline-block;"></span>5월4주차</span>
-      </div>
+      <div class="cat-row"><div class="cat-name">주방가전</div><div class="cat-bars"><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:79%;background:#555e73;"><span class="cat-bar-label" style="color:#aaa;">129.3만</span></div></div></div><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:100%;background:#4d8fff;"><span class="cat-bar-label" style="color:#fff;">164.2만</span></div></div></div></div><div class="cat-diff up">▲+26.9%</div></div>
+      <div class="cat-row"><div class="cat-name">생활가전</div><div class="cat-bars"><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:72%;background:#555e73;"><span class="cat-bar-label" style="color:#aaa;">118.1만</span></div></div></div><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:87%;background:#4d8fff;"><span class="cat-bar-label" style="color:#fff;">142.3만</span></div></div></div></div><div class="cat-diff up">▲+20.5%</div></div>
+      <div class="cat-row"><div class="cat-name">대형가전</div><div class="cat-bars"><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:0%;background:#555e73;"></div></div></div><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:70%;background:#9b7fff;"><span class="cat-bar-label" style="color:#fff;">115.4만</span></div></div></div></div><div class="cat-diff neutral">신규편성</div></div>
+      <div class="cat-row"><div class="cat-name">주방용품</div><div class="cat-bars"><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:89%;background:#555e73;"><span class="cat-bar-label" style="color:#aaa;">145.3만</span></div></div></div><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:82%;background:#ff4d6a;"><span class="cat-bar-label" style="color:#fff;">135.2만</span></div></div></div></div><div class="cat-diff down">▼-7.0%</div></div>
+      <div style="display:flex;gap:12px;margin-top:10px;font-size:10px;color:var(--text3);"><span style="display:flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;background:#555e73;border-radius:2px;display:inline-block;"></span>5월3주차</span><span style="display:flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;background:#4d8fff;border-radius:2px;display:inline-block;"></span>5월4주차</span></div>
     </div>
-
     <div class="cat-section">
       <div class="cat-title">카테고리별 분당한계이익</div>
-      <div class="cat-row">
-        <div class="cat-name">주방가전</div>
-        <div class="cat-bars">
-          <div class="cat-bar-wrap">
-            <div class="cat-bar-track"><div class="cat-bar-fill" style="width:89%;background:#555e73;"><span class="cat-bar-label" style="color:#aaa;">43.1만</span></div></div>
-          </div>
-          <div class="cat-bar-wrap">
-            <div class="cat-bar-track"><div class="cat-bar-fill" style="width:92%;background:#22c87a;"><span class="cat-bar-label" style="color:#fff;">44.0만</span></div></div>
-          </div>
-        </div>
-        <div class="cat-diff up">▲+2.1%</div>
-      </div>
-      <div class="cat-row">
-        <div class="cat-name">생활가전</div>
-        <div class="cat-bars">
-          <div class="cat-bar-wrap">
-            <div class="cat-bar-track"><div class="cat-bar-fill" style="width:83%;background:#555e73;"><span class="cat-bar-label" style="color:#aaa;">40.4만</span></div></div>
-          </div>
-          <div class="cat-bar-wrap">
-            <div class="cat-bar-track"><div class="cat-bar-fill" style="width:94%;background:#22c87a;"><span class="cat-bar-label" style="color:#fff;">45.1만</span></div></div>
-          </div>
-        </div>
-        <div class="cat-diff up">▲+11.6%</div>
-      </div>
-      <div class="cat-row">
-        <div class="cat-name">대형가전</div>
-        <div class="cat-bars">
-          <div class="cat-bar-wrap">
-            <div class="cat-bar-track"><div class="cat-bar-fill" style="width:0%;background:#555e73;"></div></div>
-          </div>
-          <div class="cat-bar-wrap">
-            <div class="cat-bar-track"><div class="cat-bar-fill" style="width:61%;background:#9b7fff;"><span class="cat-bar-label" style="color:#fff;">29.4만</span></div></div>
-          </div>
-        </div>
-        <div class="cat-diff neutral">신규편성</div>
-      </div>
-      <div class="cat-row">
-        <div class="cat-name">주방용품</div>
-        <div class="cat-bars">
-          <div class="cat-bar-wrap">
-            <div class="cat-bar-track"><div class="cat-bar-fill" style="width:86%;background:#555e73;"><span class="cat-bar-label" style="color:#aaa;">41.9만</span></div></div>
-          </div>
-          <div class="cat-bar-wrap">
-            <div class="cat-bar-track"><div class="cat-bar-fill" style="width:84%;background:#ff4d6a;"><span class="cat-bar-label" style="color:#fff;">40.8만</span></div></div>
-          </div>
-        </div>
-        <div class="cat-diff down">▼-2.6%</div>
-      </div>
-      <div style="display:flex;gap:12px;margin-top:10px;font-size:10px;color:var(--text3);">
-        <span style="display:flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;background:#555e73;border-radius:2px;display:inline-block;"></span>5월3주차</span>
-        <span style="display:flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;background:#22c87a;border-radius:2px;display:inline-block;"></span>5월4주차</span>
-      </div>
+      <div class="cat-row"><div class="cat-name">주방가전</div><div class="cat-bars"><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:89%;background:#555e73;"><span class="cat-bar-label" style="color:#aaa;">43.1만</span></div></div></div><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:92%;background:#22c87a;"><span class="cat-bar-label" style="color:#fff;">44.0만</span></div></div></div></div><div class="cat-diff up">▲+2.1%</div></div>
+      <div class="cat-row"><div class="cat-name">생활가전</div><div class="cat-bars"><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:83%;background:#555e73;"><span class="cat-bar-label" style="color:#aaa;">40.4만</span></div></div></div><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:94%;background:#22c87a;"><span class="cat-bar-label" style="color:#fff;">45.1만</span></div></div></div></div><div class="cat-diff up">▲+11.6%</div></div>
+      <div class="cat-row"><div class="cat-name">대형가전</div><div class="cat-bars"><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:0%;background:#555e73;"></div></div></div><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:61%;background:#9b7fff;"><span class="cat-bar-label" style="color:#fff;">29.4만</span></div></div></div></div><div class="cat-diff neutral">신규편성</div></div>
+      <div class="cat-row"><div class="cat-name">주방용품</div><div class="cat-bars"><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:86%;background:#555e73;"><span class="cat-bar-label" style="color:#aaa;">41.9만</span></div></div></div><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:84%;background:#ff4d6a;"><span class="cat-bar-label" style="color:#fff;">40.8만</span></div></div></div></div><div class="cat-diff down">▼-2.6%</div></div>
+      <div style="display:flex;gap:12px;margin-top:10px;font-size:10px;color:var(--text3);"><span style="display:flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;background:#555e73;border-radius:2px;display:inline-block;"></span>5월3주차</span><span style="display:flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;background:#22c87a;border-radius:2px;display:inline-block;"></span>5월4주차</span></div>
     </div>
   </div>
 
-  <!-- 인사이트 -->
   <div class="insight-grid">
     <div class="insight good">
       <div class="insight-title">✓ 개선된 점</div>
@@ -581,263 +249,113 @@
         <li>취급고 절대치 ▼ -9.0% — 가중분 감소가 주원인</li>
         <li>한계이익 ▼ -15.0% — 볼륨·효율 동시 확보 필요</li>
         <li>주방용품 분당 ▼ -7.0% — 히트락 새벽 배치 문제</li>
-        <li>코지마 문체어 108분에 분당 95만 (이전 150만↑ 대비 급락)</li>
-        <li>저녁 113.7만 — 5월2주차 170만 대비 아직 회복 미달</li>
+        <li>코지마 문체어 108분에 분당 95만 (이전 150만↑ 급락)</li>
+        <li>저녁 113.7만 — 5월2주차 170만 대비 회복 미달</li>
       </ul>
     </div>
   </div>
 </div>
 
+<div class="divider"></div>
 
-  <div class="divider"></div>
-
-  <!-- 월 누적 실적 -->
-  <div class="section">
-    <div class="section-title">월별 누적 실적 상세 (VAT포함)</div>
-
-    <!-- 탭 버튼 -->
-    <div style="display:flex;gap:6px;margin-bottom:14px;" id="monthTabs">
-      <button onclick="showMonth('all')" id="tab-all" class="tab-btn active-tab">전체</button>
-      <button onclick="showMonth('1')" id="tab-1" class="tab-btn">1월</button>
-      <button onclick="showMonth('2')" id="tab-2" class="tab-btn">2월</button>
-      <button onclick="showMonth('3')" id="tab-3" class="tab-btn">3월</button>
-      <button onclick="showMonth('4')" id="tab-4" class="tab-btn">4월</button>
-      <button onclick="showMonth('5')" id="tab-5" class="tab-btn">5월</button>
-    </div>
-
-    <!-- 전체 요약 테이블 -->
-    <div id="view-all">
-      <table class="diff-table" style="margin-bottom:14px;">
-        <thead>
-          <tr>
-            <th>월</th>
-            <th>가중분</th>
-            <th>취급고 (VAT포함)</th>
-            <th>분당취급고</th>
-            <th>매출 (V-)</th>
-            <th>한계이익</th>
-            <th>분당한계이익</th>
-            <th>누적취급고</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td>1월</td><td>6,437분</td><td class="mono" style="color:#4d8fff;">92.3억</td><td class="mono" style="color:#8b93a8;">143.3만</td><td>34.4억</td><td>29.8억</td><td class="mono" style="color:#22c87a;">46.3만</td><td class="mono" style="color:#8b93a8;">92.3억</td></tr>
-          <tr><td>2월</td><td>6,358분</td><td class="mono" style="color:#4d8fff;">87.8억</td><td class="mono" style="color:#8b93a8;">138.0만</td><td>32.8억</td><td>28.2억</td><td class="mono" style="color:#22c87a;">44.3만</td><td class="mono" style="color:#8b93a8;">180.0억</td></tr>
-          <tr><td>3월</td><td>6,089분</td><td class="mono" style="color:#4d8fff;">82.2억</td><td class="mono" style="color:#8b93a8;">134.9만</td><td>30.4억</td><td>25.7억</td><td class="mono" style="color:#22c87a;">42.1만</td><td class="mono" style="color:#8b93a8;">262.2억</td></tr>
-          <tr><td>4월</td><td>5,071분</td><td class="mono" style="color:#ff4d6a;">67.5억</td><td class="mono" style="color:#8b93a8;">133.1만</td><td>25.3억</td><td>21.4억</td><td class="mono" style="color:#f5a623;">42.3만</td><td class="mono" style="color:#8b93a8;">329.7억</td></tr>
-          <tr><td>5월</td><td>6,098분</td><td class="mono" style="color:#4d8fff;">83.9억</td><td class="mono" style="color:#8b93a8;">137.6만</td><td>30.5억</td><td>25.6억</td><td class="mono" style="color:#22c87a;">42.0만</td><td class="mono" style="color:#8b93a8;">413.6억</td></tr>
-          <tr style="border-top:1px solid rgba(255,255,255,0.15);">
-            <td style="font-weight:700;color:#f0f2f7;">YTD 합계</td>
-            <td style="font-weight:700;">30,053분</td>
-            <td class="mono" style="color:#4d8fff;font-weight:700;">413.6억</td>
-            <td class="mono" style="color:#8b93a8;font-weight:700;">137.7만</td>
-            <td style="font-weight:700;">153.3억</td>
-            <td style="font-weight:700;">130.6억</td>
-            <td class="mono" style="color:#22c87a;font-weight:700;">43.4만</td>
-            <td class="mono" style="color:#4d8fff;font-weight:700;">413.6억</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <!-- 월별 카테고리 상세 -->
-    <div id="view-month" style="display:none;">
-      <div id="month-detail"></div>
-    </div>
+<!-- 월 누적 실적 -->
+<div class="section">
+  <div class="section-title">월별 누적 실적 상세 (VAT포함 · 월 컬럼 기준)</div>
+  <div style="display:flex;gap:6px;margin-bottom:14px;">
+    <button onclick="showMonth('all')" id="tab-all" class="tab-btn active-tab">전체</button>
+    <button onclick="showMonth('1')" id="tab-1" class="tab-btn">1월</button>
+    <button onclick="showMonth('2')" id="tab-2" class="tab-btn">2월</button>
+    <button onclick="showMonth('3')" id="tab-3" class="tab-btn">3월</button>
+    <button onclick="showMonth('4')" id="tab-4" class="tab-btn">4월</button>
+    <button onclick="showMonth('5')" id="tab-5" class="tab-btn">5월</button>
   </div>
 
-  <style>
-    .tab-btn {
-      padding: 5px 14px;
-      font-size: 11px;
-      font-family: 'IBM Plex Mono', monospace;
-      background: var(--bg2);
-      border: 1px solid var(--border2);
-      border-radius: 6px;
-      color: var(--text2);
-      cursor: pointer;
-      transition: all 0.15s;
-    }
-    .tab-btn:hover { background: var(--bg3); color: var(--text1); }
-    .active-tab { background: var(--blue-bg) !important; border-color: rgba(77,143,255,0.5) !important; color: var(--blue) !important; }
-  </style>
+  <div id="view-all">
+    <table class="diff-table">
+      <thead><tr><th>월</th><th>가중분</th><th>취급고 (VAT포함)</th><th>분당취급고</th><th>매출 (V-)</th><th>한계이익</th><th>분당한계이익</th><th>누적취급고</th></tr></thead>
+      <tbody>
+        <tr><td>1월</td><td>7,329분</td><td class="mono" style="color:#4d8fff;">105.6억</td><td class="mono" style="color:#8b93a8;">144.0만</td><td>39.4억</td><td>34.1억</td><td class="mono" style="color:#22c87a;">46.5만</td><td class="mono" style="color:#555e73;">105.6억</td></tr>
+        <tr><td>2월</td><td>6,436분</td><td class="mono" style="color:#4d8fff;">88.8억</td><td class="mono" style="color:#8b93a8;">138.0만</td><td>33.2억</td><td>28.5억</td><td class="mono" style="color:#22c87a;">44.2만</td><td class="mono" style="color:#555e73;">194.4억</td></tr>
+        <tr><td>3월</td><td>5,449분</td><td class="mono" style="color:#4d8fff;">74.4억</td><td class="mono" style="color:#8b93a8;">136.5만</td><td>27.5억</td><td>23.3억</td><td class="mono" style="color:#22c87a;">42.7만</td><td class="mono" style="color:#555e73;">268.8억</td></tr>
+        <tr><td>4월</td><td>4,975분</td><td class="mono" style="color:#ff4d6a;">65.8억</td><td class="mono" style="color:#8b93a8;">132.3만</td><td>24.7억</td><td>21.0억</td><td class="mono" style="color:#f5a623;">42.2만</td><td class="mono" style="color:#555e73;">334.6억</td></tr>
+        <tr><td>5월</td><td>7,118분</td><td class="mono" style="color:#4d8fff;">97.5억</td><td class="mono" style="color:#8b93a8;">137.0만</td><td>35.4억</td><td>29.7억</td><td class="mono" style="color:#22c87a;">41.7만</td><td class="mono" style="color:#555e73;">432.1억</td></tr>
+        <tr style="border-top:1px solid rgba(255,255,255,0.15);">
+          <td style="font-weight:700;color:#f0f2f7;">YTD 합계</td>
+          <td style="font-weight:700;">31,306분</td>
+          <td class="mono" style="color:#4d8fff;font-weight:700;">432.1억</td>
+          <td class="mono" style="color:#8b93a8;font-weight:700;">138.0만</td>
+          <td style="font-weight:700;">160.2억</td>
+          <td style="font-weight:700;">136.5억</td>
+          <td class="mono" style="color:#22c87a;font-weight:700;">43.6만</td>
+          <td class="mono" style="color:#4d8fff;font-weight:700;">432.1억</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 
-  <script>
-    const monthData = {
-      '1': {
-        label: '1월',
-        total: { weight:'6,437분', sales:'92.3억', perMin:'143.3만', revenue:'34.4억', margin:'29.8억', perMargin:'46.3만' },
-        cats: [
-          { name:'🏠 생활가전', weight:'1,856분', sales:'24.6억', perMin:'132.7만', margin:'8.3억', perMargin:'44.9만' },
-          { name:'🍳 주방가전', weight:'2,630분', sales:'36.9억', perMin:'140.3만', margin:'11.9억', perMargin:'45.4만' },
-          { name:'🍳 주방용품', weight:'1,733분', sales:'26.2억', perMin:'151.1만', margin:'8.5억', perMargin:'48.8만' },
-          { name:'📦 대형가전', weight:'218분',   sales:'4.6억',  perMin:'209.9만', margin:'1.1억', perMargin:'48.3만' },
-        ]
-      },
-      '2': {
-        label: '2월',
-        total: { weight:'6,358분', sales:'87.8억', perMin:'138.0만', revenue:'32.8억', margin:'28.2억', perMargin:'44.3만' },
-        cats: [
-          { name:'🏠 생활가전', weight:'1,827분', sales:'26.3억', perMin:'143.8만', margin:'8.3억', perMargin:'45.2만' },
-          { name:'🍳 주방가전', weight:'2,351분', sales:'31.7억', perMin:'134.7만', margin:'10.6억', perMargin:'45.3만' },
-          { name:'🍳 주방용품', weight:'1,563분', sales:'21.3억', perMin:'136.4만', margin:'7.0억', perMargin:'44.8만' },
-          { name:'📦 대형가전', weight:'617분',   sales:'8.5억',  perMin:'137.7만', margin:'2.2억', perMargin:'36.3만' },
-        ]
-      },
-      '3': {
-        label: '3월',
-        total: { weight:'6,089분', sales:'82.2억', perMin:'134.9만', revenue:'30.4억', margin:'25.7억', perMargin:'42.1만' },
-        cats: [
-          { name:'🏠 생활가전', weight:'2,651분', sales:'34.5억', perMin:'130.1만', margin:'11.5억', perMargin:'43.3만' },
-          { name:'🍳 주방가전', weight:'1,681분', sales:'24.6억', perMin:'146.4만', margin:'7.3억', perMargin:'43.4만' },
-          { name:'🍳 주방용품', weight:'1,356분', sales:'16.7억', perMin:'123.1만', margin:'5.1억', perMargin:'37.8만' },
-          { name:'📦 대형가전', weight:'401분',   sales:'6.4억',  perMin:'158.8만', margin:'1.8억', perMargin:'43.8만' },
-        ]
-      },
-      '4': {
-        label: '4월',
-        total: { weight:'5,071분', sales:'67.5억', perMin:'133.1만', revenue:'25.3억', margin:'21.4억', perMargin:'42.3만' },
-        cats: [
-          { name:'🏠 생활가전', weight:'2,891분', sales:'35.4억', perMin:'122.3만', margin:'11.9억', perMargin:'41.2만' },
-          { name:'🍳 주방가전', weight:'890분',   sales:'12.0억', perMin:'134.6만', margin:'3.9억', perMargin:'43.7만' },
-          { name:'🍳 주방용품', weight:'1,064분', sales:'16.9억', perMin:'158.8만', margin:'4.7억', perMargin:'44.5만' },
-          { name:'📦 대형가전', weight:'227분',   sales:'3.3억',  perMin:'145.1만', margin:'0.9억', perMargin:'40.8만' },
-        ]
-      },
-      '5': {
-        label: '5월',
-        total: { weight:'6,098분', sales:'83.9억', perMin:'137.6만', revenue:'30.5억', margin:'25.6억', perMargin:'42.0만' },
-        cats: [
-          { name:'🏠 생활가전', weight:'2,891분', sales:'38.0억', perMin:'131.4만', margin:'12.2억', perMargin:'42.1만' },
-          { name:'🍳 주방가전', weight:'1,301분', sales:'18.0억', perMin:'138.1만', margin:'5.7억', perMargin:'43.5만' },
-          { name:'🍳 주방용품', weight:'1,768분', sales:'25.8억', perMin:'146.1만', margin:'7.4억', perMargin:'41.7만' },
-          { name:'📦 대형가전', weight:'138분',   sales:'2.1억',  perMin:'153.0만', margin:'0.4억', perMargin:'29.6만' },
-        ]
-      }
-    };
+  <div id="view-month" style="display:none;">
+    <div id="month-detail"></div>
+  </div>
+</div>
 
-    function showMonth(key) {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active-tab'));
-      document.getElementById('tab-' + key).classList.add('active-tab');
-
-      if (key === 'all') {
-        document.getElementById('view-all').style.display = 'block';
-        document.getElementById('view-month').style.display = 'none';
-        return;
-      }
-      document.getElementById('view-all').style.display = 'none';
-      document.getElementById('view-month').style.display = 'block';
-
-      const d = monthData[key];
-      let html = `
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;">
-          <div class="kpi-card" style="border-color:rgba(77,143,255,0.2);">
-            <div class="kpi-name">${d.label} 취급고 (VAT포함)</div>
-            <div class="kpi-actual" style="font-size:22px;color:#4d8fff;">${d.total.sales}</div>
-            <div class="kpi-target" style="margin-top:4px;">분당 ${d.total.perMin} · 매출 ${d.total.revenue}</div>
-          </div>
-          <div class="kpi-card" style="border-color:rgba(34,200,122,0.2);">
-            <div class="kpi-name">${d.label} 한계이익</div>
-            <div class="kpi-actual" style="font-size:22px;color:#22c87a;">${d.total.margin}</div>
-            <div class="kpi-target" style="margin-top:4px;">분당 ${d.total.perMargin}</div>
-          </div>
-          <div class="kpi-card" style="border-color:rgba(255,255,255,0.08);">
-            <div class="kpi-name">${d.label} 가중분</div>
-            <div class="kpi-actual" style="font-size:22px;color:#8b93a8;">${d.total.weight}</div>
-          </div>
-        </div>
-        <table class="diff-table">
-          <thead>
-            <tr>
-              <th>카테고리</th>
-              <th>가중분</th>
-              <th>취급고 (VAT포함)</th>
-              <th>분당취급고</th>
-              <th>한계이익</th>
-              <th>분당한계이익</th>
-            </tr>
-          </thead>
-          <tbody>`;
-      d.cats.forEach(c => {
-        html += `<tr>
-          <td>${c.name}</td>
-          <td class="mono" style="color:#555e73;">${c.weight}</td>
-          <td class="mono" style="color:#4d8fff;">${c.sales}</td>
-          <td class="mono" style="color:#8b93a8;">${c.perMin}</td>
-          <td class="mono" style="color:#f0f2f7;">${c.margin}</td>
-          <td class="mono" style="color:#22c87a;">${c.perMargin}</td>
-        </tr>`;
-      });
-      html += `</tbody></table>`;
-      document.getElementById('month-detail').innerHTML = html;
-    }
-  </script>
-
-<div class="footer">SK스토아 가전팀 · 구글시트 PGM 실적 기준 · VAT포함 · 자동 생성</div>
+<div class="footer">SK스토아 가전팀 · 구글시트 PGM 실적 기준 · VAT포함 · 월 컬럼 기준 집계</div>
 
 <script>
+const monthData = {
+  '1':{ label:'1월', total:{weight:'7,329분',sales:'105.6억',perMin:'144.0만',revenue:'39.4억',margin:'34.1억',perMargin:'46.5만'}, cats:[{name:'🏠 생활가전',weight:'1,866분',sales:'24.7억',perMin:'132.4만',margin:'8.4억',perMargin:'44.9만'},{name:'🍳 주방가전',weight:'3,191분',sales:'45.6억',perMin:'142.8만',margin:'14.5억',perMargin:'45.3만'},{name:'🍳 주방용품',weight:'2,068분',sales:'31.3억',perMin:'151.3만',margin:'10.2억',perMargin:'49.3만'},{name:'📦 대형가전',weight:'205분',sales:'4.0억',perMin:'195.3만',margin:'1.0억',perMargin:'49.6만'}]},
+  '2':{ label:'2월', total:{weight:'6,436분',sales:'88.8억',perMin:'138.0만',revenue:'33.2억',margin:'28.5억',perMargin:'44.2만'}, cats:[{name:'🏠 생활가전',weight:'1,885분',sales:'26.7억',perMin:'141.8만',margin:'8.6억',perMargin:'45.6만'},{name:'🍳 주방가전',weight:'2,362분',sales:'31.7억',perMin:'134.4만',margin:'10.7억',perMargin:'45.1만'},{name:'🍳 주방용품',weight:'1,545분',sales:'21.1억',perMin:'136.7만',margin:'6.8억',perMargin:'44.3만'},{name:'📦 대형가전',weight:'643분',sales:'9.3억',perMin:'143.8만',margin:'2.4억',perMargin:'36.8만'}]},
+  '3':{ label:'3월', total:{weight:'5,449분',sales:'74.4억',perMin:'136.5만',revenue:'27.5억',margin:'23.3억',perMargin:'42.7만'}, cats:[{name:'🏠 생활가전',weight:'2,290분',sales:'30.6억',perMin:'133.5만',margin:'10.0억',perMargin:'43.4만'},{name:'🍳 주방가전',weight:'1,433분',sales:'20.5억',perMin:'143.0만',margin:'6.2억',perMargin:'43.5만'},{name:'🍳 주방용품',weight:'1,369분',sales:'17.3억',perMin:'126.6만',margin:'5.5억',perMargin:'40.3만'},{name:'📦 대형가전',weight:'357분',sales:'6.0억',perMin:'168.4만',margin:'1.6억',perMargin:'44.3만'}]},
+  '4':{ label:'4월', total:{weight:'4,975분',sales:'65.8억',perMin:'132.3만',revenue:'24.7억',margin:'21.0억',perMargin:'42.2만'}, cats:[{name:'🏠 생활가전',weight:'2,829분',sales:'34.9억',perMin:'123.4만',margin:'11.7억',perMargin:'41.5만'},{name:'🍳 주방가전',weight:'1,035분',sales:'14.9억',perMin:'144.2만',margin:'4.5억',perMargin:'43.5만'},{name:'🍳 주방용품',weight:'918분',sales:'13.6억',perMin:'148.1만',margin:'3.9억',perMargin:'42.4만'},{name:'📦 대형가전',weight:'192분',sales:'2.4억',perMin:'122.9만',margin:'0.9억',perMargin:'45.3만'}]},
+  '5':{ label:'5월', total:{weight:'7,118분',sales:'97.5억',perMin:'137.0만',revenue:'35.4억',margin:'29.7억',perMargin:'41.7만'}, cats:[{name:'🏠 생활가전',weight:'3,375분',sales:'43.3억',perMin:'128.3만',margin:'14.1억',perMargin:'41.7만'},{name:'🍳 주방가전',weight:'1,404분',sales:'19.1억',perMin:'136.2만',margin:'6.1억',perMargin:'43.5만'},{name:'🍳 주방용품',weight:'2,102분',sales:'31.4억',perMin:'149.4만',margin:'8.8억',perMargin:'41.8만'},{name:'📦 대형가전',weight:'237분',sales:'3.7억',perMin:'155.5만',margin:'0.7억',perMargin:'30.7만'}]}
+};
+
+function showMonth(key) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active-tab'));
+  document.getElementById('tab-' + key).classList.add('active-tab');
+  if (key === 'all') {
+    document.getElementById('view-all').style.display = 'block';
+    document.getElementById('view-month').style.display = 'none';
+    return;
+  }
+  document.getElementById('view-all').style.display = 'none';
+  document.getElementById('view-month').style.display = 'block';
+  const d = monthData[key];
+  let html = `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;">
+    <div class="kpi-card" style="border-color:rgba(77,143,255,0.2);"><div class="kpi-name">${d.label} 취급고 (VAT포함)</div><div class="kpi-actual" style="font-size:22px;color:#4d8fff;">${d.total.sales}</div><div class="kpi-target" style="margin-top:4px;">분당 ${d.total.perMin} · 매출 ${d.total.revenue}</div></div>
+    <div class="kpi-card" style="border-color:rgba(34,200,122,0.2);"><div class="kpi-name">${d.label} 한계이익</div><div class="kpi-actual" style="font-size:22px;color:#22c87a;">${d.total.margin}</div><div class="kpi-target" style="margin-top:4px;">분당 ${d.total.perMargin}</div></div>
+    <div class="kpi-card" style="border-color:rgba(255,255,255,0.08);"><div class="kpi-name">${d.label} 가중분</div><div class="kpi-actual" style="font-size:22px;color:#8b93a8;">${d.total.weight}</div></div>
+  </div>
+  <table class="diff-table"><thead><tr><th>카테고리</th><th>가중분</th><th>취급고 (VAT포함)</th><th>분당취급고</th><th>한계이익</th><th>분당한계이익</th></tr></thead><tbody>`;
+  d.cats.forEach(c => {
+    html += `<tr><td>${c.name}</td><td class="mono" style="color:#555e73;">${c.weight}</td><td class="mono" style="color:#4d8fff;">${c.sales}</td><td class="mono" style="color:#8b93a8;">${c.perMin}</td><td class="mono">${c.margin}</td><td class="mono" style="color:#22c87a;">${c.perMargin}</td></tr>`;
+  });
+  html += `</tbody></table>`;
+  document.getElementById('month-detail').innerHTML = html;
+}
+
+// Chart
 const ctx = document.getElementById('monthlyChart').getContext('2d');
 new Chart(ctx, {
   type: 'bar',
   data: {
-    labels: ['1월', '2월', '3월', '4월', '5월'],
+    labels: ['1월','2월','3월','4월','5월'],
     datasets: [
-      {
-        label: '취급고',
-        data: [92.3, 87.8, 82.2, 67.5, 83.9],
-        backgroundColor: ['#4d8fff','#4d8fff','#4d8fff','#ff4d6a','#4d8fff'],
-        borderRadius: 4,
-        borderSkipped: false,
-        yAxisID: 'y'
-      },
-      {
-        label: '한계이익',
-        data: [29.8, 28.2, 25.7, 21.4, 25.6],
-        backgroundColor: 'rgba(34,200,122,0.6)',
-        borderRadius: 4,
-        borderSkipped: false,
-        yAxisID: 'y'
-      }
+      { label:'취급고', data:[105.6,88.8,74.4,65.8,97.5], backgroundColor:['#4d8fff','#4d8fff','#4d8fff','#ff4d6a','#4d8fff'], borderRadius:4, borderSkipped:false },
+      { label:'한계이익', data:[34.1,28.5,23.3,21.0,29.7], backgroundColor:'rgba(34,200,122,0.6)', borderRadius:4, borderSkipped:false }
     ]
   },
   options: {
-    responsive: true,
-    maintainAspectRatio: false,
+    responsive:true, maintainAspectRatio:false,
     plugins: {
-      legend: { display: false },
-      annotation: {},
-      tooltip: {
-        backgroundColor: '#1e2433',
-        borderColor: 'rgba(255,255,255,0.1)',
-        borderWidth: 1,
-        titleColor: '#8b93a8',
-        bodyColor: '#f0f2f7',
-        callbacks: {
-          label: (ctx) => ` ${ctx.dataset.label}: ${ctx.parsed.y}억원`
-        }
-      }
+      legend:{display:false},
+      tooltip:{ backgroundColor:'#1e2433', borderColor:'rgba(255,255,255,0.1)', borderWidth:1, titleColor:'#8b93a8', bodyColor:'#f0f2f7', callbacks:{ label:(ctx)=>` ${ctx.dataset.label}: ${ctx.parsed.y}억원` } }
     },
     scales: {
-      x: {
-        grid: { color: 'rgba(255,255,255,0.04)' },
-        ticks: { color: '#8b93a8', font: { family: 'IBM Plex Mono', size: 11 } }
-      },
-      y: {
-        grid: { color: 'rgba(255,255,255,0.04)' },
-        ticks: {
-          color: '#8b93a8',
-          font: { family: 'IBM Plex Mono', size: 10 },
-          callback: v => v + '억'
-        },
-        min: 0,
-        max: 130
-      }
+      x:{ grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#8b93a8',font:{family:'IBM Plex Mono',size:11}} },
+      y:{ grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#8b93a8',font:{family:'IBM Plex Mono',size:10},callback:v=>v+'억'}, min:0, max:140 }
     }
   }
 });
-
-// 목표선 직접 그리기
-const origDraw = Chart.instances[Chart.instances.length-1].draw.bind(Chart.instances[Chart.instances.length-1]);
 </script>
 </body>
 </html>
