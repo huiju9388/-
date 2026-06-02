@@ -589,6 +589,146 @@
     .rm-val { font-size:12px; font-weight:500; font-family:'IBM Plex Mono',monospace; color:var(--text1); }
   </style>
 
+
+  <div class="divider"></div>
+
+  <!-- 신상품 & 재촬영 실적 -->
+  <div class="section">
+    <div class="section-title">신상품 · 재촬영 실적 (2026년 1~5월 누적 · VAT포함)</div>
+
+    <!-- 요약 카드 3개 -->
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;">
+      <div class="kpi-card" style="border-color:rgba(155,127,255,0.3);">
+        <div class="kpi-name" style="color:#9b7fff;">신상품</div>
+        <div class="kpi-actual" style="font-size:22px;color:#9b7fff;">19.7억</div>
+        <div class="kpi-target" style="margin:6px 0;">31건 · 1,636분 · 분당 120.4만</div>
+        <div class="need-row" style="border-color:rgba(155,127,255,0.2);">
+          <span class="need-label">한계이익</span>
+          <span class="need-val" style="color:#9b7fff;">6.5억 · 분당 40.0만</span>
+        </div>
+      </div>
+      <div class="kpi-card" style="border-color:rgba(77,143,255,0.3);">
+        <div class="kpi-name" style="color:#4d8fff;">재녹화 · 재편집</div>
+        <div class="kpi-actual" style="font-size:22px;color:#4d8fff;">51.7억</div>
+        <div class="kpi-target" style="margin:6px 0;">63건 · 3,498분 · 분당 147.8만</div>
+        <div class="need-row" style="border-color:rgba(77,143,255,0.2);">
+          <span class="need-label">한계이익</span>
+          <span class="need-val" style="color:#4d8fff;">15.1억 · 분당 43.1만</span>
+        </div>
+      </div>
+      <div class="kpi-card" style="border-color:rgba(255,255,255,0.08);">
+        <div class="kpi-name" style="color:#8b93a8;">기존 상품</div>
+        <div class="kpi-actual" style="font-size:22px;color:#8b93a8;">360.8억</div>
+        <div class="kpi-target" style="margin:6px 0;">534건 · 26,172분 · 분당 137.8만</div>
+        <div class="need-row">
+          <span class="need-label">한계이익</span>
+          <span class="need-val" style="color:#8b93a8;">114.9억 · 분당 43.9만</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- 월별 추이 차트 -->
+    <div class="chart-wrap" style="margin-bottom:20px;">
+      <div class="chart-header">
+        <span class="chart-title-text">월별 신상품 · 재촬영 취급고 추이</span>
+        <div class="legend">
+          <span><span class="legend-dot" style="background:#9b7fff"></span>신상품</span>
+          <span><span class="legend-dot" style="background:#4d8fff"></span>재녹화+재편집</span>
+        </div>
+      </div>
+      <div style="position:relative;height:180px;">
+        <canvas id="newProdChart" role="img" aria-label="월별 신상품 재촬영 취급고 추이">신상품: 1월 2.9억, 2월 6.1억, 3월 1.0억, 4월 3.6억, 5월 6.1억</canvas>
+      </div>
+    </div>
+
+    <!-- 탭: 신상품 / 재촬영 -->
+    <div style="display:flex;gap:6px;margin-bottom:14px;">
+      <button onclick="showNewProd('shin')" id="ntab-shin" class="tab-btn active-tab">신상품 (31건)</button>
+      <button onclick="showNewProd('re')" id="ntab-re" class="tab-btn">재촬영 (63건)</button>
+    </div>
+
+    <!-- 신상품 목록 -->
+    <div id="nview-shin">
+      <table class="diff-table">
+        <thead><tr><th>#</th><th>카테고리</th><th>상품명</th><th>월</th><th>방송</th><th>취급고 (VAT포함)</th><th>분당취급고</th><th>한계이익</th><th>분당이익</th></tr></thead>
+        <tbody>
+          <tr><td class="mono" style="color:#555e73;">1</td><td><span class="ncat-badge cat-주방용품">주방용품</span></td><td style="font-weight:500;">[레녹스] 홈세트</td><td class="mono" style="color:#555e73;">2월</td><td class="mono" style="color:#555e73;">1회</td><td class="mono" style="color:#4d8fff;">1.72억</td><td class="mono" style="color:#f5a623;">191.6만</td><td>0.41억</td><td class="mono" style="color:#22c87a;">46.1만</td></tr>
+          <tr><td class="mono" style="color:#555e73;">2</td><td><span class="ncat-badge cat-주방용품">주방용품</span></td><td style="font-weight:500;">[라포레] 플레이팅팬</td><td class="mono" style="color:#555e73;">2월</td><td class="mono" style="color:#555e73;">1회</td><td class="mono" style="color:#4d8fff;">1.40억</td><td class="mono" style="color:#8b93a8;">145.8만</td><td>0.45억</td><td class="mono" style="color:#22c87a;">46.8만</td></tr>
+          <tr><td class="mono" style="color:#555e73;">3</td><td><span class="ncat-badge cat-생활가전">생활가전</span></td><td style="font-weight:500;">[쿠진] 마하라이트</td><td class="mono" style="color:#555e73;">1월</td><td class="mono" style="color:#555e73;">1회</td><td class="mono" style="color:#4d8fff;">1.25억</td><td class="mono" style="color:#8b93a8;">149.0만</td><td>0.40억</td><td class="mono" style="color:#22c87a;">47.8만</td></tr>
+          <tr><td class="mono" style="color:#555e73;">4</td><td><span class="ncat-badge cat-생활가전">생활가전</span></td><td style="font-weight:500;">[코지마] 컴포넥맥스</td><td class="mono" style="color:#555e73;">5월</td><td class="mono" style="color:#555e73;">1회</td><td class="mono" style="color:#4d8fff;">1.09억</td><td class="mono" style="color:#8b93a8;">146.2만</td><td>0.35억</td><td class="mono" style="color:#22c87a;">47.2만</td></tr>
+          <tr><td class="mono" style="color:#555e73;">5</td><td><span class="ncat-badge cat-주방가전">주방가전</span></td><td style="font-weight:500;">[휴렉] 히트 음식물처리기</td><td class="mono" style="color:#555e73;">4월</td><td class="mono" style="color:#555e73;">1회</td><td class="mono" style="color:#4d8fff;">1.08억</td><td class="mono" style="color:#f5a623;">171.7만</td><td>0.27억</td><td class="mono" style="color:#22c87a;">43.2만</td></tr>
+          <tr><td class="mono" style="color:#555e73;">6</td><td><span class="ncat-badge cat-주방용품">주방용품</span></td><td style="font-weight:500;">[아이넥스] 까세로맥스</td><td class="mono" style="color:#555e73;">1월</td><td class="mono" style="color:#555e73;">1회</td><td class="mono" style="color:#4d8fff;">0.97억</td><td class="mono" style="color:#8b93a8;">118.5만</td><td>0.37억</td><td class="mono" style="color:#22c87a;">44.9만</td></tr>
+          <tr><td class="mono" style="color:#555e73;">7</td><td><span class="ncat-badge cat-생활가전">생활가전</span></td><td style="font-weight:500;">[스타일리스] 휴대용선풍기</td><td class="mono" style="color:#555e73;">5월</td><td class="mono" style="color:#555e73;">1회</td><td class="mono" style="color:#4d8fff;">0.95억</td><td class="mono" style="color:#f5a623;">187.0만</td><td>0.27억</td><td class="mono" style="color:#22c87a;">52.2만</td></tr>
+          <tr><td class="mono" style="color:#555e73;">8</td><td><span class="ncat-badge cat-주방가전">주방가전</span></td><td style="font-weight:500;">[보랄] 에어프라이어</td><td class="mono" style="color:#555e73;">2월</td><td class="mono" style="color:#555e73;">1회</td><td class="mono" style="color:#4d8fff;">0.94억</td><td class="mono" style="color:#f5a623;">174.9만</td><td>0.26억</td><td class="mono" style="color:#22c87a;">47.9만</td></tr>
+          <tr><td class="mono" style="color:#555e73;">9</td><td><span class="ncat-badge cat-주방용품">주방용품</span></td><td style="font-weight:500;">[칼만] 저압스텐냄비</td><td class="mono" style="color:#555e73;">2월</td><td class="mono" style="color:#555e73;">1회</td><td class="mono" style="color:#4d8fff;">0.86억</td><td class="mono" style="color:#8b93a8;">138.2만</td><td>0.23억</td><td class="mono" style="color:#8b93a8;">36.9만</td></tr>
+          <tr><td class="mono" style="color:#555e73;">10</td><td><span class="ncat-badge cat-생활가전">생활가전</span></td><td style="font-weight:500;">[블라우풍트] 음성증폭기</td><td class="mono" style="color:#555e73;">5월</td><td class="mono" style="color:#555e73;">1회</td><td class="mono" style="color:#4d8fff;">0.81억</td><td class="mono" style="color:#8b93a8;">136.9만</td><td>0.27억</td><td class="mono" style="color:#22c87a;">46.1만</td></tr>
+          <tr style="background:rgba(255,255,255,0.02);"><td colspan="5" style="font-weight:500;color:#555e73;">전체 합계 (31건)</td><td class="mono" style="color:#9b7fff;font-weight:700;">19.70억</td><td class="mono" style="color:#8b93a8;font-weight:700;">120.4만</td><td style="font-weight:700;">6.54억</td><td class="mono" style="color:#22c87a;font-weight:700;">40.0만</td></tr>
+        </tbody>
+      </table>
+      <div style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:8px;">※ 신상품은 최초 방송 1회 기준. 이후 방송은 기존/재녹화로 분류됨</div>
+    </div>
+
+    <!-- 재촬영 목록 -->
+    <div id="nview-re" style="display:none;">
+      <table class="diff-table">
+        <thead><tr><th>#</th><th>구분</th><th>카테고리</th><th>상품명</th><th>방송</th><th>편성월</th><th>취급고 (VAT포함)</th><th>분당취급고</th><th>이익률</th></tr></thead>
+        <tbody>
+          <tr><td class="mono" style="color:#555e73;">1</td><td><span style="font-size:9px;padding:2px 6px;border-radius:3px;background:rgba(77,143,255,0.15);color:#4d8fff;font-family:'IBM Plex Mono',monospace;">재녹화</span></td><td><span class="ncat-badge cat-생활가전">생활가전</span></td><td style="font-weight:500;">[코지마] 안마의자</td><td class="mono" style="color:#555e73;">2회</td><td class="mono" style="color:#555e73;">3,4월</td><td class="mono" style="color:#4d8fff;">4.81억</td><td class="mono" style="color:#f5a623;">210.4만</td><td class="mono" style="color:#22c87a;">21.6%</td></tr>
+          <tr><td class="mono" style="color:#555e73;">2</td><td><span style="font-size:9px;padding:2px 6px;border-radius:3px;background:rgba(77,143,255,0.15);color:#4d8fff;font-family:'IBM Plex Mono',monospace;">재녹화</span></td><td><span class="ncat-badge cat-주방용품">주방용품</span></td><td style="font-weight:500;">[포트메리온] 보타닉가든</td><td class="mono" style="color:#555e73;">2회</td><td class="mono" style="color:#555e73;">1,5월</td><td class="mono" style="color:#4d8fff;">4.35억</td><td class="mono" style="color:#f5a623;">208.0만</td><td class="mono" style="color:#22c87a;">23.3%</td></tr>
+          <tr><td class="mono" style="color:#555e73;">3</td><td><span style="font-size:9px;padding:2px 6px;border-radius:3px;background:rgba(77,143,255,0.15);color:#4d8fff;font-family:'IBM Plex Mono',monospace;">재녹화</span></td><td><span class="ncat-badge cat-생활가전">생활가전</span></td><td style="font-weight:500;">[필립스] 면도기</td><td class="mono" style="color:#555e73;">3회</td><td class="mono" style="color:#555e73;">2~4월</td><td class="mono" style="color:#4d8fff;">2.91억</td><td class="mono" style="color:#8b93a8;">120.6만</td><td class="mono" style="color:#22c87a;">34.8%</td></tr>
+          <tr><td class="mono" style="color:#555e73;">4</td><td><span style="font-size:9px;padding:2px 6px;border-radius:3px;background:rgba(77,143,255,0.15);color:#4d8fff;font-family:'IBM Plex Mono',monospace;">재녹화</span></td><td><span class="ncat-badge cat-주방가전">주방가전</span></td><td style="font-weight:500;">[쿠쿠] 올스텐밥솥</td><td class="mono" style="color:#555e73;">2회</td><td class="mono" style="color:#555e73;">3,5월</td><td class="mono" style="color:#4d8fff;">2.72억</td><td class="mono" style="color:#f5a623;">235.2만 🏆</td><td class="mono" style="color:#8b93a8;">19.1%</td></tr>
+          <tr><td class="mono" style="color:#555e73;">5</td><td><span style="font-size:9px;padding:2px 6px;border-radius:3px;background:rgba(77,143,255,0.15);color:#4d8fff;font-family:'IBM Plex Mono',monospace;">재녹화</span></td><td><span class="ncat-badge cat-생활가전">생활가전</span></td><td style="font-weight:500;">[코지마] 복부마사지기</td><td class="mono" style="color:#555e73;">3회</td><td class="mono" style="color:#555e73;">1,2,4월</td><td class="mono" style="color:#4d8fff;">2.38억</td><td class="mono" style="color:#8b93a8;">114.9만</td><td class="mono" style="color:#22c87a;">38.1%</td></tr>
+          <tr><td class="mono" style="color:#555e73;">6</td><td><span style="font-size:9px;padding:2px 6px;border-radius:3px;background:rgba(77,143,255,0.15);color:#4d8fff;font-family:'IBM Plex Mono',monospace;">재녹화</span></td><td><span class="ncat-badge cat-생활가전">생활가전</span></td><td style="font-weight:500;">[코지마] 데코르 안마의자</td><td class="mono" style="color:#555e73;">1회</td><td class="mono" style="color:#555e73;">2월</td><td class="mono" style="color:#4d8fff;">2.30억</td><td class="mono" style="color:#f5a623;">197.5만</td><td class="mono" style="color:#8b93a8;">24.6%</td></tr>
+          <tr><td class="mono" style="color:#555e73;">7</td><td><span style="font-size:9px;padding:2px 6px;border-radius:3px;background:rgba(77,143,255,0.15);color:#4d8fff;font-family:'IBM Plex Mono',monospace;">재녹화</span></td><td><span class="ncat-badge cat-대형가전">대형가전</span></td><td style="font-weight:500;">[삼성전자] 비스포크에어컨</td><td class="mono" style="color:#555e73;">3회</td><td class="mono" style="color:#555e73;">2,4,5월</td><td class="mono" style="color:#4d8fff;">2.13억</td><td class="mono" style="color:#f5a623;">201.0만</td><td class="mono" style="color:#8b93a8;">20.2%</td></tr>
+          <tr><td class="mono" style="color:#555e73;">8</td><td><span style="font-size:9px;padding:2px 6px;border-radius:3px;background:rgba(77,143,255,0.15);color:#4d8fff;font-family:'IBM Plex Mono',monospace;">재녹화</span></td><td><span class="ncat-badge cat-주방용품">주방용품</span></td><td style="font-weight:500;">[라포레] 플레이팅팬</td><td class="mono" style="color:#555e73;">1회</td><td class="mono" style="color:#555e73;">5월</td><td class="mono" style="color:#4d8fff;">1.69억</td><td class="mono" style="color:#f5a623;">169.9만</td><td class="mono" style="color:#22c87a;">27.2%</td></tr>
+          <tr><td class="mono" style="color:#555e73;">9</td><td><span style="font-size:9px;padding:2px 6px;border-radius:3px;background:rgba(77,143,255,0.15);color:#4d8fff;font-family:'IBM Plex Mono',monospace;">재녹화</span></td><td><span class="ncat-badge cat-주방가전">주방가전</span></td><td style="font-weight:500;">[안방] 그릴</td><td class="mono" style="color:#555e73;">1회</td><td class="mono" style="color:#555e73;">1월</td><td class="mono" style="color:#4d8fff;">1.57억</td><td class="mono" style="color:#f5a623;">191.9만</td><td class="mono" style="color:#22c87a;">25.1%</td></tr>
+          <tr><td class="mono" style="color:#555e73;">10</td><td><span style="font-size:9px;padding:2px 6px;border-radius:3px;background:rgba(77,143,255,0.15);color:#4d8fff;font-family:'IBM Plex Mono',monospace;">재녹화</span></td><td><span class="ncat-badge cat-생활가전">생활가전</span></td><td style="font-weight:500;">[쿠진] 마하라이트</td><td class="mono" style="color:#555e73;">1회</td><td class="mono" style="color:#555e73;">5월</td><td class="mono" style="color:#4d8fff;">1.57억</td><td class="mono" style="color:#8b93a8;">150.1만</td><td class="mono" style="color:#22c87a;">29.3%</td></tr>
+          <tr style="background:rgba(255,255,255,0.02);"><td colspan="6" style="font-weight:500;color:#555e73;">전체 합계 (63건)</td><td class="mono" style="color:#4d8fff;font-weight:700;">51.69억</td><td class="mono" style="color:#8b93a8;font-weight:700;">147.8만</td><td class="mono" style="color:#22c87a;font-weight:700;"></td></tr>
+        </tbody>
+      </table>
+      <div style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:8px;">🏆 분당취급고 최고: 쿠쿠 올스텐밥솥 235.2만원/분</div>
+    </div>
+  </div>
+
+  <style>
+    .ncat-badge { font-size:9px; font-family:'IBM Plex Mono',monospace; padding:2px 7px; border-radius:3px; display:inline-block; }
+  </style>
+
+  <script>
+    function showNewProd(key) {
+      document.querySelectorAll('.tab-btn').forEach(b => {
+        if (b.id && b.id.startsWith('ntab-')) b.classList.remove('active-tab');
+      });
+      document.getElementById('ntab-' + key).classList.add('active-tab');
+      document.getElementById('nview-shin').style.display = key === 'shin' ? 'block' : 'none';
+      document.getElementById('nview-re').style.display   = key === 're'   ? 'block' : 'none';
+    }
+
+    // 월별 추이 차트
+    const ctx2 = document.getElementById('newProdChart').getContext('2d');
+    new Chart(ctx2, {
+      type: 'bar',
+      data: {
+        labels: ['1월','2월','3월','4월','5월'],
+        datasets: [
+          { label:'신상품', data:[2.92,6.06,1.02,3.62,6.08], backgroundColor:'rgba(155,127,255,0.7)', borderRadius:4, borderSkipped:false },
+          { label:'재녹화+재편집', data:[13.62,10.72,6.25,11.29,9.80], backgroundColor:'rgba(77,143,255,0.6)', borderRadius:4, borderSkipped:false }
+        ]
+      },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        plugins:{
+          legend:{display:false},
+          tooltip:{ backgroundColor:'#1e2433', borderColor:'rgba(255,255,255,0.1)', borderWidth:1, titleColor:'#8b93a8', bodyColor:'#f0f2f7', callbacks:{ label:(ctx)=>\` \${ctx.dataset.label}: \${ctx.parsed.y}억원\` } }
+        },
+        scales:{
+          x:{ grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#8b93a8',font:{family:'IBM Plex Mono',size:11}}, stacked:false },
+          y:{ grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#8b93a8',font:{family:'IBM Plex Mono',size:10},callback:v=>v+'억'}, min:0, max:20 }
+        }
+      }
+    });
+  </script>
+
 <div class="footer">SK스토아 가전팀 · 구글시트 PGM 실적 기준 · VAT포함 · 월 컬럼 기준 집계</div>
 
 <script>
