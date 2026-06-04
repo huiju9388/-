@@ -740,6 +740,7 @@
     <div style="display:flex;gap:6px;margin-bottom:16px;">
       <button onclick="showMD('all')"   id="mdtab-all"   class="tab-btn active-tab">전체 비교</button>
       <button onclick="showMD('ko')"    id="mdtab-ko"    class="tab-btn">권오석</button>
+      <button onclick="showMD('ma')"    id="mdtab-ma"    class="tab-btn">마영호</button>
       <button onclick="showMD('kim')"   id="mdtab-kim"   class="tab-btn">김응도</button>
       <button onclick="showMD('lim')"   id="mdtab-lim"   class="tab-btn">임동진</button>
       <button onclick="showMD('baek')"  id="mdtab-baek"  class="tab-btn">백혜정</button>
@@ -748,7 +749,7 @@
     <!-- 전체 비교 뷰 -->
     <div id="mdview-all">
       <!-- 요약 카드 -->
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;">
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px;">
 
         <div class="kpi-card" style="border-color:rgba(77,143,255,0.3);">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
@@ -764,6 +765,23 @@
           <div class="need-row" style="margin-top:6px;">
             <span class="need-label">한계이익</span>
             <span class="need-val" style="color:#22c87a;">44.0억 · 43.7만/분</span>
+          </div>
+        </div>
+
+        <div class="kpi-card" style="border-color:rgba(255,77,106,0.3);">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <div class="kpi-name" style="color:#ff4d6a;margin-bottom:0;">마영호</div>
+            <span style="font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 7px;border-radius:3px;background:rgba(255,77,106,0.1);color:#ff4d6a;">주방용품·주방가전</span>
+          </div>
+          <div style="font-size:22px;font-weight:700;color:#f0f2f7;letter-spacing:-1px;">94.0억</div>
+          <div style="font-size:11px;color:var(--text3);margin:4px 0 10px;">134건 · 5,470분</div>
+          <div class="need-row">
+            <span class="need-label">분당취급고</span>
+            <span class="need-val" style="color:#ff4d6a;">171.9만 🥈</span>
+          </div>
+          <div class="need-row" style="margin-top:6px;">
+            <span class="need-label">한계이익</span>
+            <span class="need-val" style="color:#22c87a;">24.9억 · 45.5만/분</span>
           </div>
         </div>
 
@@ -825,6 +843,7 @@
           <span class="chart-title-text">MD별 월별 취급고 추이 (VAT포함)</span>
           <div class="legend">
             <span><span class="legend-dot" style="background:#4d8fff"></span>권오석</span>
+            <span><span class="legend-dot" style="background:#ff4d6a"></span>마영호</span>
             <span><span class="legend-dot" style="background:#22c87a"></span>김응도</span>
             <span><span class="legend-dot" style="background:#f5a623"></span>임동진</span>
             <span><span class="legend-dot" style="background:#9b7fff"></span>백혜정</span>
@@ -842,6 +861,11 @@
           <div class="cat-name" style="width:50px;">백혜정</div>
           <div class="cat-bars"><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:100%;background:#9b7fff;"><span class="cat-bar-label" style="color:#fff;">154.9만원/분 🏆</span></div></div></div></div>
           <div class="cat-diff" style="color:#9b7fff;">대형가전</div>
+        </div>
+        <div class="cat-row">
+          <div class="cat-name" style="width:50px;">마영호</div>
+          <div class="cat-bars"><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:97.8%;background:#ff4d6a;"><span class="cat-bar-label" style="color:#fff;">171.9만원/분 🥈</span></div></div></div></div>
+          <div class="cat-diff" style="color:#ff4d6a;">주방용품·가전</div>
         </div>
         <div class="cat-row">
           <div class="cat-name" style="width:50px;">김응도</div>
@@ -884,6 +908,22 @@
           { name:'[라포레] 플레이팅팬',         sales:'11.02억', perMin:'133.2만', marginRate:'28.4%' },
           { name:'[에버홈] 올스텐찜기',          sales:'10.82억', perMin:'137.6만', marginRate:'34.0%' },
           { name:'[안방] 그릴',                 sales:'9.33억',  perMin:'139.3만', marginRate:'30.9%' }
+        ]
+      },
+      'ma': {
+        name:'마영호', color:'#ff4d6a', cat:'주방용품 · 주방가전',
+        total:{ cnt:134, weight:'5,470분', sales:'94.0억', perMin:'171.9만', margin:'24.9억', perMargin:'45.5만', revenue:'30.4억' },
+        monthly:{ sales:[22.8,14.5,15.3,17.7,23.7], margin:[6.0,3.8,4.0,4.8,6.3] },
+        cats:[
+          { name:'🍳 주방용품', sales:'57.8억', perMin:'168.1만', margin:'15.9억', pct:'61.5%' },
+          { name:'🍳 주방가전', sales:'36.2억', perMin:'178.3만', margin:'9.0억',  pct:'38.5%' }
+        ],
+        top5:[
+          { name:'[히트락] 밀폐용기',      sales:'39.29억', perMin:'155.8만', marginRate:'28.9%' },
+          { name:'[휴롬] 프라임 착즙기',   sales:'15.01억', perMin:'170.1만', marginRate:'27.3%' },
+          { name:'[포트메리온] 보타닉가든', sales:'13.92억', perMin:'230.0만', marginRate:'23.8%' },
+          { name:'[쿠쿠] 올스텐밥솥',     sales:'10.34억', perMin:'199.6만', marginRate:'20.9%' },
+          { name:'[쿠쿠] 메탈릭에코밥솥', sales:'5.64억',  perMin:'202.8만', marginRate:'19.7%' }
         ]
       },
       'kim': {
@@ -1024,6 +1064,7 @@
         labels: ['1월','2월','3월','4월','5월'],
         datasets: [
           { label:'권오석', data:[45.2,32.5,14.3,9.6,26.8], borderColor:'#4d8fff', backgroundColor:'rgba(77,143,255,0.05)', tension:0.4, pointRadius:4, pointBackgroundColor:'#4d8fff' },
+          { label:'마영호', data:[22.8,14.5,15.3,17.7,23.7], borderColor:'#ff4d6a', backgroundColor:'rgba(255,77,106,0.05)', tension:0.4, pointRadius:4, pointBackgroundColor:'#ff4d6a' },
           { label:'김응도', data:[16.9,25.1,26.5,19.4,19.4], borderColor:'#22c87a', backgroundColor:'rgba(34,200,122,0.05)', tension:0.4, pointRadius:4, pointBackgroundColor:'#22c87a' },
           { label:'임동진', data:[7.8,1.6,4.0,15.5,23.9], borderColor:'#f5a623', backgroundColor:'rgba(245,166,35,0.05)', tension:0.4, pointRadius:4, pointBackgroundColor:'#f5a623' },
           { label:'백혜정', data:[4.0,9.3,6.0,2.4,3.7], borderColor:'#9b7fff', backgroundColor:'rgba(155,127,255,0.05)', tension:0.4, pointRadius:4, pointBackgroundColor:'#9b7fff' }
