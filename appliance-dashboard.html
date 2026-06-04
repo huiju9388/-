@@ -729,6 +729,320 @@
     });
   </script>
 
+
+  <div class="divider"></div>
+
+  <!-- MD별 실적 -->
+  <div class="section">
+    <div class="section-title">MD별 실적 현황 (2026년 1~5월 누적 · VAT포함)</div>
+
+    <!-- MD 탭 -->
+    <div style="display:flex;gap:6px;margin-bottom:16px;">
+      <button onclick="showMD('all')"   id="mdtab-all"   class="tab-btn active-tab">전체 비교</button>
+      <button onclick="showMD('ko')"    id="mdtab-ko"    class="tab-btn">권오석</button>
+      <button onclick="showMD('kim')"   id="mdtab-kim"   class="tab-btn">김응도</button>
+      <button onclick="showMD('lim')"   id="mdtab-lim"   class="tab-btn">임동진</button>
+      <button onclick="showMD('baek')"  id="mdtab-baek"  class="tab-btn">백혜정</button>
+    </div>
+
+    <!-- 전체 비교 뷰 -->
+    <div id="mdview-all">
+      <!-- 요약 카드 -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;">
+
+        <div class="kpi-card" style="border-color:rgba(77,143,255,0.3);">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <div class="kpi-name" style="color:#4d8fff;margin-bottom:0;">권오석</div>
+            <span style="font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 7px;border-radius:3px;background:rgba(77,143,255,0.1);color:#4d8fff;">주방가전·주방용품</span>
+          </div>
+          <div style="font-size:22px;font-weight:700;color:#f0f2f7;letter-spacing:-1px;">128.4억</div>
+          <div style="font-size:11px;color:var(--text3);margin:4px 0 10px;">177건 · 10,065분</div>
+          <div class="need-row">
+            <span class="need-label">분당취급고</span>
+            <span class="need-val" style="color:#4d8fff;">127.6만</span>
+          </div>
+          <div class="need-row" style="margin-top:6px;">
+            <span class="need-label">한계이익</span>
+            <span class="need-val" style="color:#22c87a;">44.0억 · 43.7만/분</span>
+          </div>
+        </div>
+
+        <div class="kpi-card" style="border-color:rgba(34,200,122,0.3);">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <div class="kpi-name" style="color:#22c87a;margin-bottom:0;">김응도</div>
+            <span style="font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 7px;border-radius:3px;background:rgba(34,200,122,0.1);color:#22c87a;">생활가전</span>
+          </div>
+          <div style="font-size:22px;font-weight:700;color:#f0f2f7;letter-spacing:-1px;">107.4억</div>
+          <div style="font-size:11px;color:var(--text3);margin:4px 0 10px;">135건 · 8,070분</div>
+          <div class="need-row">
+            <span class="need-label">분당취급고</span>
+            <span class="need-val" style="color:#22c87a;">133.0만</span>
+          </div>
+          <div class="need-row" style="margin-top:6px;">
+            <span class="need-label">한계이익</span>
+            <span class="need-val" style="color:#22c87a;">35.3억 · 43.7만/분</span>
+          </div>
+        </div>
+
+        <div class="kpi-card" style="border-color:rgba(245,166,35,0.3);">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <div class="kpi-name" style="color:#f5a623;margin-bottom:0;">임동진</div>
+            <span style="font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 7px;border-radius:3px;background:rgba(245,166,35,0.1);color:#f5a623;">생활가전</span>
+          </div>
+          <div style="font-size:22px;font-weight:700;color:#f0f2f7;letter-spacing:-1px;">52.9억</div>
+          <div style="font-size:11px;color:var(--text3);margin:4px 0 10px;">68건 · 4,175분</div>
+          <div class="need-row">
+            <span class="need-label">분당취급고</span>
+            <span class="need-val" style="color:#f5a623;">126.6만</span>
+          </div>
+          <div class="need-row" style="margin-top:6px;">
+            <span class="need-label">한계이익</span>
+            <span class="need-val" style="color:#22c87a;">17.5억 · 41.8만/분</span>
+          </div>
+        </div>
+
+        <div class="kpi-card" style="border-color:rgba(155,127,255,0.3);">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <div class="kpi-name" style="color:#9b7fff;margin-bottom:0;">백혜정</div>
+            <span style="font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 7px;border-radius:3px;background:rgba(155,127,255,0.1);color:#9b7fff;">대형가전</span>
+          </div>
+          <div style="font-size:22px;font-weight:700;color:#f0f2f7;letter-spacing:-1px;">25.3억</div>
+          <div style="font-size:11px;color:var(--text3);margin:4px 0 10px;">65건 · 1,634분</div>
+          <div class="need-row">
+            <span class="need-label">분당취급고</span>
+            <span class="need-val" style="color:#9b7fff;">154.9만 🏆</span>
+          </div>
+          <div class="need-row" style="margin-top:6px;">
+            <span class="need-label">한계이익</span>
+            <span class="need-val" style="color:#22c87a;">6.6억 · 40.1만/분</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 월별 추이 차트 -->
+      <div class="chart-wrap" style="margin-bottom:16px;">
+        <div class="chart-header">
+          <span class="chart-title-text">MD별 월별 취급고 추이 (VAT포함)</span>
+          <div class="legend">
+            <span><span class="legend-dot" style="background:#4d8fff"></span>권오석</span>
+            <span><span class="legend-dot" style="background:#22c87a"></span>김응도</span>
+            <span><span class="legend-dot" style="background:#f5a623"></span>임동진</span>
+            <span><span class="legend-dot" style="background:#9b7fff"></span>백혜정</span>
+          </div>
+        </div>
+        <div style="position:relative;height:200px;">
+          <canvas id="mdChart"></canvas>
+        </div>
+      </div>
+
+      <!-- 분당취급고 비교 바 -->
+      <div class="chart-wrap">
+        <div class="chart-title-text" style="margin-bottom:14px;">분당취급고 비교 (VAT포함)</div>
+        <div class="cat-row">
+          <div class="cat-name" style="width:50px;">백혜정</div>
+          <div class="cat-bars"><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:100%;background:#9b7fff;"><span class="cat-bar-label" style="color:#fff;">154.9만원/분 🏆</span></div></div></div></div>
+          <div class="cat-diff" style="color:#9b7fff;">대형가전</div>
+        </div>
+        <div class="cat-row">
+          <div class="cat-name" style="width:50px;">김응도</div>
+          <div class="cat-bars"><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:85.9%;background:#22c87a;"><span class="cat-bar-label" style="color:#fff;">133.0만원/분</span></div></div></div></div>
+          <div class="cat-diff" style="color:#22c87a;">생활가전</div>
+        </div>
+        <div class="cat-row">
+          <div class="cat-name" style="width:50px;">권오석</div>
+          <div class="cat-bars"><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:82.4%;background:#4d8fff;"><span class="cat-bar-label" style="color:#fff;">127.6만원/분</span></div></div></div></div>
+          <div class="cat-diff" style="color:#4d8fff;">주방가전·용품</div>
+        </div>
+        <div class="cat-row">
+          <div class="cat-name" style="width:50px;">임동진</div>
+          <div class="cat-bars"><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:81.7%;background:#f5a623;"><span class="cat-bar-label" style="color:#fff;">126.6만원/분</span></div></div></div></div>
+          <div class="cat-diff" style="color:#f5a623;">생활가전</div>
+        </div>
+        <div style="font-size:10px;color:var(--text3);margin-top:8px;font-family:'IBM Plex Mono',monospace;">※ 백혜정 분당취급고 1위는 대형가전 카테고리 특성(고단가)에 기인</div>
+      </div>
+    </div>
+
+    <!-- MD 개별 상세 뷰 -->
+    <div id="mdview-detail" style="display:none;">
+      <div id="md-detail-content"></div>
+    </div>
+  </div>
+
+  <script>
+    const mdData = {
+      'ko': {
+        name:'권오석', color:'#4d8fff', cat:'주방가전 · 주방용품',
+        total:{ cnt:177, weight:'10,065분', sales:'128.4억', perMin:'127.6만', margin:'44.0억', perMargin:'43.7만', revenue:'50.0억' },
+        monthly:{ sales:[45.2,32.5,14.3,9.6,26.8], margin:[15.5,11.3,5.0,3.7,8.4] },
+        cats:[
+          { name:'🍳 주방가전', sales:'76.9억', perMin:'130.4만', margin:'26.1억', pct:'59.9%' },
+          { name:'🍳 주방용품', sales:'51.6억', perMin:'123.7만', margin:'17.8억', pct:'40.1%' }
+        ],
+        top5:[
+          { name:'[마이어] 생선그릴',          sales:'11.65억', perMin:'129.1만', marginRate:'36.2%' },
+          { name:'[파베르] 엔드그레인 도마세트', sales:'11.33억', perMin:'131.4만', marginRate:'34.9%' },
+          { name:'[라포레] 플레이팅팬',         sales:'11.02억', perMin:'133.2만', marginRate:'28.4%' },
+          { name:'[에버홈] 올스텐찜기',          sales:'10.82억', perMin:'137.6만', marginRate:'34.0%' },
+          { name:'[안방] 그릴',                 sales:'9.33억',  perMin:'139.3만', marginRate:'30.9%' }
+        ]
+      },
+      'kim': {
+        name:'김응도', color:'#22c87a', cat:'생활가전',
+        total:{ cnt:135, weight:'8,070분', sales:'107.4억', perMin:'133.0만', margin:'35.3억', perMargin:'43.7만', revenue:'42.0억' },
+        monthly:{ sales:[16.9,25.1,26.5,19.4,19.4], margin:[5.6,8.7,9.1,6.3,5.6] },
+        cats:[
+          { name:'🏠 생활가전', sales:'107.4억', perMin:'133.0만', margin:'35.3억', pct:'100%' }
+        ],
+        top5:[
+          { name:'[코지마] 안마의자',      sales:'24.32억', perMin:'170.8만', marginRate:'26.7%' },
+          { name:'[코지마] 데코르 안마의자', sales:'17.53억', perMin:'180.6만', marginRate:'25.7%' },
+          { name:'[코지마] 복부마사지기',   sales:'16.86억', perMin:'125.0만', marginRate:'36.5%' },
+          { name:'[코지마] 가구형 안마의자', sales:'12.56억', perMin:'130.3만', marginRate:'34.1%' },
+          { name:'[필립스] 면도기',         sales:'10.02억', perMin:'104.7만', marginRate:'36.4%' }
+        ]
+      },
+      'lim': {
+        name:'임동진', color:'#f5a623', cat:'생활가전',
+        total:{ cnt:68, weight:'4,175분', sales:'52.9억', perMin:'126.6만', margin:'17.5억', perMargin:'41.8만', revenue:'20.3억' },
+        monthly:{ sales:[7.8,1.6,4.0,15.5,23.9], margin:[2.7,0.7,1.3,5.0,7.7] },
+        cats:[
+          { name:'🏠 생활가전', sales:'52.9억', perMin:'126.6만', margin:'17.5억', pct:'100%' }
+        ],
+        top5:[
+          { name:'[쿠진] 마하라이트',        sales:'17.07억', perMin:'136.2만', marginRate:'31.9%' },
+          { name:'[AGK] 킵온팬큘레이터',     sales:'8.10억',  perMin:'113.3만', marginRate:'35.1%' },
+          { name:'[한경희] 무선폴딩팬',      sales:'8.00억',  perMin:'127.0만', marginRate:'31.3%' },
+          { name:'[블라우풍트] 이어폰',      sales:'6.56억',  perMin:'140.0만', marginRate:'30.9%' },
+          { name:'[AGK] 무선서큘레이터',     sales:'4.01억',  perMin:'109.4만', marginRate:'36.8%' }
+        ]
+      },
+      'baek': {
+        name:'백혜정', color:'#9b7fff', cat:'대형가전',
+        total:{ cnt:65, weight:'1,634분', sales:'25.3억', perMin:'154.9만', margin:'6.6억', perMargin:'40.1만', revenue:'8.2억' },
+        monthly:{ sales:[4.0,9.3,6.0,2.4,3.7], margin:[1.1,2.8,1.5,0.6,0.5] },
+        cats:[
+          { name:'📦 대형가전', sales:'25.3억', perMin:'154.9만', margin:'6.6억', pct:'100%' }
+        ],
+        top5:[
+          { name:'[삼성전자] 비스포크 에어컨', sales:'9.59억', perMin:'170.3만', marginRate:'20.9%' },
+          { name:'[삼성전자] UHDTV',          sales:'4.80억', perMin:'179.1만', marginRate:'27.1%' },
+          { name:'[LG전자] 세탁기',           sales:'2.02억', perMin:'265.7만', marginRate:'15.3%' },
+          { name:'[삼성전자] 로봇청소기',     sales:'1.96억', perMin:'118.7만', marginRate:'37.8%' },
+          { name:'[삼성전자] 제트청소기',     sales:'1.85억', perMin:'115.2만', marginRate:'38.9%' }
+        ]
+      }
+    };
+
+    function showMD(key) {
+      document.querySelectorAll('.tab-btn').forEach(b => {
+        if (b.id && b.id.startsWith('mdtab-')) b.classList.remove('active-tab');
+      });
+      document.getElementById('mdtab-' + key).classList.add('active-tab');
+
+      if (key === 'all') {
+        document.getElementById('mdview-all').style.display = 'block';
+        document.getElementById('mdview-detail').style.display = 'none';
+        return;
+      }
+      document.getElementById('mdview-all').style.display = 'none';
+      document.getElementById('mdview-detail').style.display = 'block';
+
+      const d = mdData[key];
+      const months = ['1월','2월','3월','4월','5월'];
+
+      let catsHtml = d.cats.map(c => `
+        <tr>
+          <td>${c.name}</td>
+          <td class="mono" style="color:#4d8fff;">${c.sales}</td>
+          <td class="mono" style="color:#8b93a8;">${c.perMin}</td>
+          <td class="mono" style="color:#f0f2f7;">${c.margin}</td>
+          <td class="mono" style="color:${d.color};">${c.pct}</td>
+        </tr>`).join('');
+
+      let top5Html = d.top5.map((p,i) => `
+        <tr>
+          <td class="mono" style="color:#555e73;">${i+1}</td>
+          <td style="font-weight:500;">${p.name}</td>
+          <td class="mono" style="color:#4d8fff;">${p.sales}</td>
+          <td class="mono" style="color:#8b93a8;">${p.perMin}</td>
+          <td class="mono" style="color:#22c87a;">${p.marginRate}</td>
+        </tr>`).join('');
+
+      let monthlyRows = months.map((m,i) => `
+        <tr>
+          <td>${m}</td>
+          <td class="mono" style="color:#4d8fff;">${d.monthly.sales[i]}억</td>
+          <td class="mono" style="color:#22c87a;">${d.monthly.margin[i]}억</td>
+        </tr>`).join('');
+
+      document.getElementById('md-detail-content').innerHTML = `
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;">
+          <div class="kpi-card" style="border-color:${d.color}33;">
+            <div class="kpi-name" style="color:${d.color};">${d.name} — ${d.cat}</div>
+            <div class="kpi-actual" style="font-size:22px;color:#f0f2f7;">${d.total.sales}</div>
+            <div class="kpi-target" style="margin:4px 0;">${d.total.cnt}건 · ${d.total.weight}</div>
+          </div>
+          <div class="kpi-card" style="border-color:rgba(77,143,255,0.2);">
+            <div class="kpi-name">분당취급고 (VAT포함)</div>
+            <div class="kpi-actual" style="font-size:22px;color:#4d8fff;">${d.total.perMin}</div>
+            <div class="kpi-target" style="margin-top:4px;">매출 ${d.total.revenue}</div>
+          </div>
+          <div class="kpi-card" style="border-color:rgba(34,200,122,0.2);">
+            <div class="kpi-name">한계이익</div>
+            <div class="kpi-actual" style="font-size:22px;color:#22c87a;">${d.total.margin}</div>
+            <div class="kpi-target" style="margin-top:4px;">분당 ${d.total.perMargin}</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div>
+            <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px;">카테고리별 실적</div>
+            <table class="diff-table" style="margin-bottom:12px;">
+              <thead><tr><th>카테고리</th><th>취급고</th><th>분당취급고</th><th>한계이익</th><th>비중</th></tr></thead>
+              <tbody>${catsHtml}</tbody>
+            </table>
+            <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px;">월별 실적</div>
+            <table class="diff-table">
+              <thead><tr><th>월</th><th>취급고 (VAT포함)</th><th>한계이익</th></tr></thead>
+              <tbody>${monthlyRows}</tbody>
+            </table>
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px;">취급고 TOP 5 상품</div>
+            <table class="diff-table">
+              <thead><tr><th>#</th><th>상품명</th><th>취급고</th><th>분당취급고</th><th>이익률</th></tr></thead>
+              <tbody>${top5Html}</tbody>
+            </table>
+          </div>
+        </div>`;
+    }
+
+    // MD별 월별 추이 차트
+    const mdCtx = document.getElementById('mdChart').getContext('2d');
+    new Chart(mdCtx, {
+      type: 'line',
+      data: {
+        labels: ['1월','2월','3월','4월','5월'],
+        datasets: [
+          { label:'권오석', data:[45.2,32.5,14.3,9.6,26.8], borderColor:'#4d8fff', backgroundColor:'rgba(77,143,255,0.05)', tension:0.4, pointRadius:4, pointBackgroundColor:'#4d8fff' },
+          { label:'김응도', data:[16.9,25.1,26.5,19.4,19.4], borderColor:'#22c87a', backgroundColor:'rgba(34,200,122,0.05)', tension:0.4, pointRadius:4, pointBackgroundColor:'#22c87a' },
+          { label:'임동진', data:[7.8,1.6,4.0,15.5,23.9], borderColor:'#f5a623', backgroundColor:'rgba(245,166,35,0.05)', tension:0.4, pointRadius:4, pointBackgroundColor:'#f5a623' },
+          { label:'백혜정', data:[4.0,9.3,6.0,2.4,3.7], borderColor:'#9b7fff', backgroundColor:'rgba(155,127,255,0.05)', tension:0.4, pointRadius:4, pointBackgroundColor:'#9b7fff' }
+        ]
+      },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        plugins:{
+          legend:{display:false},
+          tooltip:{ backgroundColor:'#1e2433', borderColor:'rgba(255,255,255,0.1)', borderWidth:1, titleColor:'#8b93a8', bodyColor:'#f0f2f7', callbacks:{ label:(ctx)=>`${ctx.dataset.label}: ${ctx.parsed.y}억원` } }
+        },
+        scales:{
+          x:{ grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#8b93a8',font:{family:'IBM Plex Mono',size:11}} },
+          y:{ grid:{color:'rgba(255,255,255,0.04)'}, ticks:{color:'#8b93a8',font:{family:'IBM Plex Mono',size:10},callback:v=>v+'억'}, min:0 }
+        }
+      }
+    });
+  </script>
+
 <div class="footer">SK스토아 가전팀 · 구글시트 PGM 실적 기준 · VAT포함 · 월 컬럼 기준 집계</div>
 
 <script>
