@@ -217,12 +217,56 @@ function render(){
   });
   filtered.sort((a,b)=>b[currentSort]-a[currentSort]);
 
-  const totalS=filtered.reduce((a,p)=>a+p.s,0);
-  const totalM=filtered.reduce((a,p)=>a+p.m,0);
-  document.getElementById('summary').innerHTML=filtered.length===0?'':
-    `<span class="result-count">${filtered.length}개 상품</span>
-     &nbsp;·&nbsp; 취급고 합계 <b>${totalS.toFixed(1)}억</b>
-     &nbsp;·&nbsp; 한계이익 합계 <b>${totalM.toFixed(1)}억</b>`;
+  const totalS  = filtered.reduce((a,p)=>a+p.s,  0);
+  const totalM  = filtered.reduce((a,p)=>a+p.m,  0);
+  const totalW  = filtered.reduce((a,p)=>a+p.w,  0);
+  const totalCnt= filtered.reduce((a,p)=>a+p.cnt, 0);
+  const totalPm = totalW>0 ? (totalS*100000000)/(totalW*10000) : 0;
+  const totalPmm= totalW>0 ? (totalM*100000000)/(totalW*10000) : 0;
+
+  const sumEl = document.getElementById('summary');
+  if(filtered.length===0){ sumEl.innerHTML=''; }
+  else if(currentQ || currentCat){
+    const label = currentQ || currentCat;
+    sumEl.innerHTML=`
+      <div style="background:var(--bg2);border:1.5px solid rgba(37,99,235,0.25);border-radius:12px;padding:16px 20px;margin-bottom:16px;box-shadow:0 3px 10px rgba(37,99,235,0.08);">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+          <div>
+            <span style="font-size:13px;font-weight:700;color:var(--text1);">"${label}" 누적 실적 요약</span>
+            <span style="font-size:11px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-left:10px;">${filtered.length}개 상품 · 총 ${totalCnt}회 방송</span>
+          </div>
+          <span style="font-size:10px;color:var(--blue);font-family:'IBM Plex Mono',monospace;background:var(--blue-bg);padding:3px 9px;border-radius:5px;font-weight:600;">1~6월2주차 누적</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;">
+          <div style="background:var(--bg3);border-radius:8px;padding:10px 12px;border:1px solid var(--border);text-align:center;">
+            <div style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-bottom:5px;font-weight:500;">누적 가중분</div>
+            <div style="font-size:18px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--text1);">${totalW.toFixed(0)}<span style="font-size:11px;font-weight:400;color:var(--text3);">분</span></div>
+          </div>
+          <div style="background:var(--bg3);border-radius:8px;padding:10px 12px;border:1px solid var(--border);text-align:center;">
+            <div style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-bottom:5px;font-weight:500;">누적 취급고</div>
+            <div style="font-size:18px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:#2563EB;">${totalS.toFixed(1)}<span style="font-size:11px;font-weight:400;color:var(--text3);">억</span></div>
+          </div>
+          <div style="background:var(--bg3);border-radius:8px;padding:10px 12px;border:1px solid var(--border);text-align:center;">
+            <div style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-bottom:5px;font-weight:500;">분당취급고</div>
+            <div style="font-size:18px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--text1);">${totalPm.toFixed(1)}<span style="font-size:11px;font-weight:400;color:var(--text3);">만</span></div>
+          </div>
+          <div style="background:var(--bg3);border-radius:8px;padding:10px 12px;border:1px solid var(--border);text-align:center;">
+            <div style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-bottom:5px;font-weight:500;">누적 한계이익</div>
+            <div style="font-size:18px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:#0A8558;">${totalM.toFixed(1)}<span style="font-size:11px;font-weight:400;color:var(--text3);">억</span></div>
+          </div>
+          <div style="background:var(--bg3);border-radius:8px;padding:10px 12px;border:1px solid var(--border);text-align:center;">
+            <div style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-bottom:5px;font-weight:500;">분당한계이익</div>
+            <div style="font-size:18px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:#0A8558;">${totalPmm.toFixed(1)}<span style="font-size:11px;font-weight:400;color:var(--text3);">만</span></div>
+          </div>
+        </div>
+      </div>`;
+  } else {
+    sumEl.innerHTML=`<div style="font-size:12px;color:var(--text2);font-family:'IBM Plex Mono',monospace;margin-bottom:12px;">
+      <span style="font-weight:700;color:var(--blue);">${filtered.length}개 상품</span>
+      &nbsp;·&nbsp; 취급고 합계 <b>${totalS.toFixed(1)}억</b>
+      &nbsp;·&nbsp; 한계이익 합계 <b>${totalM.toFixed(1)}억</b>
+    </div>`;
+  }
 
   const res=document.getElementById('results');
   if(filtered.length===0){
