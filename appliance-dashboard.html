@@ -8,107 +8,245 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <style>
   :root {
-    --bg:#0f1117; --bg2:#161b26; --bg3:#1e2433;
-    --border:rgba(255,255,255,0.07); --border2:rgba(255,255,255,0.13);
-    --text1:#f0f2f7; --text2:#8b93a8; --text3:#555e73;
-    --green:#22c87a; --green-bg:rgba(34,200,122,0.1);
-    --amber:#f5a623; --amber-bg:rgba(245,166,35,0.1);
-    --red:#ff4d6a; --red-bg:rgba(255,77,106,0.1);
-    --blue:#4d8fff; --blue-bg:rgba(77,143,255,0.1);
-    --purple:#9b7fff;
+    /* 배경 — 눈에 편한 웜 슬레이트 */
+    --bg:  #EEF1F7;   /* 페이지 배경 */
+    --bg2: #F8F9FC;   /* 카드 배경 */
+    --bg3: #F0F3F8;   /* 서브 카드 */
+    /* 테두리 */
+    --border:  rgba(99,120,160,0.12);
+    --border2: rgba(99,120,160,0.22);
+    /* 텍스트 */
+    --text1: #1E2840;   /* 제목·강조 */
+    --text2: #4A5568;   /* 본문 */
+    --text3: #8A97B0;   /* 보조·레이블 */
+    /* 포인트 컬러 */
+    --green:  #0E9E6A; --green-bg:  rgba(14,158,106,0.10);
+    --amber:  #C97A10; --amber-bg:  rgba(201,122,16,0.10);
+    --red:    #D63A52; --red-bg:    rgba(214,58,82,0.10);
+    --blue:   #2563EB; --blue-bg:   rgba(37,99,235,0.10);
+    --purple: #6D3FC8; --purple-bg: rgba(109,63,200,0.10);
   }
   * { box-sizing:border-box; margin:0; padding:0; }
-  body { background:#f5f6fa; color:var(--text1); font-family:'Noto Sans KR',sans-serif; font-size:13px; line-height:1.6; padding:28px 24px 60px; }
+  body {
+    background: var(--bg);
+    color: var(--text1);
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 13px;
+    line-height: 1.6;
+    padding: 28px 24px 60px;
+  }
   .mono { font-family:'IBM Plex Mono',monospace; }
-  .header { display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:32px; padding-bottom:20px; border-bottom:1px solid var(--border2); }
-  .header h1 { font-size:22px; font-weight:700; letter-spacing:-0.5px; }
+
+  /* 헤더 */
+  .header { display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:32px; padding-bottom:20px; border-bottom:2px solid var(--border2); }
+  .header h1 { font-size:22px; font-weight:700; letter-spacing:-0.5px; color:var(--text1); }
   .header .sub { font-size:12px; color:var(--text3); margin-top:4px; font-family:'IBM Plex Mono',monospace; }
   .header-right { display:flex; gap:8px; }
-  .tag { font-size:10px; font-family:'IBM Plex Mono',monospace; padding:3px 9px; border-radius:4px; border:1px solid var(--border2); color:var(--text2); }
-  .tag.vat { border-color:rgba(77,143,255,0.4); color:var(--blue); background:var(--blue-bg); }
+  .tag { font-size:10px; font-family:'IBM Plex Mono',monospace; padding:3px 10px; border-radius:5px; border:1px solid var(--border2); color:var(--text2); background:var(--bg2); }
+  .tag.vat { border-color:rgba(37,99,235,0.35); color:var(--blue); background:var(--blue-bg); }
+
+  /* 섹션 */
   .section { margin-bottom:36px; }
-  .section-title { font-size:10px; font-weight:500; color:var(--text3); text-transform:uppercase; letter-spacing:.12em; margin-bottom:14px; display:flex; align-items:center; gap:8px; }
-  .section-title::after { content:''; flex:1; height:1px; background:#e2e8f0; }
-  /* KPI cards */
-  .kpi-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; }
-  .kpi-card { background:#ffffff; border:1px solid #e2e8f0; border-radius:10px; padding:18px 20px; position:relative; overflow:hidden; }
+  .section-title { font-size:10px; font-weight:600; color:var(--text3); text-transform:uppercase; letter-spacing:.12em; margin-bottom:14px; display:flex; align-items:center; gap:10px; }
+  .section-title::after { content:''; flex:1; height:1px; background:var(--border2); }
+
+  /* 카드 공통 */
+  .card-base {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(30,40,64,0.06), 0 1px 2px rgba(30,40,64,0.04);
+  }
+
+  /* KPI 카드 */
+  .kpi-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+  .kpi-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(30,40,64,0.06);
+    transition: box-shadow .2s;
+  }
+  .kpi-card:hover { box-shadow: 0 4px 16px rgba(30,40,64,0.10); }
   .kpi-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; }
-  .kpi-card.red::before { background:var(--red); }
-  .kpi-card.amber::before { background:var(--amber); }
-  .kpi-card.green::before { background:var(--green); }
-  .kpi-name { font-size:11px; color:var(--text3); margin-bottom:10px; font-family:'IBM Plex Mono',monospace; }
+  .kpi-card.red::before   { background: linear-gradient(90deg,#D63A52,#F06880); }
+  .kpi-card.amber::before { background: linear-gradient(90deg,#C97A10,#F0A030); }
+  .kpi-card.green::before { background: linear-gradient(90deg,#0E9E6A,#2DC88A); }
+  .kpi-name { font-size:11px; color:var(--text3); margin-bottom:10px; font-family:'IBM Plex Mono',monospace; font-weight:500; }
   .kpi-row { display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:12px; }
   .kpi-actual { font-size:26px; font-weight:700; letter-spacing:-1px; }
-  .kpi-card.red .kpi-actual { color:var(--red); }
-  .kpi-card.amber .kpi-actual { color:var(--amber); }
-  .kpi-card.green .kpi-actual { color:var(--green); }
-  .kpi-pct { font-size:11px; font-family:'IBM Plex Mono',monospace; padding:3px 8px; border-radius:4px; font-weight:500; }
-  .kpi-card.red .kpi-pct { background:var(--red-bg); color:var(--red); }
-  .kpi-card.amber .kpi-pct { background:var(--amber-bg); color:var(--amber); }
-  .kpi-card.green .kpi-pct { background:var(--green-bg); color:var(--green); }
+  .kpi-card.red   .kpi-actual { color:#C42E45; }
+  .kpi-card.amber .kpi-actual { color:#A8620A; }
+  .kpi-card.green .kpi-actual { color:#0A8558; }
+  .kpi-pct { font-size:11px; font-family:'IBM Plex Mono',monospace; padding:3px 9px; border-radius:5px; font-weight:600; }
+  .kpi-card.red   .kpi-pct { background:var(--red-bg);   color:#C42E45; }
+  .kpi-card.amber .kpi-pct { background:var(--amber-bg); color:#A8620A; }
+  .kpi-card.green .kpi-pct { background:var(--green-bg); color:#0A8558; }
   .kpi-target { font-size:11px; color:var(--text3); }
-  .prog-track { width:100%; height:4px; background:rgba(0,0,0,0.08); border-radius:2px; margin-bottom:12px; overflow:hidden; }
-  .prog-fill { height:100%; border-radius:2px; }
-  .kpi-card.red .prog-fill { background:var(--red); }
-  .kpi-card.amber .prog-fill { background:var(--amber); }
-  .kpi-card.green .prog-fill { background:var(--green); }
-  .need-row { display:flex; justify-content:space-between; padding:8px 10px; background:rgba(0,0,0,0.04); border-radius:6px; border:1px solid #e2e8f0; }
+  .prog-track { width:100%; height:5px; background:var(--bg3); border-radius:3px; margin-bottom:12px; overflow:hidden; }
+  .prog-fill  { height:100%; border-radius:3px; }
+  .kpi-card.red   .prog-fill { background:linear-gradient(90deg,#D63A52,#F06880); }
+  .kpi-card.amber .prog-fill { background:linear-gradient(90deg,#C97A10,#F0A030); }
+  .kpi-card.green .prog-fill { background:linear-gradient(90deg,#0E9E6A,#2DC88A); }
+  .need-row { display:flex; justify-content:space-between; padding:9px 11px; background:var(--bg3); border-radius:7px; border:1px solid var(--border); margin-top:8px; }
   .need-label { font-size:10px; color:var(--text3); }
-  .need-val { font-size:11px; font-weight:500; font-family:'IBM Plex Mono',monospace; }
-  .kpi-card.red .need-val { color:var(--red); }
-  .kpi-card.amber .need-val { color:var(--amber); }
-  .kpi-card.green .need-val { color:var(--green); }
-  /* Chart */
-  .chart-wrap { background:#ffffff; border:1px solid #e2e8f0; border-radius:10px; padding:20px; }
+  .need-val   { font-size:11px; font-weight:600; font-family:'IBM Plex Mono',monospace; }
+  .kpi-card.red   .need-val { color:#C42E45; }
+  .kpi-card.amber .need-val { color:#A8620A; }
+  .kpi-card.green .need-val { color:#0A8558; }
+
+  /* 차트 */
+  .chart-wrap { background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:20px; box-shadow:0 2px 8px rgba(30,40,64,0.06); }
   .chart-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
-  .chart-title-text { font-size:13px; font-weight:500; }
+  .chart-title-text { font-size:13px; font-weight:600; color:var(--text1); }
   .legend { display:flex; gap:14px; font-size:10px; color:var(--text3); font-family:'IBM Plex Mono',monospace; }
   .legend span { display:flex; align-items:center; gap:5px; }
   .legend-dot { width:8px; height:8px; border-radius:2px; display:inline-block; }
-  .divider { height:1px; background:#e2e8f0; margin:36px 0; }
-  /* Week compare */
-  .compare-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px; }
-  .compare-card { background:#ffffff; border:1px solid #e2e8f0; border-radius:10px; padding:16px 18px; }
-  .compare-week { font-size:10px; color:var(--text3); font-family:'IBM Plex Mono',monospace; margin-bottom:12px; text-transform:uppercase; letter-spacing:.08em; }
+
+  /* 구분선 */
+  .divider { height:1px; background:var(--border2); margin:36px 0; }
+
+  /* 주간 비교 카드 */
+  .compare-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:16px; }
+  .compare-card { background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:16px 18px; box-shadow:0 2px 8px rgba(30,40,64,0.05); }
+  .compare-week { font-size:10px; color:var(--text3); font-family:'IBM Plex Mono',monospace; margin-bottom:12px; text-transform:uppercase; letter-spacing:.08em; font-weight:600; }
   .compare-metric-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
   .compare-metric-name { font-size:11px; color:var(--text2); }
-  .compare-metric-val { font-size:15px; font-weight:700; font-family:'IBM Plex Mono',monospace; }
-  /* Tables */
-  .diff-table { width:100%; border-collapse:collapse; background:#ffffff; border-radius:10px; overflow:hidden; border:1px solid #e2e8f0; }
-  .diff-table th { text-align:left; padding:10px 14px; font-size:10px; font-weight:500; color:var(--text3); text-transform:uppercase; letter-spacing:.08em; border-bottom:1px solid var(--border); background:rgba(0,0,0,0.03); font-family:'IBM Plex Mono',monospace; }
-  .diff-table td { padding:10px 14px; font-size:12px; border-bottom:1px solid var(--border); }
+  .compare-metric-val  { font-size:15px; font-weight:700; font-family:'IBM Plex Mono',monospace; color:var(--text1); }
+
+  /* 테이블 */
+  .diff-table { width:100%; border-collapse:collapse; background:var(--bg2); border-radius:12px; overflow:hidden; border:1px solid var(--border); box-shadow:0 2px 8px rgba(30,40,64,0.05); }
+  .diff-table th { text-align:left; padding:10px 14px; font-size:10px; font-weight:600; color:var(--text3); text-transform:uppercase; letter-spacing:.08em; border-bottom:1px solid var(--border2); background:var(--bg3); font-family:'IBM Plex Mono',monospace; }
+  .diff-table td { padding:10px 14px; font-size:12px; border-bottom:1px solid var(--border); color:var(--text1); }
   .diff-table tr:last-child td { border-bottom:none; }
-  .diff-table tr:hover td { background:rgba(0,0,0,0.03); }
-  .up { color:var(--green); font-family:'IBM Plex Mono',monospace; font-size:11px; }
-  .down { color:var(--red); font-family:'IBM Plex Mono',monospace; font-size:11px; }
-  .neutral { color:var(--blue); font-family:'IBM Plex Mono',monospace; font-size:11px; }
-  /* Cat bars */
-  .cat-section { background:#ffffff; border:1px solid #e2e8f0; border-radius:10px; padding:18px 20px; margin-bottom:12px; }
-  .cat-title { font-size:11px; color:var(--text2); font-weight:500; margin-bottom:14px; }
-  .cat-row { display:flex; align-items:center; gap:10px; margin-bottom:9px; }
+  .diff-table tr:hover td { background:var(--bg3); }
+  .up     { color:#0A8558; font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:600; }
+  .down   { color:#C42E45; font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:600; }
+  .neutral{ color:var(--blue); font-family:'IBM Plex Mono',monospace; font-size:11px; }
+
+  /* 카테고리 바 */
+  .cat-section { background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:18px 20px; margin-bottom:12px; box-shadow:0 2px 6px rgba(30,40,64,0.05); }
+  .cat-title { font-size:11px; color:var(--text2); font-weight:600; margin-bottom:14px; }
+  .cat-row { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
   .cat-name { font-size:11px; color:var(--text2); width:64px; flex-shrink:0; text-align:right; }
   .cat-bars { flex:1; display:flex; flex-direction:column; gap:3px; }
   .cat-bar-wrap { display:flex; align-items:center; gap:6px; }
-  .cat-bar-track { flex:1; height:14px; background:rgba(0,0,0,0.06); border-radius:3px; overflow:hidden; }
-  .cat-bar-fill { height:100%; border-radius:3px; display:flex; align-items:center; padding:0 5px; }
+  .cat-bar-track { flex:1; height:16px; background:var(--bg3); border-radius:4px; overflow:hidden; }
+  .cat-bar-fill { height:100%; border-radius:4px; display:flex; align-items:center; padding:0 6px; }
   .cat-bar-label { font-size:9px; font-family:'IBM Plex Mono',monospace; white-space:nowrap; }
-  .cat-diff { font-size:10px; font-family:'IBM Plex Mono',monospace; width:68px; text-align:right; flex-shrink:0; }
-  /* Insights */
-  .insight-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:16px; }
-  .insight { padding:12px 14px; border-radius:8px; border-left:3px solid; }
-  .insight.good { background:rgba(14,164,114,0.08); border-color:var(--grn); }
-  .insight.bad  { background:rgba(232,51,74,0.08);   border-color:var(--red); }
-  .insight-title { font-size:11px; font-weight:700; margin-bottom:6px; }
-  .insight.good .insight-title { color:var(--grn); }
-  .insight.bad  .insight-title { color:var(--red); }
-  .insight-body { font-size:11px; color:#4b5563; line-height:1.6; }
-  .insight-body li { margin-bottom:3px; list-style:none; }
-  .insight-body li::before { content:'— '; opacity:.5; }
-  /* Tabs */
-  .tab-btn { padding:5px 14px; font-size:11px; font-family:'IBM Plex Mono',monospace; background:#ffffff; border:1px solid var(--border2); border-radius:6px; color:var(--text2); cursor:pointer; transition:all .15s; }
-  .tab-btn:hover { background:#f1f5f9; color:var(--text1); }
-  .active-tab { background:var(--blue-bg) !important; border-color:rgba(77,143,255,0.5) !important; color:var(--blue) !important; }
-  .footer { text-align:center; font-size:10px; color:var(--text3); font-family:'IBM Plex Mono',monospace; margin-top:40px; padding-top:20px; border-top:1px solid #e2e8f0; }
+  .cat-diff { font-size:10px; font-family:'IBM Plex Mono',monospace; width:68px; text-align:right; flex-shrink:0; font-weight:600; }
+
+  /* 인사이트 */
+  .insight-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:16px; }
+  .insight { padding:14px 16px; border-radius:10px; border-left:4px solid; }
+  .insight.good { background:linear-gradient(135deg,rgba(14,158,106,0.08),rgba(14,158,106,0.04)); border-color:var(--green); }
+  .insight.bad  { background:linear-gradient(135deg,rgba(214,58,82,0.08),rgba(214,58,82,0.04));  border-color:var(--red); }
+  .insight-title { font-size:12px; font-weight:700; margin-bottom:8px; }
+  .insight.good .insight-title { color:#0A8558; }
+  .insight.bad  .insight-title { color:#C42E45; }
+  .insight-body { font-size:11px; color:var(--text2); line-height:1.7; }
+  .insight-body li { margin-bottom:4px; list-style:none; padding-left:2px; }
+  .insight-body li::before { content:'› '; color:var(--text3); font-weight:700; }
+
+  /* 탭 버튼 */
+  .tab-btn { padding:5px 14px; font-size:11px; font-family:'IBM Plex Mono',monospace; background:var(--bg2); border:1px solid var(--border2); border-radius:6px; color:var(--text2); cursor:pointer; transition:all .15s; font-weight:500; }
+  .tab-btn:hover { background:var(--bg3); color:var(--text1); border-color:var(--border2); }
+  .active-tab { background:var(--blue-bg) !important; border-color:rgba(37,99,235,0.4) !important; color:var(--blue) !important; font-weight:600 !important; }
+
+  /* 랭크 카드 */
+  .rank-card { display:flex; align-items:center; gap:14px; background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:14px 18px; margin-bottom:8px; transition:all .2s; box-shadow:0 1px 4px rgba(30,40,64,0.05); }
+  .rank-card:hover { border-color:var(--border2); box-shadow:0 4px 12px rgba(30,40,64,0.10); transform:translateY(-1px); }
+  .rank-badge { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; font-family:'IBM Plex Mono',monospace; flex-shrink:0; }
+  .r1 { background:rgba(255,215,0,0.15); color:#B8860B; border:1.5px solid rgba(255,215,0,0.4); }
+  .r2 { background:rgba(192,192,192,0.15); color:#708090; border:1.5px solid rgba(192,192,192,0.4); }
+  .r3 { background:rgba(205,127,50,0.15); color:#8B6914; border:1.5px solid rgba(205,127,50,0.4); }
+  .rn { background:var(--bg3); color:var(--text3); border:1px solid var(--border); }
+  .rank-info { width:180px; flex-shrink:0; }
+  .rank-cat-badge { font-size:9px; font-family:'IBM Plex Mono',monospace; padding:2px 7px; border-radius:4px; display:inline-block; margin-bottom:5px; font-weight:600; }
+  .cat-주방용품 { background:var(--purple-bg); color:var(--purple); }
+  .cat-생활가전 { background:var(--blue-bg); color:var(--blue); }
+  .cat-주방가전 { background:var(--green-bg); color:var(--green); }
+  .cat-대형가전 { background:var(--amber-bg); color:var(--amber); }
+  .rank-name { font-size:12px; font-weight:600; color:var(--text1); margin-bottom:3px; }
+  .rank-meta { font-size:10px; color:var(--text3); font-family:'IBM Plex Mono',monospace; }
+  .rank-bars { flex:1; display:flex; flex-direction:column; gap:5px; }
+  .rank-bar-row { display:flex; align-items:center; gap:8px; }
+  .rank-bar-label { font-size:9px; color:var(--text3); width:36px; flex-shrink:0; text-align:right; font-family:'IBM Plex Mono',monospace; }
+  .rank-bar-track { flex:1; height:18px; background:var(--bg3); border-radius:4px; overflow:hidden; }
+  .rank-bar-fill { height:100%; border-radius:4px; display:flex; align-items:center; padding:0 7px; min-width:40px; }
+  .rank-bar-val { font-size:10px; font-family:'IBM Plex Mono',monospace; font-weight:600; color:#fff; white-space:nowrap; }
+  .rank-metrics { display:flex; flex-direction:column; gap:6px; width:120px; flex-shrink:0; }
+  .rank-metric { text-align:right; }
+  .rm-label { font-size:9px; color:var(--text3); font-family:'IBM Plex Mono',monospace; }
+  .rm-val { font-size:12px; font-weight:600; font-family:'IBM Plex Mono',monospace; color:var(--text1); }
+
+  /* 검색 */
+  .sr-card { background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:16px 18px; margin-bottom:10px; cursor:pointer; transition:all .2s; box-shadow:0 1px 4px rgba(30,40,64,0.05); }
+  .sr-card:hover { border-color:var(--border2); box-shadow:0 4px 14px rgba(30,40,64,0.10); transform:translateY(-1px); }
+  .sr-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:12px; }
+  .sr-name { font-size:13px; font-weight:600; color:var(--text1); }
+  .sr-meta { font-size:10px; color:var(--text3); font-family:'IBM Plex Mono',monospace; margin-top:3px; }
+  .sr-badges { display:flex; gap:5px; flex-shrink:0; margin-left:10px; }
+  .sr-badge { font-size:9px; font-family:'IBM Plex Mono',monospace; padding:2px 7px; border-radius:4px; font-weight:600; }
+  .sr-metrics { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:12px; }
+  .sr-metric { background:var(--bg3); border-radius:7px; padding:8px 10px; border:1px solid var(--border); }
+  .sr-mlabel { font-size:9px; color:var(--text3); font-family:'IBM Plex Mono',monospace; margin-bottom:3px; }
+  .sr-mval { font-size:13px; font-weight:700; font-family:'IBM Plex Mono',monospace; color:var(--text1); }
+  .sr-chart { display:flex; gap:3px; align-items:flex-end; height:40px; margin-top:4px; }
+  .sr-bar-wrap { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; }
+  .sr-bar { width:100%; border-radius:3px 3px 0 0; min-height:2px; }
+  .sr-blabel { font-size:8px; color:var(--text3); font-family:'IBM Plex Mono',monospace; }
+  .no-result { text-align:center; padding:40px; color:var(--text3); font-family:'IBM Plex Mono',monospace; font-size:12px; }
+  .highlight { background:rgba(37,99,235,0.15); border-radius:2px; padding:0 2px; color:var(--blue); font-weight:600; }
+
+  /* db-wrap (dark 테마용 잔여) */
+  .db-wrap { background:var(--bg); border-radius:12px; padding:20px 22px 28px; font-family:'IBM Plex Mono',monospace; color:var(--text1); }
+  .db-header { display:flex; justify-content:space-between; align-items:flex-end; padding-bottom:16px; border-bottom:1px solid var(--border2); margin-bottom:20px; }
+  .db-title { font-size:16px; font-weight:700; letter-spacing:-0.3px; color:var(--text1); }
+  .db-sub { font-size:11px; color:var(--text3); margin-top:3px; }
+  .db-tags { display:flex; gap:6px; }
+  .db-tag { font-size:10px; padding:3px 9px; border-radius:4px; border:1px solid var(--border2); color:var(--text2); }
+  .db-tag.vat { border-color:rgba(37,99,235,0.35); color:var(--blue); background:var(--blue-bg); }
+  .sl { font-size:10px; color:var(--text3); text-transform:uppercase; letter-spacing:.1em; margin:18px 0 10px; display:flex; align-items:center; gap:8px; font-weight:600; }
+  .sl::after { content:''; flex:1; height:1px; background:var(--border2); }
+  .kpi { background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:12px 10px; }
+  .kpi-lbl { font-size:10px; color:var(--text3); margin-bottom:6px; font-family:'IBM Plex Mono',monospace; }
+  .kpi-diff { font-size:10px; margin-top:4px; font-weight:600; }
+  .kpi-prev { font-size:10px; color:var(--text3); margin-top:2px; }
+  .ccard { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:14px 16px; }
+  .cweek { font-size:10px; color:var(--text3); text-transform:uppercase; letter-spacing:.06em; margin-bottom:10px; font-weight:600; }
+  .crow { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+  .clabel { font-size:11px; color:var(--text2); }
+  .cval { font-size:14px; font-weight:700; color:var(--text1); }
+  .bar-row { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+  .bar-lbl { font-size:10px; color:var(--text2); width:56px; flex-shrink:0; text-align:right; }
+  .bar-track { flex:1; height:18px; background:var(--bg3); border-radius:4px; overflow:hidden; }
+  .bar-fill { height:100%; border-radius:4px; display:flex; align-items:center; padding:0 6px; }
+  .bar-txt { font-size:9px; font-weight:700; color:#fff; }
+  .diff { font-size:10px; font-weight:700; width:64px; text-align:right; flex-shrink:0; }
+  .prod-row { display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid var(--border); }
+  .prod-row:last-child { border-bottom:none; }
+  .prod-rank { font-size:11px; color:var(--text3); width:16px; flex-shrink:0; font-weight:600; }
+  .prod-info { flex:1; min-width:0; }
+  .prod-name { font-size:11px; color:var(--text1); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:500; }
+  .prod-meta { font-size:10px; color:var(--text3); margin-top:1px; }
+  .prod-val { font-size:12px; font-weight:700; }
+  .ins { border-radius:8px; padding:11px 13px; margin-bottom:8px; border-left:3px solid; }
+  .ins-g { background:rgba(14,158,106,0.08); border-color:var(--green); }
+  .ins-r { background:rgba(214,58,82,0.08);  border-color:var(--red); }
+  .ins-a { background:rgba(201,122,16,0.08); border-color:var(--amber); }
+  .ins-title { font-size:11px; font-weight:700; margin-bottom:4px; }
+  .ins-g .ins-title { color:#0A8558; }
+  .ins-r .ins-title { color:#C42E45; }
+  .ins-a .ins-title { color:#A8620A; }
+  .ins-body { font-size:10px; color:var(--text2); line-height:1.7; }
+  .ncat-badge { font-size:9px; font-family:'IBM Plex Mono',monospace; padding:2px 7px; border-radius:4px; display:inline-block; font-weight:600; }
+
+  /* 푸터 */
+  .footer { text-align:center; font-size:10px; color:var(--text3); font-family:'IBM Plex Mono',monospace; margin-top:40px; padding-top:20px; border-top:1px solid var(--border2); }
 </style>
 </head>
 <body>
@@ -139,7 +277,7 @@
       <div class="kpi-target" style="margin-bottom:10px;">목표 1,235억 · 연말 추정 951억 · 부족 284억</div>
       <div class="need-row">
         <span class="need-label">월 필요 취급고</span>
-        <span class="need-val">126.6억 <span style="color:#9ca3af;font-size:10px;">/ 현재 월평균 79.3억</span></span>
+        <span class="need-val">126.6억 <span style="color:#8A97B0;font-size:10px;">/ 현재 월평균 79.3억</span></span>
       </div>
     </div>
     <div class="kpi-card amber">
@@ -152,7 +290,7 @@
       <div class="kpi-target" style="margin-bottom:10px;">목표 403억 · 연말 추정 352억 · 부족 51억</div>
       <div class="need-row">
         <span class="need-label">월 필요 매출</span>
-        <span class="need-val">37.8억 <span style="color:#9ca3af;font-size:10px;">/ 현재 월평균 29.4억</span></span>
+        <span class="need-val">37.8억 <span style="color:#8A97B0;font-size:10px;">/ 현재 월평균 29.4억</span></span>
       </div>
     </div>
     <div class="kpi-card green">
@@ -165,7 +303,7 @@
       <div class="kpi-target" style="margin-bottom:10px;">목표 323억 · 연말 추정 300억 · 부족 23억</div>
       <div class="need-row">
         <span class="need-label">월 필요 한계이익</span>
-        <span class="need-val">28.9억 <span style="color:#9ca3af;font-size:10px;">/ 현재 월평균 25.0억</span></span>
+        <span class="need-val">28.9억 <span style="color:#8A97B0;font-size:10px;">/ 현재 월평균 25.0억</span></span>
       </div>
     </div>
   </div>
@@ -197,11 +335,11 @@
   <div class="compare-grid">
     <div class="compare-card">
       <div class="compare-week">◀ 6월1주차 (지지난 주)</div>
-      <div class="compare-metric-row"><span class="compare-metric-name">취급고 (VAT포함)</span><span class="compare-metric-val" style="color:#6b7280;">20.7억</span></div>
-      <div class="compare-metric-row"><span class="compare-metric-name">분당취급고</span><span class="compare-metric-val" style="color:#6b7280;">141.9만</span></div>
-      <div class="compare-metric-row"><span class="compare-metric-name">한계이익</span><span class="compare-metric-val" style="color:#6b7280;">6.22억</span></div>
-      <div class="compare-metric-row"><span class="compare-metric-name">분당한계이익</span><span class="compare-metric-val" style="color:#6b7280;">42.5만</span></div>
-      <div class="compare-metric-row"><span class="compare-metric-name">가중분</span><span class="compare-metric-val" style="color:#6b7280;">1,462분</span></div>
+      <div class="compare-metric-row"><span class="compare-metric-name">취급고 (VAT포함)</span><span class="compare-metric-val" style="color:#6B7280;">20.7억</span></div>
+      <div class="compare-metric-row"><span class="compare-metric-name">분당취급고</span><span class="compare-metric-val" style="color:#6B7280;">141.9만</span></div>
+      <div class="compare-metric-row"><span class="compare-metric-name">한계이익</span><span class="compare-metric-val" style="color:#6B7280;">6.22억</span></div>
+      <div class="compare-metric-row"><span class="compare-metric-name">분당한계이익</span><span class="compare-metric-val" style="color:#6B7280;">42.5만</span></div>
+      <div class="compare-metric-row"><span class="compare-metric-name">가중분</span><span class="compare-metric-val" style="color:#6B7280;">1,462분</span></div>
     </div>
     <div class="compare-card" style="border-color:rgba(37,99,235,0.35);">
       <div class="compare-week" style="color:#4d8fff;">▶ 6월2주차 (지난 주)</div>
@@ -216,19 +354,19 @@
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
     <div class="cat-section">
       <div class="cat-title">카테고리별 분당취급고 (VAT포함)</div>
-      <div class="cat-row"><div class="cat-name">대형가전</div><div class="cat-bars"><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:37%;background:#cbd5e1;"><span class="cat-bar-label" style="color:#aaa;">108.1만</span></div></div></div><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:100%;background:#9b7fff;"><span class="cat-bar-label" style="color:#fff;">291.0만 🏆</span></div></div></div></div><div class="cat-diff up">▲+169.1%</div></div>
-      <div class="cat-row"><div class="cat-name">주방용품</div><div class="cat-bars"><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:50%;background:#cbd5e1;"><span class="cat-bar-label" style="color:#aaa;">144.9만</span></div></div></div><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:48%;background:#4d8fff;"><span class="cat-bar-label" style="color:#fff;">139.3만</span></div></div></div></div><div class="cat-diff down">▼-3.9%</div></div>
-      <div class="cat-row"><div class="cat-name">주방가전</div><div class="cat-bars"><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:42%;background:#cbd5e1;"><span class="cat-bar-label" style="color:#aaa;">121.3만</span></div></div></div><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:45%;background:#4d8fff;"><span class="cat-bar-label" style="color:#fff;">131.2만</span></div></div></div></div><div class="cat-diff up">▲+8.2%</div></div>
-      <div class="cat-row"><div class="cat-name">생활가전</div><div class="cat-bars"><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:49%;background:#cbd5e1;"><span class="cat-bar-label" style="color:#aaa;">143.2만</span></div></div></div><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:44%;background:#ff4d6a;"><span class="cat-bar-label" style="color:#fff;">127.6만</span></div></div></div></div><div class="cat-diff down">▼-10.9%</div></div>
-      <div style="display:flex;gap:12px;margin-top:10px;font-size:10px;color:var(--text3);"><span style="display:flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;background:#cbd5e1;border-radius:2px;display:inline-block;"></span>5월3주차</span><span style="display:flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;background:#4d8fff;border-radius:2px;display:inline-block;"></span>5월4주차</span></div>
+      <div class="cat-row"><div class="cat-name">대형가전</div><div class="cat-bars"><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:37%;background:#C8D3E4;"><span class="cat-bar-label" style="color:#aaa;">108.1만</span></div></div></div><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:100%;background:#9b7fff;"><span class="cat-bar-label" style="color:#fff;">291.0만 🏆</span></div></div></div></div><div class="cat-diff up">▲+169.1%</div></div>
+      <div class="cat-row"><div class="cat-name">주방용품</div><div class="cat-bars"><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:50%;background:#C8D3E4;"><span class="cat-bar-label" style="color:#aaa;">144.9만</span></div></div></div><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:48%;background:#4d8fff;"><span class="cat-bar-label" style="color:#fff;">139.3만</span></div></div></div></div><div class="cat-diff down">▼-3.9%</div></div>
+      <div class="cat-row"><div class="cat-name">주방가전</div><div class="cat-bars"><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:42%;background:#C8D3E4;"><span class="cat-bar-label" style="color:#aaa;">121.3만</span></div></div></div><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:45%;background:#4d8fff;"><span class="cat-bar-label" style="color:#fff;">131.2만</span></div></div></div></div><div class="cat-diff up">▲+8.2%</div></div>
+      <div class="cat-row"><div class="cat-name">생활가전</div><div class="cat-bars"><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:49%;background:#C8D3E4;"><span class="cat-bar-label" style="color:#aaa;">143.2만</span></div></div></div><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:44%;background:#ff4d6a;"><span class="cat-bar-label" style="color:#fff;">127.6만</span></div></div></div></div><div class="cat-diff down">▼-10.9%</div></div>
+      <div style="display:flex;gap:12px;margin-top:10px;font-size:10px;color:var(--text3);"><span style="display:flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;background:#C8D3E4;border-radius:2px;display:inline-block;"></span>5월3주차</span><span style="display:flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;background:#4d8fff;border-radius:2px;display:inline-block;"></span>5월4주차</span></div>
     </div>
     <div class="cat-section">
       <div class="cat-title">카테고리별 분당한계이익</div>
-      <div class="cat-row"><div class="cat-name">대형가전</div><div class="cat-bars"><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:98%;background:#cbd5e1;"><span class="cat-bar-label" style="color:#aaa;">29.4만</span></div></div></div><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:100%;background:#22c87a;"><span class="cat-bar-label" style="color:#fff;">55.3만</span></div></div></div></div><div class="cat-diff up">▲+88.1%</div></div>
-      <div class="cat-row"><div class="cat-name">생활가전</div><div class="cat-bars"><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:94%;background:#cbd5e1;"><span class="cat-bar-label" style="color:#aaa;">45.1만</span></div></div></div><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:80%;background:#22c87a;"><span class="cat-bar-label" style="color:#fff;">44.2만</span></div></div></div></div><div class="cat-diff down">▼-1.9%</div></div>
-      <div class="cat-row"><div class="cat-name">주방용품</div><div class="cat-bars"><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:84%;background:#cbd5e1;"><span class="cat-bar-label" style="color:#aaa;">40.8만</span></div></div></div><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:77%;background:#22c87a;"><span class="cat-bar-label" style="color:#fff;">42.3만</span></div></div></div></div><div class="cat-diff up">▲+3.7%</div></div>
-      <div class="cat-row"><div class="cat-name">주방가전</div><div class="cat-bars"><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:92%;background:#cbd5e1;"><span class="cat-bar-label" style="color:#aaa;">44.0만</span></div></div></div><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:66%;background:#ff4d6a;"><span class="cat-bar-label" style="color:#fff;">36.2만</span></div></div></div></div><div class="cat-diff down">▼-17.8%</div></div>
-      <div style="display:flex;gap:12px;margin-top:10px;font-size:10px;color:var(--text3);"><span style="display:flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;background:#cbd5e1;border-radius:2px;display:inline-block;"></span>5월3주차</span><span style="display:flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;background:#22c87a;border-radius:2px;display:inline-block;"></span>5월4주차</span></div>
+      <div class="cat-row"><div class="cat-name">대형가전</div><div class="cat-bars"><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:98%;background:#C8D3E4;"><span class="cat-bar-label" style="color:#aaa;">29.4만</span></div></div></div><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:100%;background:#22c87a;"><span class="cat-bar-label" style="color:#fff;">55.3만</span></div></div></div></div><div class="cat-diff up">▲+88.1%</div></div>
+      <div class="cat-row"><div class="cat-name">생활가전</div><div class="cat-bars"><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:94%;background:#C8D3E4;"><span class="cat-bar-label" style="color:#aaa;">45.1만</span></div></div></div><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:80%;background:#22c87a;"><span class="cat-bar-label" style="color:#fff;">44.2만</span></div></div></div></div><div class="cat-diff down">▼-1.9%</div></div>
+      <div class="cat-row"><div class="cat-name">주방용품</div><div class="cat-bars"><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:84%;background:#C8D3E4;"><span class="cat-bar-label" style="color:#aaa;">40.8만</span></div></div></div><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:77%;background:#22c87a;"><span class="cat-bar-label" style="color:#fff;">42.3만</span></div></div></div></div><div class="cat-diff up">▲+3.7%</div></div>
+      <div class="cat-row"><div class="cat-name">주방가전</div><div class="cat-bars"><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:92%;background:#C8D3E4;"><span class="cat-bar-label" style="color:#aaa;">44.0만</span></div></div></div><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:66%;background:#ff4d6a;"><span class="cat-bar-label" style="color:#fff;">36.2만</span></div></div></div></div><div class="cat-diff down">▼-17.8%</div></div>
+      <div style="display:flex;gap:12px;margin-top:10px;font-size:10px;color:var(--text3);"><span style="display:flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;background:#C8D3E4;border-radius:2px;display:inline-block;"></span>5월3주차</span><span style="display:flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;background:#22c87a;border-radius:2px;display:inline-block;"></span>5월4주차</span></div>
     </div>
   </div>
 
@@ -272,17 +410,17 @@
     <table class="diff-table">
       <thead><tr><th>월</th><th>가중분</th><th>취급고 (VAT포함)</th><th>분당취급고</th><th>매출 (V-)</th><th>한계이익</th><th>분당한계이익</th><th>누적취급고</th></tr></thead>
       <tbody>
-        <tr><td>1월</td><td>7,329분</td><td class="mono" style="color:#4d8fff;">105.6억</td><td class="mono" style="color:#6b7280;">144.0만</td><td>39.4억</td><td>34.1억</td><td class="mono" style="color:#22c87a;">46.5만</td><td class="mono" style="color:#9ca3af;">105.6억</td></tr>
-        <tr><td>2월</td><td>6,436분</td><td class="mono" style="color:#4d8fff;">88.8억</td><td class="mono" style="color:#6b7280;">138.0만</td><td>33.2억</td><td>28.5억</td><td class="mono" style="color:#22c87a;">44.2만</td><td class="mono" style="color:#9ca3af;">194.4억</td></tr>
-        <tr><td>3월</td><td>5,449분</td><td class="mono" style="color:#4d8fff;">74.4억</td><td class="mono" style="color:#6b7280;">136.5만</td><td>27.5억</td><td>23.3억</td><td class="mono" style="color:#22c87a;">42.7만</td><td class="mono" style="color:#9ca3af;">268.8억</td></tr>
-        <tr><td>4월</td><td>4,975분</td><td class="mono" style="color:#ff4d6a;">65.8억</td><td class="mono" style="color:#6b7280;">132.3만</td><td>24.7억</td><td>21.0억</td><td class="mono" style="color:#f5a623;">42.2만</td><td class="mono" style="color:#9ca3af;">334.6억</td></tr>
-        <tr><td>5월</td><td>7,118분</td><td class="mono" style="color:#4d8fff;">97.5억</td><td class="mono" style="color:#6b7280;">137.0만</td><td>35.4억</td><td>29.7억</td><td class="mono" style="color:#22c87a;">41.7만</td><td class="mono" style="color:#9ca3af;">432.1억</td></tr>
-        <tr><td>6월 <span style="font-size:9px;color:#f5a623;">(1~2주차)</span></td><td>3,145분</td><td class="mono" style="color:#f5a623;">43.5억</td><td class="mono" style="color:#6b7280;">138.2만</td><td>15.9억</td><td>13.3억</td><td class="mono" style="color:#22c87a;">42.4만</td><td class="mono" style="color:#9ca3af;">475.6억</td></tr>
+        <tr><td>1월</td><td>7,329분</td><td class="mono" style="color:#4d8fff;">105.6억</td><td class="mono" style="color:#6B7280;">144.0만</td><td>39.4억</td><td>34.1억</td><td class="mono" style="color:#22c87a;">46.5만</td><td class="mono" style="color:#8A97B0;">105.6억</td></tr>
+        <tr><td>2월</td><td>6,436분</td><td class="mono" style="color:#4d8fff;">88.8억</td><td class="mono" style="color:#6B7280;">138.0만</td><td>33.2억</td><td>28.5억</td><td class="mono" style="color:#22c87a;">44.2만</td><td class="mono" style="color:#8A97B0;">194.4억</td></tr>
+        <tr><td>3월</td><td>5,449분</td><td class="mono" style="color:#4d8fff;">74.4억</td><td class="mono" style="color:#6B7280;">136.5만</td><td>27.5억</td><td>23.3억</td><td class="mono" style="color:#22c87a;">42.7만</td><td class="mono" style="color:#8A97B0;">268.8억</td></tr>
+        <tr><td>4월</td><td>4,975분</td><td class="mono" style="color:#ff4d6a;">65.8억</td><td class="mono" style="color:#6B7280;">132.3만</td><td>24.7억</td><td>21.0억</td><td class="mono" style="color:#f5a623;">42.2만</td><td class="mono" style="color:#8A97B0;">334.6억</td></tr>
+        <tr><td>5월</td><td>7,118분</td><td class="mono" style="color:#4d8fff;">97.5억</td><td class="mono" style="color:#6B7280;">137.0만</td><td>35.4억</td><td>29.7억</td><td class="mono" style="color:#22c87a;">41.7만</td><td class="mono" style="color:#8A97B0;">432.1억</td></tr>
+        <tr><td>6월 <span style="font-size:9px;color:#f5a623;">(1~2주차)</span></td><td>3,145분</td><td class="mono" style="color:#f5a623;">43.5억</td><td class="mono" style="color:#6B7280;">138.2만</td><td>15.9억</td><td>13.3억</td><td class="mono" style="color:#22c87a;">42.4만</td><td class="mono" style="color:#8A97B0;">475.6억</td></tr>
         <tr style="border-top:1px solid rgba(255,255,255,0.15);">
-          <td style="font-weight:700;color:#1a1d2e;">YTD 합계</td>
+          <td style="font-weight:700;color:#1E2840;">YTD 합계</td>
           <td style="font-weight:700;">34,451분</td>
           <td class="mono" style="color:#4d8fff;font-weight:700;">475.6억</td>
-          <td class="mono" style="color:#6b7280;font-weight:700;">138.1만</td>
+          <td class="mono" style="color:#6B7280;font-weight:700;">138.1만</td>
           <td style="font-weight:700;">176.1억</td>
           <td style="font-weight:700;">149.8억</td>
           <td class="mono" style="color:#22c87a;font-weight:700;">43.6만</td>
@@ -561,13 +699,13 @@
   </div>
 
   <style>
-    .rank-card { display:flex; align-items:center; gap:14px; background:#ffffff; border:1px solid #e2e8f0; border-radius:10px; padding:14px 18px; margin-bottom:8px; transition:all .2s; box-shadow:0 1px 3px rgba(0,0,0,0.05); }
+    .rank-card { display:flex; align-items:center; gap:14px; background:#ffffff; border:1px solid rgba(99,120,160,0.18); border-radius:10px; padding:14px 18px; margin-bottom:8px; transition:all .2s; box-shadow:0 1px 3px rgba(0,0,0,0.05); }
     .rank-card:hover { border-color:#93c5fd; box-shadow:0 3px 8px rgba(0,0,0,0.1); }
     .rank-badge { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; font-family:'IBM Plex Mono',monospace; flex-shrink:0; }
     .r1 { background:rgba(255,215,0,0.15); color:#ffd700; border:1px solid rgba(255,215,0,0.3); }
     .r2 { background:rgba(192,192,192,0.15); color:#c0c0c0; border:1px solid rgba(192,192,192,0.3); }
     .r3 { background:rgba(205,127,50,0.15); color:#cd7f32; border:1px solid rgba(205,127,50,0.3); }
-    .rn { background:#f1f5f9; color:#94a3b8; border:1px solid #e2e8f0; }
+    .rn { background:#F0F3F8; color:#94a3b8; border:1px solid rgba(99,120,160,0.18); }
     .rank-info { width:180px; flex-shrink:0; }
     .rank-cat-badge { font-size:9px; font-family:'IBM Plex Mono',monospace; padding:2px 7px; border-radius:3px; display:inline-block; margin-bottom:5px; }
     .cat-주방용품 { background:rgba(155,127,255,0.15); color:#9b7fff; }
@@ -579,7 +717,7 @@
     .rank-bars { flex:1; display:flex; flex-direction:column; gap:5px; }
     .rank-bar-row { display:flex; align-items:center; gap:8px; }
     .rank-bar-label { font-size:9px; color:var(--text3); width:36px; flex-shrink:0; text-align:right; font-family:'IBM Plex Mono',monospace; }
-    .rank-bar-track { flex:1; height:16px; background:rgba(0,0,0,0.06); border-radius:3px; overflow:hidden; }
+    .rank-bar-track { flex:1; height:16px; background:rgba(99,120,160,0.08); border-radius:3px; overflow:hidden; }
     .rank-bar-fill { height:100%; border-radius:3px; display:flex; align-items:center; padding:0 6px; min-width:40px; }
     .rank-bar-val { font-size:9px; font-family:'IBM Plex Mono',monospace; font-weight:500; color:#fff; white-space:nowrap; }
     .rank-metrics { display:flex; flex-direction:column; gap:6px; width:120px; flex-shrink:0; }
@@ -616,12 +754,12 @@
         </div>
       </div>
       <div class="kpi-card" style="border-color:rgba(255,255,255,0.08);">
-        <div class="kpi-name" style="color:#6b7280;">기존 상품</div>
-        <div class="kpi-actual" style="font-size:22px;color:#6b7280;">399.6억</div>
+        <div class="kpi-name" style="color:#6B7280;">기존 상품</div>
+        <div class="kpi-actual" style="font-size:22px;color:#6B7280;">399.6억</div>
         <div class="kpi-target" style="margin:6px 0;">585건 · 28,902분 · 분당 138.3만</div>
         <div class="need-row">
           <span class="need-label">한계이익</span>
-          <span class="need-val" style="color:#6b7280;">126.6억 · 분당 43.8만</span>
+          <span class="need-val" style="color:#6B7280;">126.6억 · 분당 43.8만</span>
         </div>
       </div>
     </div>
@@ -651,17 +789,17 @@
       <table class="diff-table">
         <thead><tr><th>#</th><th>카테고리</th><th>상품명</th><th>월</th><th>방송</th><th>취급고 (VAT포함)</th><th>분당취급고</th><th>한계이익</th><th>분당이익</th></tr></thead>
         <tbody>
-          <tr><td class="mono" style="color:#9ca3af;">1</td><td><span class="ncat-badge cat-주방용품">주방용품</span></td><td style="font-weight:500;">[레녹스] 홈세트</td><td class="mono" style="color:#9ca3af;">2월</td><td class="mono" style="color:#9ca3af;">1회</td><td class="mono" style="color:#4d8fff;">1.72억</td><td class="mono" style="color:#f5a623;">191.6만</td><td>0.41억</td><td class="mono" style="color:#22c87a;">46.1만</td></tr>
-          <tr><td class="mono" style="color:#9ca3af;">2</td><td><span class="ncat-badge cat-주방용품">주방용품</span></td><td style="font-weight:500;">[라포레] 플레이팅팬</td><td class="mono" style="color:#9ca3af;">2월</td><td class="mono" style="color:#9ca3af;">1회</td><td class="mono" style="color:#4d8fff;">1.40억</td><td class="mono" style="color:#6b7280;">145.8만</td><td>0.45억</td><td class="mono" style="color:#22c87a;">46.8만</td></tr>
-          <tr><td class="mono" style="color:#9ca3af;">3</td><td><span class="ncat-badge cat-생활가전">생활가전</span></td><td style="font-weight:500;">[쿠진] 마하라이트</td><td class="mono" style="color:#9ca3af;">1월</td><td class="mono" style="color:#9ca3af;">1회</td><td class="mono" style="color:#4d8fff;">1.25억</td><td class="mono" style="color:#6b7280;">149.0만</td><td>0.40억</td><td class="mono" style="color:#22c87a;">47.8만</td></tr>
-          <tr><td class="mono" style="color:#9ca3af;">4</td><td><span class="ncat-badge cat-생활가전">생활가전</span></td><td style="font-weight:500;">[코지마] 컴포넥맥스</td><td class="mono" style="color:#9ca3af;">5월</td><td class="mono" style="color:#9ca3af;">1회</td><td class="mono" style="color:#4d8fff;">1.09억</td><td class="mono" style="color:#6b7280;">146.2만</td><td>0.35억</td><td class="mono" style="color:#22c87a;">47.2만</td></tr>
-          <tr><td class="mono" style="color:#9ca3af;">5</td><td><span class="ncat-badge cat-주방가전">주방가전</span></td><td style="font-weight:500;">[휴렉] 히트 음식물처리기</td><td class="mono" style="color:#9ca3af;">4월</td><td class="mono" style="color:#9ca3af;">1회</td><td class="mono" style="color:#4d8fff;">1.08억</td><td class="mono" style="color:#f5a623;">171.7만</td><td>0.27억</td><td class="mono" style="color:#22c87a;">43.2만</td></tr>
-          <tr><td class="mono" style="color:#9ca3af;">6</td><td><span class="ncat-badge cat-주방용품">주방용품</span></td><td style="font-weight:500;">[아이넥스] 까세로맥스</td><td class="mono" style="color:#9ca3af;">1월</td><td class="mono" style="color:#9ca3af;">1회</td><td class="mono" style="color:#4d8fff;">0.97억</td><td class="mono" style="color:#6b7280;">118.5만</td><td>0.37억</td><td class="mono" style="color:#22c87a;">44.9만</td></tr>
-          <tr><td class="mono" style="color:#9ca3af;">7</td><td><span class="ncat-badge cat-생활가전">생활가전</span></td><td style="font-weight:500;">[스타일리스] 휴대용선풍기</td><td class="mono" style="color:#9ca3af;">5월</td><td class="mono" style="color:#9ca3af;">1회</td><td class="mono" style="color:#4d8fff;">0.95억</td><td class="mono" style="color:#f5a623;">187.0만</td><td>0.27억</td><td class="mono" style="color:#22c87a;">52.2만</td></tr>
-          <tr><td class="mono" style="color:#9ca3af;">8</td><td><span class="ncat-badge cat-주방가전">주방가전</span></td><td style="font-weight:500;">[보랄] 에어프라이어</td><td class="mono" style="color:#9ca3af;">2월</td><td class="mono" style="color:#9ca3af;">1회</td><td class="mono" style="color:#4d8fff;">0.94억</td><td class="mono" style="color:#f5a623;">174.9만</td><td>0.26억</td><td class="mono" style="color:#22c87a;">47.9만</td></tr>
-          <tr><td class="mono" style="color:#9ca3af;">9</td><td><span class="ncat-badge cat-주방용품">주방용품</span></td><td style="font-weight:500;">[칼만] 저압스텐냄비</td><td class="mono" style="color:#9ca3af;">2월</td><td class="mono" style="color:#9ca3af;">1회</td><td class="mono" style="color:#4d8fff;">0.86억</td><td class="mono" style="color:#6b7280;">138.2만</td><td>0.23억</td><td class="mono" style="color:#6b7280;">36.9만</td></tr>
-          <tr><td class="mono" style="color:#9ca3af;">10</td><td><span class="ncat-badge cat-생활가전">생활가전</span></td><td style="font-weight:500;">[블라우풍트] 음성증폭기</td><td class="mono" style="color:#9ca3af;">5월</td><td class="mono" style="color:#9ca3af;">1회</td><td class="mono" style="color:#4d8fff;">0.81억</td><td class="mono" style="color:#6b7280;">136.9만</td><td>0.27억</td><td class="mono" style="color:#22c87a;">46.1만</td></tr>
-          <tr style="background:rgba(0,0,0,0.03);"><td colspan="5" style="font-weight:500;color:#9ca3af;">전체 합계 (31건)</td><td class="mono" style="color:#9b7fff;font-weight:700;">19.70억</td><td class="mono" style="color:#6b7280;font-weight:700;">120.4만</td><td style="font-weight:700;">6.54억</td><td class="mono" style="color:#22c87a;font-weight:700;">40.0만</td></tr>
+          <tr><td class="mono" style="color:#8A97B0;">1</td><td><span class="ncat-badge cat-주방용품">주방용품</span></td><td style="font-weight:500;">[레녹스] 홈세트</td><td class="mono" style="color:#8A97B0;">2월</td><td class="mono" style="color:#8A97B0;">1회</td><td class="mono" style="color:#4d8fff;">1.72억</td><td class="mono" style="color:#f5a623;">191.6만</td><td>0.41억</td><td class="mono" style="color:#22c87a;">46.1만</td></tr>
+          <tr><td class="mono" style="color:#8A97B0;">2</td><td><span class="ncat-badge cat-주방용품">주방용품</span></td><td style="font-weight:500;">[라포레] 플레이팅팬</td><td class="mono" style="color:#8A97B0;">2월</td><td class="mono" style="color:#8A97B0;">1회</td><td class="mono" style="color:#4d8fff;">1.40억</td><td class="mono" style="color:#6B7280;">145.8만</td><td>0.45억</td><td class="mono" style="color:#22c87a;">46.8만</td></tr>
+          <tr><td class="mono" style="color:#8A97B0;">3</td><td><span class="ncat-badge cat-생활가전">생활가전</span></td><td style="font-weight:500;">[쿠진] 마하라이트</td><td class="mono" style="color:#8A97B0;">1월</td><td class="mono" style="color:#8A97B0;">1회</td><td class="mono" style="color:#4d8fff;">1.25억</td><td class="mono" style="color:#6B7280;">149.0만</td><td>0.40억</td><td class="mono" style="color:#22c87a;">47.8만</td></tr>
+          <tr><td class="mono" style="color:#8A97B0;">4</td><td><span class="ncat-badge cat-생활가전">생활가전</span></td><td style="font-weight:500;">[코지마] 컴포넥맥스</td><td class="mono" style="color:#8A97B0;">5월</td><td class="mono" style="color:#8A97B0;">1회</td><td class="mono" style="color:#4d8fff;">1.09억</td><td class="mono" style="color:#6B7280;">146.2만</td><td>0.35억</td><td class="mono" style="color:#22c87a;">47.2만</td></tr>
+          <tr><td class="mono" style="color:#8A97B0;">5</td><td><span class="ncat-badge cat-주방가전">주방가전</span></td><td style="font-weight:500;">[휴렉] 히트 음식물처리기</td><td class="mono" style="color:#8A97B0;">4월</td><td class="mono" style="color:#8A97B0;">1회</td><td class="mono" style="color:#4d8fff;">1.08억</td><td class="mono" style="color:#f5a623;">171.7만</td><td>0.27억</td><td class="mono" style="color:#22c87a;">43.2만</td></tr>
+          <tr><td class="mono" style="color:#8A97B0;">6</td><td><span class="ncat-badge cat-주방용품">주방용품</span></td><td style="font-weight:500;">[아이넥스] 까세로맥스</td><td class="mono" style="color:#8A97B0;">1월</td><td class="mono" style="color:#8A97B0;">1회</td><td class="mono" style="color:#4d8fff;">0.97억</td><td class="mono" style="color:#6B7280;">118.5만</td><td>0.37억</td><td class="mono" style="color:#22c87a;">44.9만</td></tr>
+          <tr><td class="mono" style="color:#8A97B0;">7</td><td><span class="ncat-badge cat-생활가전">생활가전</span></td><td style="font-weight:500;">[스타일리스] 휴대용선풍기</td><td class="mono" style="color:#8A97B0;">5월</td><td class="mono" style="color:#8A97B0;">1회</td><td class="mono" style="color:#4d8fff;">0.95억</td><td class="mono" style="color:#f5a623;">187.0만</td><td>0.27억</td><td class="mono" style="color:#22c87a;">52.2만</td></tr>
+          <tr><td class="mono" style="color:#8A97B0;">8</td><td><span class="ncat-badge cat-주방가전">주방가전</span></td><td style="font-weight:500;">[보랄] 에어프라이어</td><td class="mono" style="color:#8A97B0;">2월</td><td class="mono" style="color:#8A97B0;">1회</td><td class="mono" style="color:#4d8fff;">0.94억</td><td class="mono" style="color:#f5a623;">174.9만</td><td>0.26억</td><td class="mono" style="color:#22c87a;">47.9만</td></tr>
+          <tr><td class="mono" style="color:#8A97B0;">9</td><td><span class="ncat-badge cat-주방용품">주방용품</span></td><td style="font-weight:500;">[칼만] 저압스텐냄비</td><td class="mono" style="color:#8A97B0;">2월</td><td class="mono" style="color:#8A97B0;">1회</td><td class="mono" style="color:#4d8fff;">0.86억</td><td class="mono" style="color:#6B7280;">138.2만</td><td>0.23억</td><td class="mono" style="color:#6B7280;">36.9만</td></tr>
+          <tr><td class="mono" style="color:#8A97B0;">10</td><td><span class="ncat-badge cat-생활가전">생활가전</span></td><td style="font-weight:500;">[블라우풍트] 음성증폭기</td><td class="mono" style="color:#8A97B0;">5월</td><td class="mono" style="color:#8A97B0;">1회</td><td class="mono" style="color:#4d8fff;">0.81억</td><td class="mono" style="color:#6B7280;">136.9만</td><td>0.27억</td><td class="mono" style="color:#22c87a;">46.1만</td></tr>
+          <tr style="background:rgba(99,120,160,0.05);"><td colspan="5" style="font-weight:500;color:#8A97B0;">전체 합계 (31건)</td><td class="mono" style="color:#9b7fff;font-weight:700;">19.70억</td><td class="mono" style="color:#6B7280;font-weight:700;">120.4만</td><td style="font-weight:700;">6.54억</td><td class="mono" style="color:#22c87a;font-weight:700;">40.0만</td></tr>
         </tbody>
       </table>
       <div style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:8px;">※ 신상품은 최초 방송 1회 기준. 이후 방송은 기존/재녹화로 분류됨</div>
@@ -672,17 +810,17 @@
       <table class="diff-table">
         <thead><tr><th>#</th><th>구분</th><th>카테고리</th><th>상품명</th><th>방송</th><th>편성월</th><th>취급고 (VAT포함)</th><th>분당취급고</th><th>이익률</th></tr></thead>
         <tbody>
-          <tr><td class="mono" style="color:#9ca3af;">1</td><td><span style="font-size:9px;padding:2px 6px;border-radius:3px;background:rgba(77,143,255,0.15);color:#4d8fff;font-family:'IBM Plex Mono',monospace;">재녹화</span></td><td><span class="ncat-badge cat-생활가전">생활가전</span></td><td style="font-weight:500;">[코지마] 안마의자</td><td class="mono" style="color:#9ca3af;">2회</td><td class="mono" style="color:#9ca3af;">3,4월</td><td class="mono" style="color:#4d8fff;">4.81억</td><td class="mono" style="color:#f5a623;">210.4만</td><td class="mono" style="color:#22c87a;">21.6%</td></tr>
-          <tr><td class="mono" style="color:#9ca3af;">2</td><td><span style="font-size:9px;padding:2px 6px;border-radius:3px;background:rgba(77,143,255,0.15);color:#4d8fff;font-family:'IBM Plex Mono',monospace;">재녹화</span></td><td><span class="ncat-badge cat-주방용품">주방용품</span></td><td style="font-weight:500;">[포트메리온] 보타닉가든</td><td class="mono" style="color:#9ca3af;">2회</td><td class="mono" style="color:#9ca3af;">1,5월</td><td class="mono" style="color:#4d8fff;">4.35억</td><td class="mono" style="color:#f5a623;">208.0만</td><td class="mono" style="color:#22c87a;">23.3%</td></tr>
-          <tr><td class="mono" style="color:#9ca3af;">3</td><td><span style="font-size:9px;padding:2px 6px;border-radius:3px;background:rgba(77,143,255,0.15);color:#4d8fff;font-family:'IBM Plex Mono',monospace;">재녹화</span></td><td><span class="ncat-badge cat-생활가전">생활가전</span></td><td style="font-weight:500;">[필립스] 면도기</td><td class="mono" style="color:#9ca3af;">3회</td><td class="mono" style="color:#9ca3af;">2~4월</td><td class="mono" style="color:#4d8fff;">2.91억</td><td class="mono" style="color:#6b7280;">120.6만</td><td class="mono" style="color:#22c87a;">34.8%</td></tr>
-          <tr><td class="mono" style="color:#9ca3af;">4</td><td><span style="font-size:9px;padding:2px 6px;border-radius:3px;background:rgba(77,143,255,0.15);color:#4d8fff;font-family:'IBM Plex Mono',monospace;">재녹화</span></td><td><span class="ncat-badge cat-주방가전">주방가전</span></td><td style="font-weight:500;">[쿠쿠] 올스텐밥솥</td><td class="mono" style="color:#9ca3af;">2회</td><td class="mono" style="color:#9ca3af;">3,5월</td><td class="mono" style="color:#4d8fff;">2.72억</td><td class="mono" style="color:#f5a623;">235.2만 🏆</td><td class="mono" style="color:#6b7280;">19.1%</td></tr>
-          <tr><td class="mono" style="color:#9ca3af;">5</td><td><span style="font-size:9px;padding:2px 6px;border-radius:3px;background:rgba(77,143,255,0.15);color:#4d8fff;font-family:'IBM Plex Mono',monospace;">재녹화</span></td><td><span class="ncat-badge cat-생활가전">생활가전</span></td><td style="font-weight:500;">[코지마] 복부마사지기</td><td class="mono" style="color:#9ca3af;">3회</td><td class="mono" style="color:#9ca3af;">1,2,4월</td><td class="mono" style="color:#4d8fff;">2.38억</td><td class="mono" style="color:#6b7280;">114.9만</td><td class="mono" style="color:#22c87a;">38.1%</td></tr>
-          <tr><td class="mono" style="color:#9ca3af;">6</td><td><span style="font-size:9px;padding:2px 6px;border-radius:3px;background:rgba(77,143,255,0.15);color:#4d8fff;font-family:'IBM Plex Mono',monospace;">재녹화</span></td><td><span class="ncat-badge cat-생활가전">생활가전</span></td><td style="font-weight:500;">[코지마] 데코르 안마의자</td><td class="mono" style="color:#9ca3af;">1회</td><td class="mono" style="color:#9ca3af;">2월</td><td class="mono" style="color:#4d8fff;">2.30억</td><td class="mono" style="color:#f5a623;">197.5만</td><td class="mono" style="color:#6b7280;">24.6%</td></tr>
-          <tr><td class="mono" style="color:#9ca3af;">7</td><td><span style="font-size:9px;padding:2px 6px;border-radius:3px;background:rgba(77,143,255,0.15);color:#4d8fff;font-family:'IBM Plex Mono',monospace;">재녹화</span></td><td><span class="ncat-badge cat-대형가전">대형가전</span></td><td style="font-weight:500;">[삼성전자] 비스포크에어컨</td><td class="mono" style="color:#9ca3af;">3회</td><td class="mono" style="color:#9ca3af;">2,4,5월</td><td class="mono" style="color:#4d8fff;">2.13억</td><td class="mono" style="color:#f5a623;">201.0만</td><td class="mono" style="color:#6b7280;">20.2%</td></tr>
-          <tr><td class="mono" style="color:#9ca3af;">8</td><td><span style="font-size:9px;padding:2px 6px;border-radius:3px;background:rgba(77,143,255,0.15);color:#4d8fff;font-family:'IBM Plex Mono',monospace;">재녹화</span></td><td><span class="ncat-badge cat-주방용품">주방용품</span></td><td style="font-weight:500;">[라포레] 플레이팅팬</td><td class="mono" style="color:#9ca3af;">1회</td><td class="mono" style="color:#9ca3af;">5월</td><td class="mono" style="color:#4d8fff;">1.69억</td><td class="mono" style="color:#f5a623;">169.9만</td><td class="mono" style="color:#22c87a;">27.2%</td></tr>
-          <tr><td class="mono" style="color:#9ca3af;">9</td><td><span style="font-size:9px;padding:2px 6px;border-radius:3px;background:rgba(77,143,255,0.15);color:#4d8fff;font-family:'IBM Plex Mono',monospace;">재녹화</span></td><td><span class="ncat-badge cat-주방가전">주방가전</span></td><td style="font-weight:500;">[안방] 그릴</td><td class="mono" style="color:#9ca3af;">1회</td><td class="mono" style="color:#9ca3af;">1월</td><td class="mono" style="color:#4d8fff;">1.57억</td><td class="mono" style="color:#f5a623;">191.9만</td><td class="mono" style="color:#22c87a;">25.1%</td></tr>
-          <tr><td class="mono" style="color:#9ca3af;">10</td><td><span style="font-size:9px;padding:2px 6px;border-radius:3px;background:rgba(77,143,255,0.15);color:#4d8fff;font-family:'IBM Plex Mono',monospace;">재녹화</span></td><td><span class="ncat-badge cat-생활가전">생활가전</span></td><td style="font-weight:500;">[쿠진] 마하라이트</td><td class="mono" style="color:#9ca3af;">1회</td><td class="mono" style="color:#9ca3af;">5월</td><td class="mono" style="color:#4d8fff;">1.57억</td><td class="mono" style="color:#6b7280;">150.1만</td><td class="mono" style="color:#22c87a;">29.3%</td></tr>
-          <tr style="background:rgba(0,0,0,0.03);"><td colspan="6" style="font-weight:500;color:#9ca3af;">전체 합계 (63건)</td><td class="mono" style="color:#4d8fff;font-weight:700;">51.69억</td><td class="mono" style="color:#6b7280;font-weight:700;">147.8만</td><td class="mono" style="color:#22c87a;font-weight:700;"></td></tr>
+          <tr><td class="mono" style="color:#8A97B0;">1</td><td><span style="font-size:9px;padding:2px 6px;border-radius:3px;background:rgba(77,143,255,0.15);color:#4d8fff;font-family:'IBM Plex Mono',monospace;">재녹화</span></td><td><span class="ncat-badge cat-생활가전">생활가전</span></td><td style="font-weight:500;">[코지마] 안마의자</td><td class="mono" style="color:#8A97B0;">2회</td><td class="mono" style="color:#8A97B0;">3,4월</td><td class="mono" style="color:#4d8fff;">4.81억</td><td class="mono" style="color:#f5a623;">210.4만</td><td class="mono" style="color:#22c87a;">21.6%</td></tr>
+          <tr><td class="mono" style="color:#8A97B0;">2</td><td><span style="font-size:9px;padding:2px 6px;border-radius:3px;background:rgba(77,143,255,0.15);color:#4d8fff;font-family:'IBM Plex Mono',monospace;">재녹화</span></td><td><span class="ncat-badge cat-주방용품">주방용품</span></td><td style="font-weight:500;">[포트메리온] 보타닉가든</td><td class="mono" style="color:#8A97B0;">2회</td><td class="mono" style="color:#8A97B0;">1,5월</td><td class="mono" style="color:#4d8fff;">4.35억</td><td class="mono" style="color:#f5a623;">208.0만</td><td class="mono" style="color:#22c87a;">23.3%</td></tr>
+          <tr><td class="mono" style="color:#8A97B0;">3</td><td><span style="font-size:9px;padding:2px 6px;border-radius:3px;background:rgba(77,143,255,0.15);color:#4d8fff;font-family:'IBM Plex Mono',monospace;">재녹화</span></td><td><span class="ncat-badge cat-생활가전">생활가전</span></td><td style="font-weight:500;">[필립스] 면도기</td><td class="mono" style="color:#8A97B0;">3회</td><td class="mono" style="color:#8A97B0;">2~4월</td><td class="mono" style="color:#4d8fff;">2.91억</td><td class="mono" style="color:#6B7280;">120.6만</td><td class="mono" style="color:#22c87a;">34.8%</td></tr>
+          <tr><td class="mono" style="color:#8A97B0;">4</td><td><span style="font-size:9px;padding:2px 6px;border-radius:3px;background:rgba(77,143,255,0.15);color:#4d8fff;font-family:'IBM Plex Mono',monospace;">재녹화</span></td><td><span class="ncat-badge cat-주방가전">주방가전</span></td><td style="font-weight:500;">[쿠쿠] 올스텐밥솥</td><td class="mono" style="color:#8A97B0;">2회</td><td class="mono" style="color:#8A97B0;">3,5월</td><td class="mono" style="color:#4d8fff;">2.72억</td><td class="mono" style="color:#f5a623;">235.2만 🏆</td><td class="mono" style="color:#6B7280;">19.1%</td></tr>
+          <tr><td class="mono" style="color:#8A97B0;">5</td><td><span style="font-size:9px;padding:2px 6px;border-radius:3px;background:rgba(77,143,255,0.15);color:#4d8fff;font-family:'IBM Plex Mono',monospace;">재녹화</span></td><td><span class="ncat-badge cat-생활가전">생활가전</span></td><td style="font-weight:500;">[코지마] 복부마사지기</td><td class="mono" style="color:#8A97B0;">3회</td><td class="mono" style="color:#8A97B0;">1,2,4월</td><td class="mono" style="color:#4d8fff;">2.38억</td><td class="mono" style="color:#6B7280;">114.9만</td><td class="mono" style="color:#22c87a;">38.1%</td></tr>
+          <tr><td class="mono" style="color:#8A97B0;">6</td><td><span style="font-size:9px;padding:2px 6px;border-radius:3px;background:rgba(77,143,255,0.15);color:#4d8fff;font-family:'IBM Plex Mono',monospace;">재녹화</span></td><td><span class="ncat-badge cat-생활가전">생활가전</span></td><td style="font-weight:500;">[코지마] 데코르 안마의자</td><td class="mono" style="color:#8A97B0;">1회</td><td class="mono" style="color:#8A97B0;">2월</td><td class="mono" style="color:#4d8fff;">2.30억</td><td class="mono" style="color:#f5a623;">197.5만</td><td class="mono" style="color:#6B7280;">24.6%</td></tr>
+          <tr><td class="mono" style="color:#8A97B0;">7</td><td><span style="font-size:9px;padding:2px 6px;border-radius:3px;background:rgba(77,143,255,0.15);color:#4d8fff;font-family:'IBM Plex Mono',monospace;">재녹화</span></td><td><span class="ncat-badge cat-대형가전">대형가전</span></td><td style="font-weight:500;">[삼성전자] 비스포크에어컨</td><td class="mono" style="color:#8A97B0;">3회</td><td class="mono" style="color:#8A97B0;">2,4,5월</td><td class="mono" style="color:#4d8fff;">2.13억</td><td class="mono" style="color:#f5a623;">201.0만</td><td class="mono" style="color:#6B7280;">20.2%</td></tr>
+          <tr><td class="mono" style="color:#8A97B0;">8</td><td><span style="font-size:9px;padding:2px 6px;border-radius:3px;background:rgba(77,143,255,0.15);color:#4d8fff;font-family:'IBM Plex Mono',monospace;">재녹화</span></td><td><span class="ncat-badge cat-주방용품">주방용품</span></td><td style="font-weight:500;">[라포레] 플레이팅팬</td><td class="mono" style="color:#8A97B0;">1회</td><td class="mono" style="color:#8A97B0;">5월</td><td class="mono" style="color:#4d8fff;">1.69억</td><td class="mono" style="color:#f5a623;">169.9만</td><td class="mono" style="color:#22c87a;">27.2%</td></tr>
+          <tr><td class="mono" style="color:#8A97B0;">9</td><td><span style="font-size:9px;padding:2px 6px;border-radius:3px;background:rgba(77,143,255,0.15);color:#4d8fff;font-family:'IBM Plex Mono',monospace;">재녹화</span></td><td><span class="ncat-badge cat-주방가전">주방가전</span></td><td style="font-weight:500;">[안방] 그릴</td><td class="mono" style="color:#8A97B0;">1회</td><td class="mono" style="color:#8A97B0;">1월</td><td class="mono" style="color:#4d8fff;">1.57억</td><td class="mono" style="color:#f5a623;">191.9만</td><td class="mono" style="color:#22c87a;">25.1%</td></tr>
+          <tr><td class="mono" style="color:#8A97B0;">10</td><td><span style="font-size:9px;padding:2px 6px;border-radius:3px;background:rgba(77,143,255,0.15);color:#4d8fff;font-family:'IBM Plex Mono',monospace;">재녹화</span></td><td><span class="ncat-badge cat-생활가전">생활가전</span></td><td style="font-weight:500;">[쿠진] 마하라이트</td><td class="mono" style="color:#8A97B0;">1회</td><td class="mono" style="color:#8A97B0;">5월</td><td class="mono" style="color:#4d8fff;">1.57억</td><td class="mono" style="color:#6B7280;">150.1만</td><td class="mono" style="color:#22c87a;">29.3%</td></tr>
+          <tr style="background:rgba(99,120,160,0.05);"><td colspan="6" style="font-weight:500;color:#8A97B0;">전체 합계 (63건)</td><td class="mono" style="color:#4d8fff;font-weight:700;">51.69억</td><td class="mono" style="color:#6B7280;font-weight:700;">147.8만</td><td class="mono" style="color:#22c87a;font-weight:700;"></td></tr>
         </tbody>
       </table>
       <div style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:8px;">🏆 분당취급고 최고: 쿠쿠 올스텐밥솥 235.2만원/분</div>
@@ -718,11 +856,11 @@
         responsive:true, maintainAspectRatio:false,
         plugins:{
           legend:{display:false},
-          tooltip:{ backgroundColor:'#ffffff', borderColor:'rgba(0,0,0,0.12)', borderWidth:1, titleColor:'#6b7280', bodyColor:'#1a1d2e', callbacks:{ label:(ctx)=>`${ctx.dataset.label}: ${ctx.parsed.y}억원` } }
+          tooltip:{ backgroundColor:'#F8F9FC', borderColor:'rgba(99,120,160,0.2)', borderWidth:1, titleColor:'#8A97B0', bodyColor:'#1E2840', padding:10, callbacks:{ label:(ctx)=>`${ctx.dataset.label}: ${ctx.parsed.y}억원` } }
         },
         scales:{
-          x:{ grid:{color:'rgba(0,0,0,0.06)'}, ticks:{color:'#6b7280',font:{family:'IBM Plex Mono',size:11}}, stacked:false },
-          y:{ grid:{color:'rgba(0,0,0,0.06)'}, ticks:{color:'#6b7280',font:{family:'IBM Plex Mono',size:10},callback:v=>v+'억'}, min:0, max:20 }
+          x:{ grid:{color:'rgba(99,120,160,0.08)'}, ticks:{color:'#8A97B0',font:{family:'IBM Plex Mono',size:11}}, stacked:false },
+          y:{ grid:{color:'rgba(99,120,160,0.08)'}, ticks:{color:'#8A97B0',font:{family:'IBM Plex Mono',size:10},callback:v=>v+'억'}, min:0, max:20 }
         }
       }
     });
@@ -755,7 +893,7 @@
             <div class="kpi-name" style="color:#4d8fff;margin-bottom:0;">권오석</div>
             <span style="font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 7px;border-radius:3px;background:rgba(77,143,255,0.1);color:#4d8fff;">주방가전·주방용품</span>
           </div>
-          <div style="font-size:22px;font-weight:700;color:#1a1d2e;letter-spacing:-1px;">144.1억</div>
+          <div style="font-size:22px;font-weight:700;color:#1E2840;letter-spacing:-1px;">144.1억</div>
           <div style="font-size:11px;color:var(--text3);margin:4px 0 10px;">202건 · 11,219분</div>
           <div class="need-row">
             <span class="need-label">분당취급고</span>
@@ -772,7 +910,7 @@
             <div class="kpi-name" style="color:#ff4d6a;margin-bottom:0;">마영호</div>
             <span style="font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 7px;border-radius:3px;background:rgba(255,77,106,0.1);color:#ff4d6a;">주방용품·주방가전</span>
           </div>
-          <div style="font-size:22px;font-weight:700;color:#1a1d2e;letter-spacing:-1px;">100.1억</div>
+          <div style="font-size:22px;font-weight:700;color:#1E2840;letter-spacing:-1px;">100.1억</div>
           <div style="font-size:11px;color:var(--text3);margin:4px 0 10px;">141건 · 5,870분</div>
           <div class="need-row">
             <span class="need-label">분당취급고</span>
@@ -789,7 +927,7 @@
             <div class="kpi-name" style="color:#22c87a;margin-bottom:0;">김응도</div>
             <span style="font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 7px;border-radius:3px;background:rgba(34,200,122,0.1);color:#22c87a;">생활가전</span>
           </div>
-          <div style="font-size:22px;font-weight:700;color:#1a1d2e;letter-spacing:-1px;">117.9억</div>
+          <div style="font-size:22px;font-weight:700;color:#1E2840;letter-spacing:-1px;">117.9억</div>
           <div style="font-size:11px;color:var(--text3);margin:4px 0 10px;">144건 · 8,739분</div>
           <div class="need-row">
             <span class="need-label">분당취급고</span>
@@ -806,7 +944,7 @@
             <div class="kpi-name" style="color:#f5a623;margin-bottom:0;">임동진</div>
             <span style="font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 7px;border-radius:3px;background:rgba(245,166,35,0.1);color:#f5a623;">생활가전</span>
           </div>
-          <div style="font-size:22px;font-weight:700;color:#1a1d2e;letter-spacing:-1px;">63.3억</div>
+          <div style="font-size:22px;font-weight:700;color:#1E2840;letter-spacing:-1px;">63.3억</div>
           <div style="font-size:11px;color:var(--text3);margin:4px 0 10px;">83건 · 5,062분</div>
           <div class="need-row">
             <span class="need-label">분당취급고</span>
@@ -823,7 +961,7 @@
             <div class="kpi-name" style="color:#9b7fff;margin-bottom:0;">백혜정</div>
             <span style="font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 7px;border-radius:3px;background:rgba(155,127,255,0.1);color:#9b7fff;">대형가전</span>
           </div>
-          <div style="font-size:22px;font-weight:700;color:#1a1d2e;letter-spacing:-1px;">26.1억</div>
+          <div style="font-size:22px;font-weight:700;color:#1E2840;letter-spacing:-1px;">26.1억</div>
           <div style="font-size:11px;color:var(--text3);margin:4px 0 10px;">67건 · 1,668분</div>
           <div class="need-row">
             <span class="need-label">분당취급고</span>
@@ -993,17 +1131,17 @@
         <tr>
           <td>${c.name}</td>
           <td class="mono" style="color:#4d8fff;">${c.sales}</td>
-          <td class="mono" style="color:#6b7280;">${c.perMin}</td>
-          <td class="mono" style="color:#1a1d2e;">${c.margin}</td>
+          <td class="mono" style="color:#6B7280;">${c.perMin}</td>
+          <td class="mono" style="color:#1E2840;">${c.margin}</td>
           <td class="mono" style="color:${d.color};">${c.pct}</td>
         </tr>`).join('');
 
       let top5Html = d.top5.map((p,i) => `
         <tr>
-          <td class="mono" style="color:#9ca3af;">${i+1}</td>
+          <td class="mono" style="color:#8A97B0;">${i+1}</td>
           <td style="font-weight:500;">${p.name}</td>
           <td class="mono" style="color:#4d8fff;">${p.sales}</td>
-          <td class="mono" style="color:#6b7280;">${p.perMin}</td>
+          <td class="mono" style="color:#6B7280;">${p.perMin}</td>
           <td class="mono" style="color:#22c87a;">${p.marginRate}</td>
         </tr>`).join('');
 
@@ -1018,7 +1156,7 @@
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;">
           <div class="kpi-card" style="border-color:${d.color}33;">
             <div class="kpi-name" style="color:${d.color};">${d.name} — ${d.cat}</div>
-            <div class="kpi-actual" style="font-size:22px;color:#1a1d2e;">${d.total.sales}</div>
+            <div class="kpi-actual" style="font-size:22px;color:#1E2840;">${d.total.sales}</div>
             <div class="kpi-target" style="margin:4px 0;">${d.total.cnt}건 · ${d.total.weight}</div>
           </div>
           <div class="kpi-card" style="border-color:rgba(77,143,255,0.2);">
@@ -1073,11 +1211,11 @@
         responsive:true, maintainAspectRatio:false,
         plugins:{
           legend:{display:false},
-          tooltip:{ backgroundColor:'#ffffff', borderColor:'rgba(0,0,0,0.12)', borderWidth:1, titleColor:'#6b7280', bodyColor:'#1a1d2e', callbacks:{ label:(ctx)=>`${ctx.dataset.label}: ${ctx.parsed.y}억원` } }
+          tooltip:{ backgroundColor:'#F8F9FC', borderColor:'rgba(99,120,160,0.2)', borderWidth:1, titleColor:'#8A97B0', bodyColor:'#1E2840', padding:10, callbacks:{ label:(ctx)=>`${ctx.dataset.label}: ${ctx.parsed.y}억원` } }
         },
         scales:{
-          x:{ grid:{color:'rgba(0,0,0,0.06)'}, ticks:{color:'#6b7280',font:{family:'IBM Plex Mono',size:11}} },
-          y:{ grid:{color:'rgba(0,0,0,0.06)'}, ticks:{color:'#6b7280',font:{family:'IBM Plex Mono',size:10},callback:v=>v+'억'}, min:0 }
+          x:{ grid:{color:'rgba(99,120,160,0.08)'}, ticks:{color:'#8A97B0',font:{family:'IBM Plex Mono',size:11}} },
+          y:{ grid:{color:'rgba(99,120,160,0.08)'}, ticks:{color:'#8A97B0',font:{family:'IBM Plex Mono',size:10},callback:v=>v+'억'}, min:0 }
         }
       }
     });
@@ -1096,10 +1234,10 @@
         id="searchInput"
         type="text"
         placeholder="브랜드명 또는 상품명 입력 (예: 코지마, 히트락, 밀폐용기...)"
-        style="width:100%;padding:12px 16px 12px 42px;background:#ffffff;border:1.5px solid #e2e8f0;border-radius:8px;color:var(--dt1);font-size:13px;font-family:'IBM Plex Mono',monospace;outline:none;transition:border-color .2s;box-shadow:0 1px 3px rgba(0,0,0,0.06);"
+        style="width:100%;padding:12px 16px 12px 42px;background:#F8F9FC;border:1.5px solid rgba(99,120,160,0.22);border-radius:8px;color:#1E2840;font-size:13px;font-family:'IBM Plex Mono',monospace;outline:none;transition:all .2s;box-shadow:0 2px 6px rgba(30,40,64,0.06);"
         oninput="doSearch(this.value)"
         onfocus="this.style.borderColor='rgba(77,143,255,0.5)'"
-        onblur="this.style.borderColor='rgba(255,255,255,0.13)'"
+        onblur="this.style.borderColor='rgba(99,120,160,0.22)'"
       />
       <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:16px;opacity:.4;">🔍</span>
     </div>
@@ -1114,30 +1252,30 @@
     </div>
 
     <!-- 결과 영역 -->
-    <div id="searchSummary" style="font-size:11px;color:#9ca3af;font-family:'IBM Plex Mono',monospace;margin-bottom:10px;"></div>
+    <div id="searchSummary" style="font-size:11px;color:#8A97B0;font-family:'IBM Plex Mono',monospace;margin-bottom:10px;"></div>
     <div id="searchResults"></div>
   </div>
 
   <style>
     .sr-card {
-      background:#ffffff;border:1px solid #e2e8f0;border-radius:10px;
+      background:#ffffff;border:1px solid rgba(99,120,160,0.18);border-radius:10px;
       padding:16px 18px;margin-bottom:10px;cursor:pointer;transition:all .2s;box-shadow:0 1px 3px rgba(0,0,0,0.05);
     }
     .sr-card:hover { border-color:#93c5fd;box-shadow:0 3px 8px rgba(0,0,0,0.1); }
     .sr-header { display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px; }
     .sr-name { font-size:13px;font-weight:600;color:var(--dt1); }
-    .sr-meta { font-size:10px;color:#9ca3af;font-family:'IBM Plex Mono',monospace;margin-top:3px; }
+    .sr-meta { font-size:10px;color:#8A97B0;font-family:'IBM Plex Mono',monospace;margin-top:3px; }
     .sr-badges { display:flex;gap:5px;flex-shrink:0;margin-left:10px; }
     .sr-badge { font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 7px;border-radius:3px; }
     .sr-metrics { display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px; }
-    .sr-metric { background:rgba(0,0,0,0.04);border-radius:6px;padding:8px 10px; }
-    .sr-mlabel { font-size:9px;color:#9ca3af;font-family:'IBM Plex Mono',monospace;margin-bottom:3px; }
+    .sr-metric { background:rgba(99,120,160,0.07);border-radius:6px;padding:8px 10px; }
+    .sr-mlabel { font-size:9px;color:#8A97B0;font-family:'IBM Plex Mono',monospace;margin-bottom:3px; }
     .sr-mval { font-size:13px;font-weight:600;font-family:'IBM Plex Mono',monospace; }
     .sr-chart { display:flex;gap:3px;align-items:flex-end;height:40px;margin-top:4px; }
     .sr-bar-wrap { flex:1;display:flex;flex-direction:column;align-items:center;gap:2px; }
     .sr-bar { width:100%;border-radius:2px 2px 0 0;min-height:2px; }
-    .sr-blabel { font-size:8px;color:#9ca3af;font-family:'IBM Plex Mono',monospace; }
-    .no-result { text-align:center;padding:40px;color:#9ca3af;font-family:'IBM Plex Mono',monospace;font-size:12px; }
+    .sr-blabel { font-size:8px;color:#8A97B0;font-family:'IBM Plex Mono',monospace; }
+    .no-result { text-align:center;padding:40px;color:#8A97B0;font-family:'IBM Plex Mono',monospace;font-size:12px; }
     .highlight { background:rgba(37,99,235,0.15);border-radius:2px;padding:0 1px; }
   </style>
 
@@ -1201,7 +1339,7 @@
       const maxS = Math.max(...filtered.map(p => Math.max(...p.ms)));
 
       results.innerHTML = filtered.map(p => {
-        const catColor = CAT_COLORS[p.cat] || '#8b93a8';
+        const catColor = CAT_COLORS[p.cat] || '#6B7280';
         const shinColor = SHIN_LABELS[p.shin] || '';
         const shinBadge = shinColor ? `<span class="sr-badge" style="background:${shinColor}22;color:${shinColor};">${p.shin}</span>` : '';
         const monthsStr = p.months.map(m=>m+'월').join(', ');
@@ -1212,7 +1350,7 @@
           const h = maxS > 0 ? Math.max(2, Math.round(v/maxS*36)) : 2;
           const color = i===3 ? '#ff4d6a' : catColor; // 4월은 빨간색
           return `<div class="sr-bar-wrap">
-            <div class="sr-bar" style="height:${h}px;background:${v>0?color:'rgba(255,255,255,0.05)'};opacity:${v>0?0.8:1};"></div>
+            <div class="sr-bar" style="height:${h}px;background:${v>0?color:'rgba(99,120,160,0.08)'};opacity:${v>0?0.8:1};"></div>
             <div class="sr-blabel">${MONTHS[i].replace('월','')}</div>
           </div>`;
         }).join('');
@@ -1247,7 +1385,7 @@
             </div>
           </div>
           <div style="display:flex;align-items:flex-end;gap:12px;">
-            <div style="font-size:9px;color:#9ca3af;font-family:'IBM Plex Mono',monospace;flex-shrink:0;">월별 취급고</div>
+            <div style="font-size:9px;color:#8A97B0;font-family:'IBM Plex Mono',monospace;flex-shrink:0;">월별 취급고</div>
             <div class="sr-chart" style="flex:1;">${bars}</div>
           </div>
         </div>`;
@@ -1283,11 +1421,11 @@ function showMonth(key) {
   let html = `<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;">
     <div class="kpi-card" style="border-color:rgba(77,143,255,0.2);"><div class="kpi-name">${d.label} 취급고 (VAT포함)</div><div class="kpi-actual" style="font-size:22px;color:#4d8fff;">${d.total.sales}</div><div class="kpi-target" style="margin-top:4px;">분당 ${d.total.perMin} · 매출 ${d.total.revenue}</div></div>
     <div class="kpi-card" style="border-color:rgba(34,200,122,0.2);"><div class="kpi-name">${d.label} 한계이익</div><div class="kpi-actual" style="font-size:22px;color:#22c87a;">${d.total.margin}</div><div class="kpi-target" style="margin-top:4px;">분당 ${d.total.perMargin}</div></div>
-    <div class="kpi-card" style="border-color:rgba(255,255,255,0.08);"><div class="kpi-name">${d.label} 가중분</div><div class="kpi-actual" style="font-size:22px;color:#6b7280;">${d.total.weight}</div></div>
+    <div class="kpi-card" style="border-color:rgba(255,255,255,0.08);"><div class="kpi-name">${d.label} 가중분</div><div class="kpi-actual" style="font-size:22px;color:#6B7280;">${d.total.weight}</div></div>
   </div>
   <table class="diff-table"><thead><tr><th>카테고리</th><th>가중분</th><th>취급고 (VAT포함)</th><th>분당취급고</th><th>한계이익</th><th>분당한계이익</th></tr></thead><tbody>`;
   d.cats.forEach(c => {
-    html += `<tr><td>${c.name}</td><td class="mono" style="color:#9ca3af;">${c.weight}</td><td class="mono" style="color:#4d8fff;">${c.sales}</td><td class="mono" style="color:#6b7280;">${c.perMin}</td><td class="mono">${c.margin}</td><td class="mono" style="color:#22c87a;">${c.perMargin}</td></tr>`;
+    html += `<tr><td>${c.name}</td><td class="mono" style="color:#8A97B0;">${c.weight}</td><td class="mono" style="color:#4d8fff;">${c.sales}</td><td class="mono" style="color:#6B7280;">${c.perMin}</td><td class="mono">${c.margin}</td><td class="mono" style="color:#22c87a;">${c.perMargin}</td></tr>`;
   });
   html += `</tbody></table>`;
   document.getElementById('month-detail').innerHTML = html;
@@ -1308,11 +1446,11 @@ new Chart(ctx, {
     responsive:true, maintainAspectRatio:false,
     plugins: {
       legend:{display:false},
-      tooltip:{ backgroundColor:'#ffffff', borderColor:'rgba(0,0,0,0.12)', borderWidth:1, titleColor:'#6b7280', bodyColor:'#1a1d2e', callbacks:{ label:(ctx)=>` ${ctx.dataset.label}: ${ctx.parsed.y}억원` } }
+      tooltip:{ backgroundColor:'#F8F9FC', borderColor:'rgba(99,120,160,0.2)', borderWidth:1, titleColor:'#8A97B0', bodyColor:'#1E2840', padding:10, callbacks:{ label:(ctx)=>` ${ctx.dataset.label}: ${ctx.parsed.y}억원` } }
     },
     scales: {
-      x:{ grid:{color:'rgba(0,0,0,0.06)'}, ticks:{color:'#6b7280',font:{family:'IBM Plex Mono',size:11}} },
-      y:{ grid:{color:'rgba(0,0,0,0.06)'}, ticks:{color:'#6b7280',font:{family:'IBM Plex Mono',size:10},callback:v=>v+'억'}, min:0, max:140 }
+      x:{ grid:{color:'rgba(99,120,160,0.08)'}, ticks:{color:'#8A97B0',font:{family:'IBM Plex Mono',size:11}} },
+      y:{ grid:{color:'rgba(99,120,160,0.08)'}, ticks:{color:'#8A97B0',font:{family:'IBM Plex Mono',size:10},callback:v=>v+'억'}, min:0, max:140 }
     }
   }
 });
