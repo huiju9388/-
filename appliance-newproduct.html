@@ -138,6 +138,36 @@
   <div class="section">
     <div class="section-title">MD별 신상품 · 재촬영 비중 (전체 취급고 대비)</div>
     <div class="md-ratio-grid" id="mdRatioGrid"></div>
+
+    <!-- 참고: 퇴사/이동 인원 -->
+    <div style="margin-top:14px;padding:14px 18px;background:rgba(138,151,176,0.07);border:1px dashed rgba(138,151,176,0.35);border-radius:10px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <span style="font-size:11px;font-weight:700;color:#8A97B0;">📋 참고 — 정수란 (前 가전팀, 4월 뷰티팀 이동)</span>
+        <span style="font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 8px;border-radius:10px;background:rgba(138,151,176,0.15);color:#8A97B0;">집계 제외</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px;">
+        <div style="background:#fff;border-radius:7px;padding:9px 11px;border:1px solid rgba(138,151,176,0.18);text-align:center;">
+          <div style="font-size:9px;color:#8A97B0;font-family:'IBM Plex Mono',monospace;margin-bottom:4px;">전체 취급고</div>
+          <div style="font-size:15px;font-weight:700;color:#6B7280;">24.18억</div>
+        </div>
+        <div style="background:#fff;border-radius:7px;padding:9px 11px;border:1px solid rgba(138,151,176,0.18);text-align:center;">
+          <div style="font-size:9px;color:#8A97B0;font-family:'IBM Plex Mono',monospace;margin-bottom:4px;">신상품 비중</div>
+          <div style="font-size:15px;font-weight:700;color:#6D3FC8;">8.4%</div>
+        </div>
+        <div style="background:#fff;border-radius:7px;padding:9px 11px;border:1px solid rgba(138,151,176,0.18);text-align:center;">
+          <div style="font-size:9px;color:#8A97B0;font-family:'IBM Plex Mono',monospace;margin-bottom:4px;">재촬영 비중</div>
+          <div style="font-size:15px;font-weight:700;color:#2563EB;">14.8%</div>
+        </div>
+        <div style="background:#fff;border-radius:7px;padding:9px 11px;border:1px solid rgba(138,151,176,0.18);text-align:center;">
+          <div style="font-size:9px;color:#8A97B0;font-family:'IBM Plex Mono',monospace;margin-bottom:4px;">분당취급고</div>
+          <div style="font-size:15px;font-weight:700;color:#6B7280;">127.7만</div>
+        </div>
+      </div>
+      <div style="font-size:11px;color:#6B7280;line-height:1.7;margin-top:10px;">
+        1~3월 운영 · 49건 · 1,893분 · 한계이익 8.36억<br>
+        주력 상품 [AGK]멀티압력솥 21회 16.97억 → 4월 11일부터 <b style="color:#2563EB;">권오석</b> 인수인계 (이후 실적은 권오석 집계에 포함됨)
+      </div>
+    </div>
   </div>
 
   <!-- 상품별 실적 -->
@@ -165,7 +195,7 @@ const SHIN_DATA = [{"name":"[레녹스]홈세트","cat":"주방용품","md":"마
 const RE_DATA   = [{"name":"[코지마]안마의자","cat":"생활가전","md":"김응도","cnt":2,"w":228.6,"s":4.81,"pm":210.4,"m":1.044,"pmm":45.7,"mr":21.7,"months":["3","4"],"type":"재녹화"},{"name":"[포트메리온]보타닉가든","cat":"주방용품","md":"마영호","cnt":2,"w":209.2,"s":4.352,"pm":208.0,"m":1.014,"pmm":48.5,"mr":23.3,"months":["1","5"],"type":"재녹화"},{"name":"[코지마]데코르안마의자","cat":"생활가전","md":"김응도","cnt":2,"w":236.4,"s":4.027,"pm":170.4,"m":1.085,"pmm":45.9,"mr":27.0,"months":["2","6"],"type":"재녹화"},{"name":"[필립스]면도기","cat":"생활가전","md":"김응도","cnt":3,"w":241.2,"s":2.908,"pm":120.6,"m":1.014,"pmm":42.0,"mr":34.9,"months":["2","3","4"],"type":"재녹화,재편집"},{"name":"[쿠쿠]올스텐밥솥","cat":"주방가전","md":"마영호","cnt":2,"w":115.8,"s":2.723,"pm":235.2,"m":0.524,"pmm":45.3,"mr":19.2,"months":["3","5"],"type":"재녹화"},{"name":"[코지마]복부마사지기","cat":"생활가전","md":"김응도","cnt":3,"w":207.2,"s":2.381,"pm":114.9,"m":0.907,"pmm":43.8,"mr":38.1,"months":["1","2","4"],"type":"재녹화"},{"name":"[삼성전자]비스포크에어컨","cat":"대형가전","md":"백혜정","cnt":3,"w":106.0,"s":2.132,"pm":201.0,"m":0.428,"pmm":40.3,"mr":20.1,"months":["2","4","5"],"type":"재녹화"},{"name":"[라포레]플레이팅팬","cat":"주방용품","md":"권오석","cnt":1,"w":99.6,"s":1.693,"pm":169.9,"m":0.463,"pmm":46.5,"mr":27.4,"months":["5"],"type":"재녹화"},{"name":"[안방]그릴","cat":"주방가전","md":"권오석","cnt":1,"w":82.0,"s":1.573,"pm":191.9,"m":0.391,"pmm":47.7,"mr":24.9,"months":["1"],"type":"재녹화"},{"name":"[쿠진]마하라이트","cat":"생활가전","md":"임동진","cnt":1,"w":104.4,"s":1.567,"pm":150.1,"m":0.464,"pmm":44.4,"mr":29.6,"months":["5"],"type":"재녹화"},{"name":"[AGK]무선서큘레이터","cat":"생활가전","md":"임동진","cnt":2,"w":157.8,"s":1.558,"pm":98.7,"m":0.631,"pmm":40.0,"mr":40.5,"months":["5","6"],"type":"재녹화"},{"name":"[아토만]전기담요","cat":"생활가전","md":"임동진","cnt":1,"w":107.0,"s":1.334,"pm":124.7,"m":0.485,"pmm":45.3,"mr":36.3,"months":["1"],"type":"재녹화"},{"name":"[델리원]밀폐실리콘백","cat":"주방용품","md":"권오석","cnt":2,"w":99.5,"s":1.295,"pm":130.3,"m":0.449,"pmm":45.1,"mr":34.7,"months":["2","5"],"type":"재녹화"},{"name":"[AGK]음식물처리기","cat":"주방가전","md":"정수란","cnt":1,"w":108.6,"s":1.205,"pm":111.0,"m":0.489,"pmm":45.0,"mr":40.6,"months":["4"],"type":"재녹화"},{"name":"[로보락]물걸레청소기","cat":"생활가전","md":"김응도","cnt":1,"w":62.0,"s":1.188,"pm":191.6,"m":0.256,"pmm":41.3,"mr":21.6,"months":["1"],"type":"재녹화"},{"name":"[AGK]멀티압력솥","cat":"주방가전","md":"정수란","cnt":1,"w":106.8,"s":1.158,"pm":108.4,"m":0.482,"pmm":45.1,"mr":41.6,"months":["2"],"type":"재녹화"},{"name":"[하티브]심전도계","cat":"생활가전","md":"김응도","cnt":2,"w":145.2,"s":1.135,"pm":78.2,"m":0.743,"pmm":51.2,"mr":65.5,"months":["2","6"],"type":"재녹화"},{"name":"[AGK]킵온팬큘레이터","cat":"생활가전","md":"임동진","cnt":1,"w":86.4,"s":1.101,"pm":127.5,"m":0.397,"pmm":45.9,"mr":36.0,"months":["4"],"type":"재녹화"},{"name":"[테팔]무선청소기7","cat":"생활가전","md":"임동진","cnt":1,"w":90.0,"s":1.067,"pm":118.5,"m":0.39,"pmm":43.4,"mr":36.6,"months":["1"],"type":"재녹화"},{"name":"[휴롬]프라임착즙기","cat":"주방가전","md":"마영호","cnt":1,"w":63.0,"s":1.028,"pm":163.2,"m":0.281,"pmm":44.6,"mr":27.3,"months":["2"],"type":"재녹화"},{"name":"[마이어]소형블렌더","cat":"주방가전","md":"권오석","cnt":1,"w":55.2,"s":1.027,"pm":186.1,"m":0.296,"pmm":53.6,"mr":28.8,"months":["4"],"type":"재녹화"},{"name":"[마이어]생선그릴","cat":"주방가전","md":"권오석","cnt":1,"w":61.8,"s":0.973,"pm":157.4,"m":0.306,"pmm":49.5,"mr":31.5,"months":["2"],"type":"재녹화"},{"name":"[코지마]코지스툴","cat":"생활가전","md":"김응도","cnt":1,"w":73.0,"s":0.958,"pm":131.2,"m":0.341,"pmm":46.7,"mr":35.6,"months":["1"],"type":"재녹화"},{"name":"[프리파라]밀폐용기","cat":"주방용품","md":"권오석","cnt":1,"w":43.2,"s":0.785,"pm":181.6,"m":0.203,"pmm":46.9,"mr":25.8,"months":["4"],"type":"재녹화"},{"name":"[LG전자]휘센에어컨","cat":"대형가전","md":"백혜정","cnt":2,"w":40.9,"s":0.769,"pm":188.0,"m":0.088,"pmm":21.4,"mr":11.4,"months":["2","5"],"type":"재녹화"},{"name":"[쿠쿠]메탈릭에코밥솥","cat":"주방가전","md":"마영호","cnt":1,"w":57.0,"s":0.727,"pm":127.6,"m":0.224,"pmm":39.4,"mr":30.9,"months":["4"],"type":"재녹화"},{"name":"[블라우풍트]이어폰","cat":"생활가전","md":"임동진","cnt":1,"w":53.0,"s":0.709,"pm":133.7,"m":0.23,"pmm":43.3,"mr":32.4,"months":["1"],"type":"재녹화"},{"name":"[로보락]로봇청소기","cat":"생활가전","md":"김응도","cnt":1,"w":64.8,"s":0.686,"pm":105.9,"m":0.126,"pmm":19.4,"mr":18.3,"months":["4"],"type":"재녹화"},{"name":"[칼만]밀폐큐브밧드풀세트","cat":"주방용품","md":"권오석","cnt":1,"w":73.0,"s":0.676,"pm":92.6,"m":0.311,"pmm":42.6,"mr":46.0,"months":["1"],"type":"재녹화"},{"name":"[삼성전자]로봇청소기","cat":"대형가전","md":"백혜정","cnt":3,"w":60.9,"s":0.659,"pm":108.1,"m":0.26,"pmm":42.7,"mr":39.5,"months":["3","4"],"type":"재녹화,재편집"},{"name":"[보랄]듀얼헤드선풍기","cat":"생활가전","md":"김응도","cnt":1,"w":57.0,"s":0.617,"pm":108.2,"m":0.242,"pmm":42.5,"mr":39.2,"months":["5"],"type":"재녹화"},{"name":"[삼성전자]제트청소기","cat":"대형가전","md":"백혜정","cnt":2,"w":38.5,"s":0.602,"pm":156.2,"m":0.198,"pmm":51.4,"mr":32.9,"months":["1","5"],"type":"재녹화"},{"name":"[LG전자]디오스냉장고","cat":"대형가전","md":"백혜정","cnt":1,"w":21.0,"s":0.59,"pm":281.0,"m":0.061,"pmm":29.1,"mr":10.4,"months":["1"],"type":"재녹화"},{"name":"[삼성전자]UHDTV","cat":"대형가전","md":"백혜정","cnt":2,"w":47.5,"s":0.575,"pm":121.0,"m":0.186,"pmm":39.2,"mr":32.4,"months":["1","5"],"type":"재녹화"},{"name":"[헤르젠]미니김치냉장고","cat":"주방가전","md":"정수란","cnt":1,"w":52.0,"s":0.559,"pm":107.6,"m":0.235,"pmm":45.3,"mr":42.1,"months":["1"],"type":"재편집"},{"name":"[필립스]음파칫솔","cat":"생활가전","md":"김응도","cnt":1,"w":82.8,"s":0.495,"pm":59.8,"m":0.208,"pmm":25.1,"mr":42.0,"months":["4"],"type":"재녹화"},{"name":"[일월]선풍기","cat":"생활가전","md":"임동진","cnt":1,"w":39.6,"s":0.485,"pm":122.4,"m":0.117,"pmm":29.7,"mr":24.2,"months":["4"],"type":"재녹화"},{"name":"[테팔]솔리드블랙팬","cat":"주방용품","md":"정수란","cnt":1,"w":37.0,"s":0.448,"pm":121.2,"m":0.102,"pmm":27.6,"mr":22.8,"months":["1"],"type":"재녹화"},{"name":"[에버홈]두유제조기","cat":"주방가전","md":"권오석","cnt":1,"w":22.0,"s":0.372,"pm":168.9,"m":0.088,"pmm":40.1,"mr":23.7,"months":["1"],"type":"재녹화"},{"name":"[삼성전자]청소기","cat":"대형가전","md":"백혜정","cnt":2,"w":28.0,"s":0.36,"pm":128.3,"m":0.143,"pmm":50.8,"mr":39.6,"months":["2","4"],"type":"재녹화"},{"name":"[에버홈]올스텐찜기","cat":"주방가전","md":"권오석","cnt":1,"w":13.1,"s":0.273,"pm":209.2,"m":0.05,"pmm":38.0,"mr":18.2,"months":["3"],"type":"재녹화"},{"name":"[에버홈]착즙믹서기","cat":"주방가전","md":"권오석","cnt":1,"w":12.4,"s":0.261,"pm":209.5,"m":0.048,"pmm":38.9,"mr":18.6,"months":["6"],"type":"재녹화"},{"name":"[에버홈]헬시메이커","cat":"주방가전","md":"권오석","cnt":1,"w":19.0,"s":0.243,"pm":128.2,"m":0.048,"pmm":25.2,"mr":19.7,"months":["3"],"type":"재녹화"},{"name":"[LG전자]UHDTV","cat":"대형가전","md":"백혜정","cnt":1,"w":23.9,"s":0.22,"pm":91.7,"m":0.082,"pmm":34.4,"mr":37.5,"months":["2"],"type":"재녹화"},{"name":"[에코하임]실리콘밀폐용기","cat":"주방용품","md":"정수란","cnt":1,"w":12.8,"s":0.207,"pm":162.2,"m":0.051,"pmm":39.8,"mr":24.5,"months":["3"],"type":"재녹화"},{"name":"[히트락]밀폐용기","cat":"주방용품","md":"마영호","cnt":1,"w":9.4,"s":0.143,"pm":151.3,"m":0.041,"pmm":43.7,"mr":28.9,"months":["4"],"type":"재녹화"},{"name":"[삼성전자]공기청정기","cat":"대형가전","md":"백혜정","cnt":1,"w":14.7,"s":0.12,"pm":81.6,"m":0.07,"pmm":47.6,"mr":58.4,"months":["4"],"type":"재녹화"},{"name":"[한경희]스팀청소기","cat":"생활가전","md":"임동진","cnt":1,"w":13.9,"s":0.103,"pm":74.1,"m":0.039,"pmm":28.1,"mr":37.9,"months":["2"],"type":"재녹화"}];
 
 const CAT_COLORS = {'생활가전':'#2563EB','주방가전':'#0E9E6A','주방용품':'#6D3FC8','대형가전':'#C97A10'};
-const MD_COLORS  = {'권오석':'#2563EB','마영호':'#D63A52','김응도':'#0E9E6A','임동진':'#C97A10','백혜정':'#6D3FC8'};
+const MD_COLORS  = {'권오석':'#2563EB','마영호':'#D63A52','김응도':'#0E9E6A','임동진':'#C97A10','백혜정':'#6D3FC8','정수란':'#9CA3AF'};
 
 let currentTab = 'shin';
 let currentSort = 's';
@@ -225,6 +255,7 @@ function render(){
   const rows = sorted.map((p,i) => {
     const catColor = CAT_COLORS[p.cat] || '#8A97B0';
     const mdColor  = MD_COLORS[p.md] || '#8A97B0';
+    const mdLabel  = p.md==='정수란' ? '정수란 (前)' : p.md;
     const monthsStr = p.months.map(m=>m+'월').join(',');
     const pmCls = p.pm >= 150 ? 'good' : p.pm < 100 ? 'bad' : '';
     const mrCls = p.mr >= 30 ? 'good' : p.mr < 20 ? 'bad' : '';
@@ -232,7 +263,7 @@ function render(){
       <td class="mono" style="color:var(--text3);">${i+1}</td>
       <td><span class="pcat-badge" style="background:${catColor}18;color:${catColor};">${p.cat}</span></td>
       <td class="pname">${p.name}</td>
-      <td><span class="pmd-badge" style="color:${mdColor};font-weight:600;">${p.md}</span></td>
+      <td><span class="pmd-badge" style="color:${mdColor};font-weight:600;">${mdLabel}</span></td>
       <td class="mono">${p.cnt}회</td>
       <td class="mono" style="color:var(--text3);">${monthsStr}</td>
       <td class="mono" style="font-weight:700;">${p.s.toFixed(3)}억</td>
