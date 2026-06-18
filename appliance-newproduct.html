@@ -132,7 +132,32 @@
 
   <!-- MD별 신상품 비중 -->
   <div class="section">
-    <div class="section-title">MD별 신상품 · 재촬영 비중 (전체 취급고 대비)</div>
+    <div class="section-title">MD별 신상품 비중 (전체 취급고 대비 · 라이프타임 기준)</div>
+
+    <!-- 적정 기준치 가이드 -->
+    <div style="margin-bottom:16px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px 18px;box-shadow:0 2px 8px rgba(30,40,64,0.06);">
+      <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:10px;display:flex;align-items:center;gap:6px;">📐 신상품 비중 적정 기준치 (가이드라인)</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
+        <div style="background:#fff;border-radius:8px;padding:10px 12px;border:1px solid rgba(214,58,82,0.25);">
+          <div style="font-size:9px;font-family:'IBM Plex Mono',monospace;color:#C42E45;font-weight:700;margin-bottom:4px;">10% 미만 — 위험(고갈)</div>
+          <div style="font-size:10px;color:var(--text2);line-height:1.5;">신상품 파이프라인 단절. Input phase 룰(월 2건) 강제 적용 필요</div>
+        </div>
+        <div style="background:#fff;border-radius:8px;padding:10px 12px;border:1px solid rgba(14,158,106,0.3);">
+          <div style="font-size:9px;font-family:'IBM Plex Mono',monospace;color:#0A8558;font-weight:700;margin-bottom:4px;">15~30% — 적정</div>
+          <div style="font-size:10px;color:var(--text2);line-height:1.5;">안정적 매출 기반 + 지속적 신상품 보충이 균형 잡힌 구간. 유지 권장</div>
+        </div>
+        <div style="background:#fff;border-radius:8px;padding:10px 12px;border:1px solid rgba(201,122,16,0.3);">
+          <div style="font-size:9px;font-family:'IBM Plex Mono',monospace;color:#A8620A;font-weight:700;margin-bottom:4px;">30~45% — 주의</div>
+          <div style="font-size:10px;color:var(--text2);line-height:1.5;">신상품 의존 상승 중. 후속 보충 라인 모니터링 필요</div>
+        </div>
+        <div style="background:#fff;border-radius:8px;padding:10px 12px;border:1px solid rgba(214,58,82,0.25);">
+          <div style="font-size:9px;font-family:'IBM Plex Mono',monospace;color:#C42E45;font-weight:700;margin-bottom:4px;">45% 이상 — 위험(과의존)</div>
+          <div style="font-size:10px;color:var(--text2);line-height:1.5;">소수 신상품에 매출 과의존. 기존 라인 확대 또는 신상품 추가 다변화 필요</div>
+        </div>
+      </div>
+      <div style="font-size:10px;color:var(--text3);margin-top:10px;line-height:1.5;">※ "위험(과의존)"은 신상품 비중을 낮추라는 의미가 아니라, 해당 MD의 <b>전체 취급고 자체를 키워 비중을 자연 희석</b>시키는 방향이 우선. "위험(고갈)"은 신상품 투입 자체를 늘리는 방향.</div>
+    </div>
+
     <div class="md-ratio-grid" id="mdRatioGrid"></div>
 
     <!-- 참고: 퇴사/이동 인원 -->
@@ -194,15 +219,21 @@ const MD_COLORS  = {'권오석':'#2563EB','마영호':'#D63A52','김응도':'#0E
 let currentSort = 's';
 
 // ===== MD별 비중 카드 렌더링 (신상품 라이프타임 / 기존 2분할) =====
+function statusBadge(pct){
+  if (pct < 10) return '<span class="md-rank-badge" style="background:rgba(214,58,82,0.12);color:#C42E45;">⚠️ 위험(고갈)</span>';
+  if (pct < 15) return '<span class="md-rank-badge" style="background:rgba(138,151,176,0.15);color:#6B7280;">낮은 편</span>';
+  if (pct <= 30) return '<span class="md-rank-badge" style="background:rgba(14,158,106,0.12);color:#0A8558;">✅ 적정</span>';
+  if (pct <= 45) return '<span class="md-rank-badge" style="background:rgba(201,122,16,0.12);color:#A8620A;">▲ 주의</span>';
+  return '<span class="md-rank-badge" style="background:rgba(214,58,82,0.12);color:#C42E45;">⚠️ 위험(과의존)</span>';
+}
 function renderMdRatio(){
   const grid = document.getElementById('mdRatioGrid');
   grid.innerHTML = MD_DATA.map((d,i) => {
-    const rankBadge = i===0 ? '<span class="md-rank-badge" style="background:rgba(217,119,6,0.15);color:#A8620A;">신상품 의존도 1위</span>' : '';
-    const warnBadge = (i>0 && d.shin_pct>=40) ? '<span class="md-rank-badge" style="background:rgba(214,58,82,0.12);color:#C42E45;">집중 위험</span>' : '';
+    const badge = statusBadge(d.shin_pct);
     return `<div class="md-card">
       <div class="md-card-header">
         <span class="md-name">${d.md}</span>
-        ${rankBadge}${warnBadge}
+        ${badge}
       </div>
       <div class="md-stack-bar">
         <div class="md-stack-seg" style="width:${d.shin_pct}%;background:#6D3FC8;" title="신상품(라이프타임) ${d.shin_pct}%">${d.shin_pct>=5?d.shin_pct+'%':''}</div>
