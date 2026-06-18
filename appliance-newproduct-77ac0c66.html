@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>가전팀 신상품·재촬영 실적</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root {
+    --bg:#EEF1F7; --bg2:#F8F9FC; --bg3:#F0F3F8;
+    --border:rgba(99,120,160,0.12); --border2:rgba(99,120,160,0.22);
+    --text1:#1E2840; --text2:#4A5568; --text3:#8A97B0;
+    --green:#0E9E6A; --green-bg:rgba(14,158,106,0.10);
+    --amber:#C97A10; --amber-bg:rgba(201,122,16,0.10);
+    --red:#D63A52;   --red-bg:rgba(214,58,82,0.10);
+    --blue:#2563EB;  --blue-bg:rgba(37,99,235,0.10);
+    --purple:#6D3FC8; --purple-bg:rgba(109,63,200,0.10);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text1);font-family:'Noto Sans KR',sans-serif;font-size:13px;line-height:1.6;min-height:100vh;}
+
+  .page-header{background:var(--bg2);border-bottom:2px solid var(--border2);padding:16px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 10px rgba(30,40,64,0.08);}
+  .page-header-left{display:flex;align-items:center;gap:14px;}
+  .back-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;background:var(--bg3);border:1px solid var(--border2);border-radius:7px;color:var(--text2);font-size:12px;font-weight:500;text-decoration:none;transition:all .15s;font-family:'IBM Plex Mono',monospace;}
+  .back-btn:hover{background:var(--blue-bg);color:var(--blue);border-color:rgba(37,99,235,0.3);}
+  .page-title{font-size:18px;font-weight:700;color:var(--text1);letter-spacing:-0.3px;}
+  .page-sub{font-size:11px;color:var(--text3);margin-top:2px;font-family:'IBM Plex Mono',monospace;}
+  .page-tag{font-size:10px;font-family:'IBM Plex Mono',monospace;padding:4px 10px;border-radius:5px;border:1px solid rgba(37,99,235,0.35);color:var(--blue);background:var(--blue-bg);}
+  .header-right{display:flex;gap:8px;align-items:center;}
+  .nav-link{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:var(--blue);color:#fff;border-radius:7px;font-size:12px;font-weight:600;text-decoration:none;font-family:'IBM Plex Mono',monospace;box-shadow:0 2px 8px rgba(37,99,235,0.25);transition:all .2s;}
+  .nav-link:hover{background:#1d4ed8;transform:translateY(-1px);}
+
+  .content{padding:24px 28px 60px;max-width:1400px;margin:0 auto;}
+  .section{margin-bottom:32px;}
+  .section-title{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.12em;margin-bottom:14px;display:flex;align-items:center;gap:10px;}
+  .section-title::after{content:'';flex:1;height:1px;background:var(--border2);}
+
+  /* 요약 카드 3종 */
+  .summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px;}
+  .summary-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px 20px;box-shadow:0 2px 8px rgba(30,40,64,0.06);position:relative;overflow:hidden;}
+  .summary-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+  .sc-purple::before{background:linear-gradient(90deg,#6D3FC8,#9B7FFF);}
+  .sc-blue::before{background:linear-gradient(90deg,#2563EB,#60A5FA);}
+  .sc-gray::before{background:linear-gradient(90deg,#8A97B0,#C8D3E4);}
+  .sc-label{font-size:11px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-bottom:8px;font-weight:500;}
+  .sc-val{font-size:26px;font-weight:700;letter-spacing:-1px;margin-bottom:6px;}
+  .sc-sub{font-size:11px;color:var(--text3);}
+
+  /* MD별 비중 카드 */
+  .md-ratio-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;}
+  .md-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px 18px;box-shadow:0 2px 8px rgba(30,40,64,0.06);}
+  .md-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+  .md-name{font-size:13px;font-weight:700;color:var(--text1);}
+  .md-total{font-size:11px;color:var(--text3);font-family:'IBM Plex Mono',monospace;}
+  .md-stack-bar{width:100%;height:24px;border-radius:6px;overflow:hidden;display:flex;margin-bottom:10px;background:var(--bg3);}
+  .md-stack-seg{height:100%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;font-family:'IBM Plex Mono',monospace;}
+  .md-legend{display:flex;flex-direction:column;gap:5px;}
+  .md-legend-row{display:flex;justify-content:space-between;align-items:center;font-size:10px;}
+  .md-legend-label{display:flex;align-items:center;gap:5px;color:var(--text2);}
+  .md-legend-dot{width:7px;height:7px;border-radius:2px;display:inline-block;}
+  .md-legend-val{font-family:'IBM Plex Mono',monospace;font-weight:600;color:var(--text1);}
+  .md-rank-badge{font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 7px;border-radius:10px;font-weight:700;}
+
+  /* 탭 */
+  .tab-row{display:flex;gap:6px;margin-bottom:16px;}
+  .tab-btn{padding:7px 18px;font-size:12px;font-family:'IBM Plex Mono',monospace;background:var(--bg2);border:1px solid var(--border2);border-radius:20px;color:var(--text2);cursor:pointer;transition:all .15s;font-weight:500;}
+  .tab-btn:hover{background:var(--bg3);color:var(--text1);}
+  .active-tab{background:var(--blue)!important;border-color:var(--blue)!important;color:#fff!important;font-weight:700!important;}
+
+  /* 정렬 */
+  .sort-row{display:flex;gap:6px;margin-bottom:14px;align-items:center;}
+  .sort-label{font-size:11px;color:var(--text3);font-family:'IBM Plex Mono',monospace;}
+  .sort-btn{padding:4px 12px;font-size:10px;font-family:'IBM Plex Mono',monospace;background:var(--bg3);border:1px solid var(--border2);border-radius:5px;color:var(--text2);cursor:pointer;}
+  .sort-btn:hover{background:var(--bg2);color:var(--text1);}
+  .sort-active{background:var(--blue-bg)!important;color:var(--blue)!important;border-color:rgba(37,99,235,0.4)!important;font-weight:700!important;}
+
+  /* 테이블 */
+  .prod-table{width:100%;border-collapse:collapse;background:var(--bg2);border-radius:12px;overflow:hidden;border:1px solid var(--border);box-shadow:0 2px 8px rgba(30,40,64,0.05);}
+  .prod-table th{text-align:left;padding:11px 14px;font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border2);background:var(--bg3);font-family:'IBM Plex Mono',monospace;}
+  .prod-table td{padding:11px 14px;font-size:12px;border-bottom:1px solid var(--border);color:var(--text1);}
+  .prod-table tr:last-child td{border-bottom:none;}
+  .prod-table tr:hover td{background:rgba(99,120,160,0.04);}
+  .pname{font-weight:600;}
+  .pcat-badge{font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 7px;border-radius:4px;font-weight:600;}
+  .pmd-badge{font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;}
+  .good{color:#0A8558;font-weight:700;}
+  .bad{color:#C42E45;font-weight:700;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+
+  @media(max-width:900px){
+    .md-ratio-grid{grid-template-columns:repeat(2,1fr);}
+    .summary-grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+<!-- ===== 비밀번호 게이트 ===== -->
+<div id="pwGateOverlay" style="position:fixed;inset:0;z-index:99999;background:#1E2840;display:flex;align-items:center;justify-content:center;font-family:'Noto Sans KR',sans-serif;">
+  <div style="background:#F8F9FC;border-radius:16px;padding:36px 32px;width:320px;box-shadow:0 12px 40px rgba(0,0,0,0.3);text-align:center;">
+    <div style="font-size:28px;margin-bottom:8px;">🔒</div>
+    <div style="font-size:15px;font-weight:700;color:#1E2840;margin-bottom:4px;">가전팀 전용 페이지</div>
+    <div style="font-size:11px;color:#8A97B0;margin-bottom:18px;">팀 비밀번호를 입력해주세요</div>
+    <input type="password" id="pwGateInput" placeholder="비밀번호" style="width:100%;padding:10px 12px;border:1px solid rgba(99,120,160,0.3);border-radius:8px;font-size:13px;margin-bottom:10px;box-sizing:border-box;outline:none;" autocomplete="off">
+    <button onclick="pwGateCheck()" style="width:100%;padding:10px;background:#2563EB;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">입장</button>
+    <div id="pwGateError" style="font-size:11px;color:#D63A52;margin-top:10px;display:none;">비밀번호가 올바르지 않습니다</div>
+  </div>
+</div>
+<script>
+(function(){
+  var PW_HASH = "74cefd57b1b41b4254cfb4cb81ebb26876e0e10b42be7cf132c9ac56ebe839cf";
+  var SESSION_KEY = "appliance_team_auth_2026";
+  function sha256(str){
+    return crypto.subtle.digest('SHA-256', new TextEncoder().encode(str)).then(function(buf){
+      return Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
+    });
+  }
+  function unlock(){
+    document.getElementById('pwGateOverlay').style.display = 'none';
+    document.documentElement.style.overflow = '';
+  }
+  // 이미 인증된 세션이면 바로 통과
+  if (sessionStorage.getItem(SESSION_KEY) === 'ok') {
+    unlock();
+  } else {
+    document.documentElement.style.overflow = 'hidden';
+  }
+  window.pwGateCheck = function(){
+    var val = document.getElementById('pwGateInput').value;
+    sha256(val).then(function(hash){
+      if (hash === PW_HASH) {
+        sessionStorage.setItem(SESSION_KEY, 'ok');
+        unlock();
+      } else {
+        document.getElementById('pwGateError').style.display = 'block';
+        document.getElementById('pwGateInput').value = '';
+      }
+    });
+  };
+  document.addEventListener('DOMContentLoaded', function(){
+    var input = document.getElementById('pwGateInput');
+    if (input) {
+      input.addEventListener('keydown', function(e){
+        if (e.key === 'Enter') pwGateCheck();
+      });
+      input.focus();
+    }
+  });
+})();
+</script>
+<!-- ===== /비밀번호 게이트 ===== -->
+
+
+<div class="page-header">
+  <div class="page-header-left">
+    <a href="appliance-dashboard-77ac0c66.html" class="back-btn">← 대시보드</a>
+    <div>
+      <div class="page-title">🆕 신상품 · 재촬영 실적</div>
+      <div class="page-sub">SK스토아 가전팀 · 2026년 1~6월2주차</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <a href="appliance-search-77ac0c66.html" class="nav-link" style="background:var(--purple);box-shadow:0 2px 8px rgba(109,63,200,0.25);" onmouseover="this.style.background='#5b32a8'" onmouseout="this.style.background='var(--purple)'">🔍 상품 검색</a>
+    <span class="page-tag">VAT포함</span>
+  </div>
+</div>
+
+<div class="content">
+
+  <!-- 전체 요약 -->
+  <div class="section">
+    <div class="section-title">전체 실적 구성</div>
+    <div class="summary-grid" style="grid-template-columns:repeat(2,1fr);">
+      <div class="summary-card sc-purple">
+        <div class="sc-label">신상품 (라이프타임 누적 · 신상품→재촬영→기존 전환분 포함)</div>
+        <div class="sc-val" style="color:#6D3FC8;">100.82억</div>
+        <div class="sc-sub">142건 방송 · 34개 품목 · 분당 128.7만</div>
+      </div>
+      <div class="summary-card sc-gray">
+        <div class="sc-label">기존 상품 (신상품 이력 없는 상품)</div>
+        <div class="sc-val" style="color:#8A97B0;">379.07억</div>
+        <div class="sc-sub">552건 · 분당 138.1만</div>
+      </div>
+    </div>
+    <div style="font-size:10px;color:#8A97B0;margin-top:-14px;margin-bottom:4px;">※ 신상품 비중 산정 기준: 동일 상품명(편성코드명)으로 한 번이라도 "신상품" 태그가 붙은 상품은, 이후 재촬영·기존으로 태그가 바뀌어도 해당 상품의 전체 누적 방송을 신상품 출신으로 합산</div>
+  </div>
+
+  <!-- MD별 신상품 비중 -->
+  <div class="section">
+    <div class="section-title">MD별 신상품 비중 (전체 취급고 대비 · 라이프타임 기준)</div>
+
+    <!-- 적정 기준치 가이드 -->
+    <div style="margin-bottom:16px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px 18px;box-shadow:0 2px 8px rgba(30,40,64,0.06);">
+      <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:10px;display:flex;align-items:center;gap:6px;">📐 신상품 비중 적정 기준치 (가이드라인)</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;">
+        <div style="background:#fff;border-radius:8px;padding:10px 12px;border:1px solid rgba(214,58,82,0.25);">
+          <div style="font-size:9px;font-family:'IBM Plex Mono',monospace;color:#C42E45;font-weight:700;margin-bottom:4px;">10% 미만 — 위험(고갈)</div>
+          <div style="font-size:10px;color:var(--text2);line-height:1.5;">신상품 파이프라인 단절. Input phase 룰(월 2건) 강제 적용 필요</div>
+        </div>
+        <div style="background:#fff;border-radius:8px;padding:10px 12px;border:1px solid rgba(14,158,106,0.3);">
+          <div style="font-size:9px;font-family:'IBM Plex Mono',monospace;color:#0A8558;font-weight:700;margin-bottom:4px;">15~30% — 적정</div>
+          <div style="font-size:10px;color:var(--text2);line-height:1.5;">안정적 매출 기반 + 지속적 신상품 보충이 균형 잡힌 구간. 유지 권장</div>
+        </div>
+        <div style="background:#fff;border-radius:8px;padding:10px 12px;border:1px solid rgba(201,122,16,0.3);">
+          <div style="font-size:9px;font-family:'IBM Plex Mono',monospace;color:#A8620A;font-weight:700;margin-bottom:4px;">30~45% — 주의</div>
+          <div style="font-size:10px;color:var(--text2);line-height:1.5;">신상품 의존 상승 중. 후속 보충 라인 모니터링 필요</div>
+        </div>
+        <div style="background:#fff;border-radius:8px;padding:10px 12px;border:1px solid rgba(214,58,82,0.25);">
+          <div style="font-size:9px;font-family:'IBM Plex Mono',monospace;color:#C42E45;font-weight:700;margin-bottom:4px;">45% 이상 — 위험(과의존)</div>
+          <div style="font-size:10px;color:var(--text2);line-height:1.5;">소수 신상품에 매출 과의존. 기존 라인 확대 또는 신상품 추가 다변화 필요</div>
+        </div>
+      </div>
+      <div style="font-size:10px;color:var(--text3);margin-top:10px;line-height:1.5;">※ "위험(과의존)"은 신상품 비중을 낮추라는 의미가 아니라, 해당 MD의 <b>전체 취급고 자체를 키워 비중을 자연 희석</b>시키는 방향이 우선. "위험(고갈)"은 신상품 투입 자체를 늘리는 방향.</div>
+    </div>
+
+    <div class="md-ratio-grid" id="mdRatioGrid"></div>
+
+    <!-- 참고: 퇴사/이동 인원 -->
+    <div style="margin-top:14px;padding:14px 18px;background:rgba(138,151,176,0.07);border:1px dashed rgba(138,151,176,0.35);border-radius:10px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <span style="font-size:11px;font-weight:700;color:#8A97B0;">📋 참고 — 정수란 (前 가전팀, 4월 뷰티팀 이동)</span>
+        <span style="font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 8px;border-radius:10px;background:rgba(138,151,176,0.15);color:#8A97B0;">집계 제외</span>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px;">
+        <div style="background:#fff;border-radius:7px;padding:9px 11px;border:1px solid rgba(138,151,176,0.18);text-align:center;">
+          <div style="font-size:9px;color:#8A97B0;font-family:'IBM Plex Mono',monospace;margin-bottom:4px;">전체 취급고</div>
+          <div style="font-size:15px;font-weight:700;color:#6B7280;">24.66억</div>
+        </div>
+        <div style="background:#fff;border-radius:7px;padding:9px 11px;border:1px solid rgba(138,151,176,0.18);text-align:center;">
+          <div style="font-size:9px;color:#8A97B0;font-family:'IBM Plex Mono',monospace;margin-bottom:4px;">신상품 비중(라이프타임)</div>
+          <div style="font-size:15px;font-weight:700;color:#6D3FC8;">9.4%</div>
+        </div>
+        <div style="background:#fff;border-radius:7px;padding:9px 11px;border:1px solid rgba(138,151,176,0.18);text-align:center;">
+          <div style="font-size:9px;color:#8A97B0;font-family:'IBM Plex Mono',monospace;margin-bottom:4px;">신상품 출신 취급고</div>
+          <div style="font-size:15px;font-weight:700;color:#6D3FC8;">2.31억</div>
+        </div>
+        <div style="background:#fff;border-radius:7px;padding:9px 11px;border:1px solid rgba(138,151,176,0.18);text-align:center;">
+          <div style="font-size:9px;color:#8A97B0;font-family:'IBM Plex Mono',monospace;margin-bottom:4px;">분당취급고(신상품)</div>
+          <div style="font-size:15px;font-weight:700;color:#6B7280;">124.9만</div>
+        </div>
+      </div>
+      <div style="font-size:11px;color:#6B7280;line-height:1.7;margin-top:10px;">
+        1~3월 운영 · 49건 · 1,893분 · 한계이익 8.36억<br>
+        주력 상품 [AGK]멀티압력솥 21회 16.97억 → 4월 11일부터 <b style="color:#2563EB;">권오석</b> 인수인계 (이후 실적은 권오석 집계에 포함됨, [AGK]멀티압력솥은 신상품 태그 없어 위 9.4%엔 미포함)
+      </div>
+    </div>
+  </div>
+
+  <!-- 상품별 실적 -->
+  <div class="section">
+    <div class="section-title">상품별 실적</div>
+    <div class="tab-row">
+      <button id="tab-shin" class="tab-btn active-tab" style="cursor:default;">🆕 신상품 라이프타임 (34개 품목 · 142건)</button>
+    </div>
+    <div class="sort-row">
+      <span class="sort-label">정렬</span>
+      <button onclick="setSort('s')"   id="sort-s"   class="sort-btn sort-active">취급고 ↓</button>
+      <button onclick="setSort('pm')"  id="sort-pm"  class="sort-btn">분당취급고 ↓</button>
+      <button onclick="setSort('mr')"  id="sort-mr"  class="sort-btn">이익률 ↓</button>
+      <button onclick="setSort('cnt')" id="sort-cnt" class="sort-btn">방송횟수 ↓</button>
+    </div>
+    <div id="tableArea"></div>
+  </div>
+
+</div>
+
+<script>
+const MD_DATA  = [{"md": "임동진", "total_s": 63.38, "total_cnt": 84, "shin_s": 44.16, "shin_cnt": 50, "shin_prod_cnt": 7, "shin_pct": 69.7, "shin_pm": 126.2, "gy_s": 19.22, "gy_cnt": 34, "gy_pct": 30.3}, {"md": "권오석", "total_s": 144.39, "total_cnt": 203, "shin_s": 39.01, "shin_cnt": 52, "shin_prod_cnt": 11, "shin_pct": 27.0, "shin_pm": 128.5, "gy_s": 105.38, "gy_cnt": 151, "gy_pct": 73.0}, {"md": "정수란", "total_s": 24.66, "total_cnt": 50, "shin_s": 2.31, "shin_cnt": 12, "shin_prod_cnt": 6, "shin_pct": 9.4, "shin_pm": 124.9, "gy_s": 22.35, "gy_cnt": 38, "gy_pct": 90.6}, {"md": "마영호", "total_s": 100.91, "total_cnt": 142, "shin_s": 8.47, "shin_cnt": 21, "shin_prod_cnt": 9, "shin_pct": 8.4, "shin_pm": 146.9, "gy_s": 92.44, "gy_cnt": 121, "gy_pct": 91.6}, {"md": "김응도", "total_s": 120.5, "total_cnt": 148, "shin_s": 6.87, "shin_cnt": 7, "shin_prod_cnt": 4, "shin_pct": 5.7, "shin_pm": 128.2, "gy_s": 113.63, "gy_cnt": 141, "gy_pct": 94.3}, {"md": "백혜정", "total_s": 26.05, "total_cnt": 67, "shin_s": 0.0, "shin_cnt": 0, "shin_prod_cnt": 0, "shin_pct": 0.0, "shin_pm": 0, "gy_s": 26.05, "gy_cnt": 67, "gy_pct": 100.0}];
+const SHIN_DATA = [{"name": "[쿠진]마하라이트", "cat": "생활가전", "md": "임동진", "cnt": 15, "w": 1474.2, "s": 20.436, "pm": 138.6, "m": 6.43, "pmm": 43.6, "mr": 31.5, "months": ["1", "3", "4", "5", "6"]}, {"name": "[라포레]플레이팅팬", "cat": "주방용품", "md": "권오석", "cnt": 12, "w": 969.3, "s": 12.646, "pm": 130.5, "m": 3.675, "pmm": 37.9, "mr": 29.1, "months": ["2", "3", "4", "5", "6"]}, {"name": "[한경희]무선폴딩팬", "cat": "생활가전", "md": "임동진", "cnt": 14, "w": 815.2, "s": 9.827, "pm": 120.5, "m": 3.168, "pmm": 38.9, "mr": 32.2, "months": ["4", "5", "6"]}, {"name": "[칼만]저압스텐냄비", "cat": "주방용품", "md": "권오석", "cnt": 8, "w": 452.2, "s": 6.525, "pm": 144.3, "m": 2.043, "pmm": 45.2, "mr": 31.3, "months": ["2", "4", "5", "6"]}, {"name": "[AGK]무선서큘레이터", "cat": "생활가전", "md": "임동진", "cnt": 9, "w": 586.6, "s": 6.214, "pm": 105.9, "m": 2.373, "pmm": 40.5, "mr": 38.2, "months": ["5", "6"]}, {"name": "[렌지프로]그릴팟", "cat": "주방용품", "md": "권오석", "cnt": 9, "w": 452.8, "s": 5.658, "pm": 124.9, "m": 1.832, "pmm": 40.4, "mr": 32.4, "months": ["3", "4", "5", "6"]}, {"name": "[코지마]컴포넥맥스", "cat": "생활가전", "md": "김응도", "cnt": 4, "w": 379.2, "s": 5.605, "pm": 147.8, "m": 1.781, "pmm": 47.0, "mr": 31.8, "months": ["5", "6"]}, {"name": "[스타일리스]휴대용선풍기", "cat": "생활가전", "md": "임동진", "cnt": 5, "w": 329.4, "s": 5.008, "pm": 152.0, "m": 1.469, "pmm": 44.6, "mr": 29.3, "months": ["5", "6"]}, {"name": "[마이어]디지털포트", "cat": "주방가전", "md": "권오석", "cnt": 6, "w": 379.4, "s": 4.43, "pm": 116.8, "m": 1.662, "pmm": 43.8, "mr": 37.5, "months": ["1", "2"]}, {"name": "[휴렉]히트음식물처리기", "cat": "주방가전", "md": "권오석", "cnt": 5, "w": 267.0, "s": 3.969, "pm": 148.7, "m": 1.131, "pmm": 42.3, "mr": 28.5, "months": ["4", "5", "6"]}, {"name": "[보랄]에어프라이어", "cat": "주방가전", "md": "마영호", "cnt": 5, "w": 176.6, "s": 2.962, "pm": 167.7, "m": 0.841, "pmm": 47.6, "mr": 28.4, "months": ["2"]}, {"name": "[AM]저압냄비세트", "cat": "주방용품", "md": "권오석", "cnt": 4, "w": 205.3, "s": 2.523, "pm": 122.9, "m": 0.821, "pmm": 40.0, "mr": 32.5, "months": ["5", "6"]}, {"name": "[레녹스]홈세트", "cat": "주방용품", "md": "마영호", "cnt": 1, "w": 90.0, "s": 1.725, "pm": 191.6, "m": 0.415, "pmm": 46.1, "mr": 24.0, "months": ["2"]}, {"name": "[스타일리스]무선폴딩팬", "cat": "생활가전", "md": "임동진", "cnt": 3, "w": 187.8, "s": 1.493, "pm": 79.5, "m": 0.678, "pmm": 36.1, "mr": 45.4, "months": ["4", "5"]}, {"name": "[바이마르]냄비", "cat": "주방용품", "md": "마영호", "cnt": 4, "w": 118.8, "s": 1.481, "pm": 124.7, "m": 0.421, "pmm": 35.4, "mr": 28.4, "months": ["2", "3", "4"]}, {"name": "[라포레]밥용기세트", "cat": "주방용품", "md": "권오석", "cnt": 2, "w": 99.9, "s": 1.292, "pm": 129.3, "m": 0.388, "pmm": 38.8, "mr": 30.0, "months": ["6"]}, {"name": "[아이넥스]까세로맥스", "cat": "주방용품", "md": "정수란", "cnt": 1, "w": 82.0, "s": 0.971, "pm": 118.5, "m": 0.368, "pmm": 44.9, "mr": 37.9, "months": ["1"]}, {"name": "[블라우풍트]음성증폭기", "cat": "생활가전", "md": "임동진", "cnt": 3, "w": 59.7, "s": 0.846, "pm": 141.7, "m": 0.283, "pmm": 47.3, "mr": 33.4, "months": ["3", "4", "5"]}, {"name": "[에코하임]스텐대야세트", "cat": "주방용품", "md": "마영호", "cnt": 5, "w": 36.2, "s": 0.81, "pm": 223.6, "m": 0.207, "pmm": 57.2, "mr": 25.6, "months": ["3", "4", "5"]}, {"name": "[엔유씨]요거트메이커", "cat": "주방가전", "md": "마영호", "cnt": 1, "w": 74.4, "s": 0.757, "pm": 101.8, "m": 0.31, "pmm": 41.7, "mr": 41.0, "months": ["4"]}, {"name": "[로렌힐스]싱크볼", "cat": "주방용품", "md": "정수란", "cnt": 1, "w": 61.4, "s": 0.67, "pm": 109.1, "m": 0.156, "pmm": 25.4, "mr": 23.3, "months": ["3"]}, {"name": "[스텐짱]만능가위세트", "cat": "주방용품", "md": "권오석", "cnt": 2, "w": 61.6, "s": 0.549, "pm": 89.1, "m": 0.263, "pmm": 42.7, "mr": 47.9, "months": ["4", "5"]}, {"name": "[락앤락]머스트픽밀폐용기", "cat": "주방용품", "md": "마영호", "cnt": 4, "w": 50.2, "s": 0.522, "pm": 103.9, "m": 0.167, "pmm": 33.2, "mr": 31.9, "months": ["1", "2", "4"]}, {"name": "[라포레]텀블러세트", "cat": "주방용품", "md": "권오석", "cnt": 1, "w": 44.1, "s": 0.518, "pm": 117.4, "m": 0.144, "pmm": 32.6, "mr": 27.7, "months": ["6"]}, {"name": "[에코하임]실리콘백", "cat": "주방용품", "md": "정수란", "cnt": 4, "w": 27.6, "s": 0.514, "pm": 186.2, "m": 0.13, "pmm": 47.2, "mr": 25.3, "months": ["1", "2"]}, {"name": "[베르그뮐레]전동그라인더", "cat": "주방가전", "md": "권오석", "cnt": 1, "w": 48.1, "s": 0.483, "pm": 100.3, "m": 0.151, "pmm": 31.4, "mr": 31.3, "months": ["6"]}, {"name": "[JONR]로봇청소기", "cat": "생활가전", "md": "김응도", "cnt": 1, "w": 48.0, "s": 0.435, "pm": 90.5, "m": 0.134, "pmm": 27.9, "mr": 30.8, "months": ["5"]}, {"name": "[프리즘]발터치선풍기", "cat": "생활가전", "md": "김응도", "cnt": 1, "w": 57.6, "s": 0.418, "pm": 72.6, "m": 0.219, "pmm": 38.0, "mr": 52.3, "months": ["5"]}, {"name": "[테팔]이지밀커핸드블렌더", "cat": "주방가전", "md": "권오석", "cnt": 2, "w": 56.8, "s": 0.414, "pm": 72.8, "m": 0.245, "pmm": 43.1, "mr": 59.2, "months": ["5", "6"]}, {"name": "[보랄]무선듀얼폴딩팬", "cat": "생활가전", "md": "김응도", "cnt": 1, "w": 51.0, "s": 0.414, "pm": 81.1, "m": 0.211, "pmm": 41.4, "mr": 51.1, "months": ["5"]}, {"name": "[FC바르셀로나]면도기", "cat": "생활가전", "md": "임동진", "cnt": 1, "w": 45.6, "s": 0.336, "pm": 73.6, "m": 0.156, "pmm": 34.2, "mr": 46.4, "months": ["5"]}, {"name": "[에코하임]텀블러블렌더", "cat": "주방가전", "md": "마영호", "cnt": 3, "w": 15.2, "s": 0.184, "pm": 121.3, "m": 0.047, "pmm": 30.7, "mr": 25.3, "months": ["3", "4"]}, {"name": "[에코센스]조이락밀폐용기", "cat": "주방용품", "md": "마영호", "cnt": 3, "w": 15.4, "s": 0.13, "pm": 84.6, "m": 0.037, "pmm": 24.0, "mr": 28.3, "months": ["1", "2"]}, {"name": "[리오쿡]테이블매트", "cat": "주방용품", "md": "마영호", "cnt": 1, "w": 14.1, "s": 0.057, "pm": 40.6, "m": 0.016, "pmm": 11.1, "mr": 27.2, "months": ["4"]}];
+
+const CAT_COLORS = {'생활가전':'#2563EB','주방가전':'#0E9E6A','주방용품':'#6D3FC8','대형가전':'#C97A10'};
+const MD_COLORS  = {'권오석':'#2563EB','마영호':'#D63A52','김응도':'#0E9E6A','임동진':'#C97A10','백혜정':'#6D3FC8','정수란':'#9CA3AF'};
+
+let currentSort = 's';
+
+// ===== MD별 비중 카드 렌더링 (신상품 라이프타임 / 기존 2분할) =====
+function statusBadge(pct){
+  if (pct < 10) return '<span class="md-rank-badge" style="background:rgba(214,58,82,0.12);color:#C42E45;">⚠️ 위험(고갈)</span>';
+  if (pct < 15) return '<span class="md-rank-badge" style="background:rgba(138,151,176,0.15);color:#6B7280;">낮은 편</span>';
+  if (pct <= 30) return '<span class="md-rank-badge" style="background:rgba(14,158,106,0.12);color:#0A8558;">✅ 적정</span>';
+  if (pct <= 45) return '<span class="md-rank-badge" style="background:rgba(201,122,16,0.12);color:#A8620A;">▲ 주의</span>';
+  return '<span class="md-rank-badge" style="background:rgba(214,58,82,0.12);color:#C42E45;">⚠️ 위험(과의존)</span>';
+}
+function renderMdRatio(){
+  const grid = document.getElementById('mdRatioGrid');
+  grid.innerHTML = MD_DATA.map((d,i) => {
+    const badge = statusBadge(d.shin_pct);
+    return `<div class="md-card">
+      <div class="md-card-header">
+        <span class="md-name">${d.md}</span>
+        ${badge}
+      </div>
+      <div class="md-stack-bar">
+        <div class="md-stack-seg" style="width:${d.shin_pct}%;background:#6D3FC8;" title="신상품(라이프타임) ${d.shin_pct}%">${d.shin_pct>=5?d.shin_pct+'%':''}</div>
+        <div class="md-stack-seg" style="width:${d.gy_pct}%;background:#C8D3E4;color:#6B7280;" title="기존 ${d.gy_pct}%">${d.gy_pct>=15?d.gy_pct+'%':''}</div>
+      </div>
+      <div class="md-legend">
+        <div class="md-legend-row">
+          <span class="md-legend-label"><span class="md-legend-dot" style="background:#6D3FC8;"></span>신상품(라이프타임)</span>
+          <span class="md-legend-val" style="color:#6D3FC8;">${d.shin_pct}% (${d.shin_s}억)</span>
+        </div>
+        <div class="md-legend-row">
+          <span class="md-legend-label"><span class="md-legend-dot" style="background:#C8D3E4;"></span>기존 상품</span>
+          <span class="md-legend-val" style="color:#6B7280;">${d.gy_pct}% (${d.gy_s}억)</span>
+        </div>
+        <div class="md-legend-row" style="padding-top:4px;border-top:1px solid var(--border);margin-top:2px;">
+          <span class="md-legend-label">전체 취급고</span>
+          <span class="md-legend-val">${d.total_s}억</span>
+        </div>
+        <div class="md-legend-row">
+          <span class="md-legend-label">신상품 품목수</span>
+          <span class="md-legend-val">${d.shin_prod_cnt}개</span>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function setSort(key){
+  currentSort = key;
+  document.querySelectorAll('.sort-btn').forEach(b=>b.classList.remove('sort-active'));
+  document.getElementById('sort-'+key).classList.add('sort-active');
+  render();
+}
+
+function render(){
+  const data = SHIN_DATA;
+  const sorted = [...data].sort((a,b)=>b[currentSort]-a[currentSort]);
+
+  const rows = sorted.map((p,i) => {
+    const catColor = CAT_COLORS[p.cat] || '#8A97B0';
+    const mdColor  = MD_COLORS[p.md] || '#8A97B0';
+    const mdLabel  = p.md==='정수란' ? '정수란 (前)' : p.md;
+    const monthsStr = p.months.map(m=>m+'월').join(',');
+    const pmCls = p.pm >= 150 ? 'good' : p.pm < 100 ? 'bad' : '';
+    const mrCls = p.mr >= 30 ? 'good' : p.mr < 20 ? 'bad' : '';
+    return `<tr>
+      <td class="mono" style="color:var(--text3);">${i+1}</td>
+      <td><span class="pcat-badge" style="background:${catColor}18;color:${catColor};">${p.cat}</span></td>
+      <td class="pname">${p.name}</td>
+      <td><span class="pmd-badge" style="color:${mdColor};font-weight:600;">${mdLabel}</span></td>
+      <td class="mono">${p.cnt}회</td>
+      <td class="mono" style="color:var(--text3);">${monthsStr}</td>
+      <td class="mono" style="font-weight:700;">${p.s.toFixed(3)}억</td>
+      <td class="mono ${pmCls}">${p.pm.toFixed(1)}만</td>
+      <td class="mono">${p.m.toFixed(3)}억</td>
+      <td class="mono ${mrCls}">${p.mr.toFixed(1)}%</td>
+    </tr>`;
+  }).join('');
+
+  document.getElementById('tableArea').innerHTML = `
+    <table class="prod-table">
+      <thead>
+        <tr>
+          <th>#</th><th>카테고리</th><th>상품명</th><th>MD</th><th>방송(라이프타임)</th><th>편성월</th>
+          <th>취급고(라이프타임)</th><th>분당취급고</th><th>한계이익</th><th>이익률</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+renderMdRatio();
+render();
+</script>
+</body>
+</html>
