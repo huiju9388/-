@@ -393,6 +393,24 @@ function renderHeatmapFor(product){
   renderInsight(result);
 }
 
+function renderHeatmapForCategory(cat){
+  currentTarget = null;
+  const catProducts = DATA.filter(p => p.cat === cat);
+  const bcList = catProducts.flatMap(p => p.bc||[]);
+  const result = buildGrid(bcList);
+  const catColor = CAT_COLORS[cat] || '#8A97B0';
+
+  document.getElementById('targetTitle').textContent = `${cat} 카테고리 합산`;
+  document.getElementById('targetBadge').textContent = cat;
+  document.getElementById('targetBadge').style.color = catColor;
+  document.getElementById('targetBadge').style.background = catColor+'18';
+  document.getElementById('targetSub').textContent = `${catProducts.length}개 상품 누적 — 카테고리 전체의 요일×시간대별 편성 분포`;
+
+  renderSummary(result, catProducts.length);
+  renderHeatmapGrid(result);
+  renderInsight(result);
+}
+
 function onInput(val){
   currentQ = val.trim();
   document.getElementById('clearBtn').style.display = currentQ ? 'block' : 'none';
@@ -403,13 +421,18 @@ function clearSearch(){
   document.getElementById('clearBtn').style.display = 'none';
   currentQ = '';
   renderResultsList();
-  renderHeatmapFor(null);
+  if(currentCat){ renderHeatmapForCategory(currentCat); }
+  else { renderHeatmapFor(null); }
 }
 function filterCat(cat){
   currentCat = cat;
   document.querySelectorAll('[id^="fc-"]').forEach(b => b.classList.remove('active-tab'));
   document.getElementById('fc-'+(cat||'all')).classList.add('active-tab');
   renderResultsList();
+  if(!currentQ){
+    if(cat){ renderHeatmapForCategory(cat); }
+    else { renderHeatmapFor(null); }
+  }
 }
 
 function renderResultsList(){
