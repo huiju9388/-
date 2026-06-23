@@ -137,6 +137,18 @@
   .cat-bar-track { flex:1; height:16px; background:var(--bg3); border-radius:4px; overflow:hidden; }
   .cat-bar-fill { height:100%; border-radius:4px; display:flex; align-items:center; padding:0 6px; }
   .cat-bar-label { font-size:9px; font-family:'IBM Plex Mono',monospace; white-space:nowrap; }
+
+  /* MD 집중도 게이지 */
+  .conc-row{ display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+  .conc-name{ width:54px; font-size:12px; font-weight:700; flex-shrink:0; }
+  .conc-bar-track{ flex:1; height:24px; background:var(--bg3); border-radius:6px; overflow:hidden; }
+  .conc-bar-fill{ height:100%; border-radius:6px; display:flex; align-items:center; padding:0 10px; transition:width .3s; min-width:46px; }
+  .conc-pct{ font-size:11px; font-weight:700; color:#fff; font-family:'IBM Plex Mono',monospace; white-space:nowrap; }
+  .conc-info{ width:260px; flex-shrink:0; font-size:11px; color:var(--text2); font-family:'IBM Plex Mono',monospace; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .conc-badge{ font-size:9px; font-weight:700; padding:3px 8px; border-radius:20px; margin-left:6px; }
+
+  /* 랭킹 리더보드 */
+  .lb-toolbar{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px; }
   .cat-diff { font-size:10px; font-family:'IBM Plex Mono',monospace; width:68px; text-align:right; flex-shrink:0; font-weight:600; }
 
   /* 인사이트 */
@@ -308,7 +320,16 @@
 fetch('data/dashboard-data.json').then(r => r.json()).then(d => {
   monthData = d.monthData;
   mdData = d.mdData;
+  shinTrendData = d.shinTrendData;
+  renderConcentration();
+  renderShinTrendChart();
+  renderLeaderboard();
 }).catch(e => console.error('dashboard-data load failed', e));
+
+fetch('data/search-data.json').then(r => r.json()).then(d => {
+  productData = d;
+  renderLeaderboard();
+}).catch(e => console.error('search-data load failed', e));
 </script>
 
 
@@ -1197,6 +1218,225 @@ fetch('data/dashboard-data.json').then(r => r.json()).then(d => {
     });
   </script>
 
+
+<div class="divider"></div>
+
+<!-- MD별 포트폴리오 집중도 -->
+<div class="section">
+  <div class="section-title">MD별 포트폴리오 집중도 (TOP1 상품 비중 · 2026년 1~6월3주차 누적)</div>
+  <div class="chart-wrap" style="margin-bottom:24px;">
+    <div id="concGauges">불러오는 중...</div>
+    <div style="font-size:10px;color:var(--text3);margin-top:12px;font-family:'IBM Plex Mono',monospace;">
+      기준 · 25% 미만 안정 &nbsp;·&nbsp; 25~35% 주의 &nbsp;·&nbsp; 35%+ 위험-집중 (단일 상품 의존도 과다 → 분산 검토 필요)
+    </div>
+  </div>
+</div>
+
+<!-- 신상품 비율 월별 추이 -->
+<div class="section">
+  <div class="section-title">신상품 비율 월별 추이 (라이프타임 기준 · MD별)</div>
+  <div class="chart-wrap" style="margin-bottom:24px;">
+    <div class="chart-header">
+      <span class="chart-title-text">월별 신상품 비중(%) 추이</span>
+      <div class="legend">
+        <span><span class="legend-dot" style="background:#4d8fff"></span>권오석</span>
+        <span><span class="legend-dot" style="background:#ff4d6a"></span>마영호</span>
+        <span><span class="legend-dot" style="background:#22c87a"></span>김응도</span>
+        <span><span class="legend-dot" style="background:#f5a623"></span>임동진</span>
+        <span><span class="legend-dot" style="background:#9b7fff"></span>백혜정</span>
+      </div>
+    </div>
+    <div style="position:relative;height:220px;">
+      <canvas id="shinTrendChart"></canvas>
+    </div>
+    <div style="font-size:10px;color:var(--text3);margin:12px 0 10px;font-family:'IBM Plex Mono',monospace;">
+      기준 · 15% 미만 위험-고갈 &nbsp;·&nbsp; 15~30% 적정 &nbsp;·&nbsp; 30~45% 주의 &nbsp;·&nbsp; 45%+ 위험-과의존
+    </div>
+    <div id="shinTrendInsight"></div>
+  </div>
+</div>
+
+<!-- 분당취급고 · 분당한계이익 랭킹 -->
+<div class="section">
+  <div class="section-title">분당취급고 · 분당한계이익 랭킹 (2026년 1~6월3주차 누적 · VAT포함)</div>
+  <div class="chart-wrap">
+    <div class="lb-toolbar">
+      <div style="display:flex;gap:6px;">
+        <button onclick="setLbGroup('product')" id="lbg-product" class="tab-btn active-tab">상품별</button>
+        <button onclick="setLbGroup('md')" id="lbg-md" class="tab-btn">MD별</button>
+        <button onclick="setLbGroup('cat')" id="lbg-cat" class="tab-btn">카테고리별</button>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;">
+        <button onclick="setLbSort('s')"   id="lbs-s"   class="tab-btn active-tab">취급고 ↓</button>
+        <button onclick="setLbSort('pm')"  id="lbs-pm"  class="tab-btn">분당취급고 ↓</button>
+        <button onclick="setLbSort('m')"   id="lbs-m"   class="tab-btn">한계이익 ↓</button>
+        <button onclick="setLbSort('pmm')" id="lbs-pmm" class="tab-btn">분당한계이익 ↓</button>
+        <button onclick="setLbSort('mr')"  id="lbs-mr"  class="tab-btn">이익률 ↓</button>
+        <button onclick="setLbSort('cnt')" id="lbs-cnt" class="tab-btn">방송횟수 ↓</button>
+      </div>
+    </div>
+    <table class="diff-table" id="lbTable"></table>
+    <div style="font-size:10px;color:var(--text3);margin-top:10px;font-family:'IBM Plex Mono',monospace;" id="lbFootnote"></div>
+  </div>
+</div>
+
+<script>
+  let shinTrendData = {};
+  let productData = [];
+  let shinChartInstance = null;
+  let lbGroup = 'product';
+  let lbSort = 's';
+  const MD_COLOR = {'권오석':'#4d8fff','마영호':'#ff4d6a','김응도':'#22c87a','임동진':'#f5a623','백혜정':'#9b7fff'};
+
+  // ===== A. MD별 포트폴리오 집중도 게이지 =====
+  function renderConcentration(){
+    const order = ['ko','ma','kim','lim','baek'];
+    if(!mdData || !Object.keys(mdData).length){ return; }
+    const html = order.map(key=>{
+      const d = mdData[key];
+      if(!d || !d.top5 || !d.top5.length) return '';
+      const totalSales = parseFloat(d.total.sales);
+      const top1 = d.top5[0];
+      const top1Sales = parseFloat(top1.sales);
+      const pct = totalSales>0 ? (top1Sales/totalSales*100) : 0;
+      let tierLabel='안정', barColor='#0E9E6A';
+      if(pct>=35){ tierLabel='위험-집중'; barColor='#D63A52'; }
+      else if(pct>=25){ tierLabel='주의'; barColor='#C97A10'; }
+      return `<div class="conc-row">
+        <div class="conc-name" style="color:${d.color};">${d.name}</div>
+        <div class="conc-bar-track"><div class="conc-bar-fill" style="width:${Math.min(pct,100).toFixed(1)}%;background:${barColor};"><span class="conc-pct">${pct.toFixed(1)}%</span></div></div>
+        <div class="conc-info">${top1.name} <span class="conc-badge" style="background:${barColor}22;color:${barColor};">${tierLabel}</span></div>
+      </div>`;
+    }).join('');
+    document.getElementById('concGauges').innerHTML = html;
+  }
+
+  // ===== B. 신상품 비율 월별 추이 차트 =====
+  function renderShinTrendChart(){
+    if(!shinTrendData || !Object.keys(shinTrendData).length){ return; }
+    const months = ['1월','2월','3월','4월','5월','6월'];
+    const mdKeys = Object.keys(shinTrendData);
+    const datasets = mdKeys.map(md=>{
+      const color = MD_COLOR[md] || '#8A97B0';
+      return {
+        label: md,
+        data: shinTrendData[md].map(x=>x.shin_pct),
+        borderColor: color,
+        backgroundColor: color+'0D',
+        tension:0.4, pointRadius:4, pointBackgroundColor:color
+      };
+    });
+    const ctx = document.getElementById('shinTrendChart').getContext('2d');
+    if(shinChartInstance) shinChartInstance.destroy();
+    shinChartInstance = new Chart(ctx, {
+      type:'line',
+      data:{ labels:months, datasets },
+      options:{
+        responsive:true, maintainAspectRatio:false,
+        plugins:{
+          legend:{display:false},
+          tooltip:{ backgroundColor:'#F8F9FC', borderColor:'rgba(99,120,160,0.2)', borderWidth:1, titleColor:'#8A97B0', bodyColor:'#1E2840', padding:10, callbacks:{ label:(c)=>`${c.dataset.label}: ${c.parsed.y}%` } }
+        },
+        scales:{
+          x:{ grid:{color:'rgba(99,120,160,0.08)'}, ticks:{color:'#8A97B0',font:{family:'IBM Plex Mono',size:11}} },
+          y:{ grid:{color:'rgba(99,120,160,0.08)'}, ticks:{color:'#8A97B0',font:{family:'IBM Plex Mono',size:10},callback:v=>v+'%'}, min:0, max:100 }
+        }
+      }
+    });
+
+    const latestIdx = months.length-1;
+    const badges = mdKeys.map(md=>{
+      const v = shinTrendData[md][latestIdx];
+      if(!v) return '';
+      const pct = v.shin_pct;
+      let tier='적정', color='#0E9E6A';
+      if(pct<15){ tier='위험-고갈'; color='#D63A52'; }
+      else if(pct<30){ tier='적정'; color='#0E9E6A'; }
+      else if(pct<45){ tier='주의'; color='#C97A10'; }
+      else { tier='위험-과의존'; color='#D63A52'; }
+      return `<span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-family:'IBM Plex Mono',monospace;padding:5px 10px;border-radius:20px;background:${color}18;color:${color};font-weight:600;margin-right:6px;margin-bottom:6px;">${md} 6월 ${pct.toFixed(1)}% · ${tier}</span>`;
+    }).join('');
+    document.getElementById('shinTrendInsight').innerHTML = badges;
+  }
+
+  // ===== C. 분당취급고 · 분당한계이익 랭킹 리더보드 =====
+  function setLbGroup(g){
+    lbGroup = g;
+    document.querySelectorAll('[id^="lbg-"]').forEach(b=>b.classList.remove('active-tab'));
+    document.getElementById('lbg-'+g).classList.add('active-tab');
+    renderLeaderboard();
+  }
+  function setLbSort(k){
+    lbSort = k;
+    document.querySelectorAll('[id^="lbs-"]').forEach(b=>b.classList.remove('active-tab'));
+    document.getElementById('lbs-'+k).classList.add('active-tab');
+    renderLeaderboard();
+  }
+  function aggregateBy(key){
+    const map = {};
+    productData.forEach(p=>{
+      const k = p[key];
+      if(!map[k]) map[k] = {label:k, s:0, m:0, w:0, cnt:0};
+      map[k].s += p.s; map[k].m += p.m; map[k].w += p.w; map[k].cnt += p.cnt;
+    });
+    return Object.values(map).map(g=>({
+      label:g.label, s:g.s, m:g.m, w:g.w, cnt:g.cnt,
+      pm: g.w>0 ? g.s*10000/g.w : 0,
+      pmm: g.w>0 ? g.m*10000/g.w : 0,
+      mr: g.s>0 ? (g.m/g.s*100) : 0
+    }));
+  }
+  function getMdRows(){
+    const order = ['ko','ma','kim','lim','baek'];
+    return order.map(key=>{
+      const d = mdData[key];
+      if(!d) return null;
+      const s = parseFloat(d.total.sales);
+      const m = parseFloat(d.total.margin);
+      const pm = parseFloat(d.total.perMin);
+      const pmm = parseFloat(d.total.perMargin);
+      const cnt = d.total.cnt;
+      const mr = s>0 ? (m/s*100) : 0;
+      return {label:d.name, sub:'', s, m, pm, pmm, mr, cnt};
+    }).filter(Boolean);
+  }
+  function renderLeaderboard(){
+    if(!productData.length) return;
+    let rows, labelHeader;
+    if(lbGroup==='product'){
+      rows = productData.map(p=>({label:p.name, sub:p.brand+' · '+p.md, s:p.s, m:p.m, pm:p.pm, pmm:p.pmm, mr:p.mr, cnt:p.cnt}));
+      labelHeader = '상품명';
+    } else if(lbGroup==='md'){
+      if(!mdData || !Object.keys(mdData).length) return;
+      rows = getMdRows();
+      labelHeader = 'MD';
+    } else {
+      rows = aggregateBy('cat').map(r=>({label:r.label, sub:'', s:r.s, m:r.m, pm:r.pm, pmm:r.pmm, mr:r.mr, cnt:r.cnt}));
+      labelHeader = '카테고리';
+    }
+    rows.sort((a,b)=> b[lbSort] - a[lbSort]);
+    const showRows = lbGroup==='product' ? rows.slice(0,15) : rows;
+
+    const thead = `<thead><tr><th>#</th><th>${labelHeader}</th><th>취급고</th><th>분당취급고</th><th>한계이익</th><th>분당한계이익</th><th>이익률</th><th>방송횟수</th></tr></thead>`;
+    const tbody = '<tbody>' + showRows.map((r,i)=>`
+      <tr>
+        <td class="mono" style="color:#8A97B0;">${i+1}</td>
+        <td style="font-weight:600;">${r.label}${r.sub?`<div style="font-size:10px;color:#8A97B0;font-weight:400;">${r.sub}</div>`:''}</td>
+        <td class="mono" style="color:#4d8fff;">${r.s.toFixed(2)}억</td>
+        <td class="mono" style="color:#1E2840;">${r.pm.toFixed(1)}만</td>
+        <td class="mono" style="color:#22c87a;">${r.m.toFixed(2)}억</td>
+        <td class="mono" style="color:#0A8558;">${r.pmm.toFixed(1)}만</td>
+        <td class="mono">${r.mr.toFixed(1)}%</td>
+        <td class="mono" style="color:#8A97B0;">${r.cnt}회</td>
+      </tr>`).join('') + '</tbody>';
+    document.getElementById('lbTable').innerHTML = thead+tbody;
+    document.getElementById('lbFootnote').textContent = lbGroup==='product'
+      ? `상위 15개 상품만 표시 (전체 ${rows.length}개 중) · 전체 목록은 상품 검색 페이지에서 확인 가능`
+      : `${rows.length}개 ${labelHeader} 전체 표시`;
+  }
+</script>
+
+<div class="divider"></div>
 
 <div class="footer">SK스토아 가전팀 · 구글시트 PGM 실적 기준 · VAT포함 · 월 컬럼 기준 집계</div>
 
