@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SK스토아 가전팀 대시보드</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root {
+    /* 배경 — 눈에 편한 웜 슬레이트 */
+    --bg:  #EEF1F7;   /* 페이지 배경 */
+    --bg2: #F8F9FC;   /* 카드 배경 */
+    --bg3: #F0F3F8;   /* 서브 카드 */
+    /* 테두리 */
+    --border:  rgba(99,120,160,0.12);
+    --border2: rgba(99,120,160,0.22);
+    /* 텍스트 */
+    --text1: #1E2840;   /* 제목·강조 */
+    --text2: #4A5568;   /* 본문 */
+    --text3: #8A97B0;   /* 보조·레이블 */
+    /* 포인트 컬러 */
+    --green:  #0E9E6A; --green-bg:  rgba(14,158,106,0.10);
+    --amber:  #C97A10; --amber-bg:  rgba(201,122,16,0.10);
+    --red:    #D63A52; --red-bg:    rgba(214,58,82,0.10);
+    --blue:   #2563EB; --blue-bg:   rgba(37,99,235,0.10);
+    --purple: #6D3FC8; --purple-bg: rgba(109,63,200,0.10);
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body {
+    background: var(--bg);
+    color: var(--text1);
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 13px;
+    line-height: 1.6;
+    padding: 28px 24px 60px;
+  }
+  .mono { font-family:'IBM Plex Mono',monospace; }
+
+  /* 헤더 */
+  .header { display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:32px; padding-bottom:20px; border-bottom:2px solid var(--border2); }
+  .header h1 { font-size:22px; font-weight:700; letter-spacing:-0.5px; color:var(--text1); }
+  .header .sub { font-size:12px; color:var(--text3); margin-top:4px; font-family:'IBM Plex Mono',monospace; }
+  .header-right { display:flex; gap:8px; }
+  .tag { font-size:10px; font-family:'IBM Plex Mono',monospace; padding:3px 10px; border-radius:5px; border:1px solid var(--border2); color:var(--text2); background:var(--bg2); }
+  .tag.vat { border-color:rgba(37,99,235,0.35); color:var(--blue); background:var(--blue-bg); }
+
+  /* 섹션 */
+  .section { margin-bottom:36px; }
+  .section-title { font-size:10px; font-weight:600; color:var(--text3); text-transform:uppercase; letter-spacing:.12em; margin-bottom:14px; display:flex; align-items:center; gap:10px; }
+  .section-title::after { content:''; flex:1; height:1px; background:var(--border2); }
+
+  /* 카드 공통 */
+  .card-base {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(30,40,64,0.06), 0 1px 2px rgba(30,40,64,0.04);
+  }
+
+  /* KPI 카드 */
+  .kpi-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+  .kpi-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(30,40,64,0.06);
+    transition: box-shadow .2s;
+  }
+  .kpi-card:hover { box-shadow: 0 4px 16px rgba(30,40,64,0.10); }
+  .kpi-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; }
+  .kpi-card.red::before   { background: linear-gradient(90deg,#D63A52,#F06880); }
+  .kpi-card.amber::before { background: linear-gradient(90deg,#C97A10,#F0A030); }
+  .kpi-card.green::before { background: linear-gradient(90deg,#0E9E6A,#2DC88A); }
+  .kpi-name { font-size:11px; color:var(--text3); margin-bottom:10px; font-family:'IBM Plex Mono',monospace; font-weight:500; }
+  .kpi-row { display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:12px; }
+  .kpi-actual { font-size:26px; font-weight:700; letter-spacing:-1px; }
+  .kpi-card.red   .kpi-actual { color:#C42E45; }
+  .kpi-card.amber .kpi-actual { color:#A8620A; }
+  .kpi-card.green .kpi-actual { color:#0A8558; }
+  .kpi-pct { font-size:11px; font-family:'IBM Plex Mono',monospace; padding:3px 9px; border-radius:5px; font-weight:600; }
+  .kpi-card.red   .kpi-pct { background:var(--red-bg);   color:#C42E45; }
+  .kpi-card.amber .kpi-pct { background:var(--amber-bg); color:#A8620A; }
+  .kpi-card.green .kpi-pct { background:var(--green-bg); color:#0A8558; }
+  .kpi-target { font-size:11px; color:var(--text3); }
+  .prog-track { width:100%; height:5px; background:var(--bg3); border-radius:3px; margin-bottom:12px; overflow:hidden; }
+  .prog-fill  { height:100%; border-radius:3px; }
+  .kpi-card.red   .prog-fill { background:linear-gradient(90deg,#D63A52,#F06880); }
+  .kpi-card.amber .prog-fill { background:linear-gradient(90deg,#C97A10,#F0A030); }
+  .kpi-card.green .prog-fill { background:linear-gradient(90deg,#0E9E6A,#2DC88A); }
+  .need-row { display:flex; justify-content:space-between; padding:9px 11px; background:var(--bg3); border-radius:7px; border:1px solid var(--border); margin-top:8px; }
+  .need-label { font-size:10px; color:var(--text3); }
+  .need-val   { font-size:11px; font-weight:600; font-family:'IBM Plex Mono',monospace; }
+  .kpi-card.red   .need-val { color:#C42E45; }
+  .kpi-card.amber .need-val { color:#A8620A; }
+  .kpi-card.green .need-val { color:#0A8558; }
+
+  /* 차트 */
+  .chart-wrap { background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:20px; box-shadow:0 2px 8px rgba(30,40,64,0.06); }
+  .chart-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+  .chart-title-text { font-size:13px; font-weight:600; color:var(--text1); }
+  .legend { display:flex; gap:14px; font-size:10px; color:var(--text3); font-family:'IBM Plex Mono',monospace; }
+  .legend span { display:flex; align-items:center; gap:5px; }
+  .legend-dot { width:8px; height:8px; border-radius:2px; display:inline-block; }
+
+  /* 구분선 */
+  .divider { height:1px; background:var(--border2); margin:36px 0; }
+
+  /* 주간 비교 카드 */
+  .compare-grid { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:16px; }
+  .compare-card { background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:16px 18px; box-shadow:0 2px 8px rgba(30,40,64,0.05); }
+  .compare-week { font-size:10px; color:var(--text3); font-family:'IBM Plex Mono',monospace; margin-bottom:12px; text-transform:uppercase; letter-spacing:.08em; font-weight:600; }
+  .compare-metric-row { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+  .compare-metric-name { font-size:11px; color:var(--text2); }
+  .compare-metric-val  { font-size:15px; font-weight:700; font-family:'IBM Plex Mono',monospace; color:var(--text1); }
+
+  /* 테이블 */
+  .diff-table { width:100%; border-collapse:collapse; background:var(--bg2); border-radius:12px; overflow:hidden; border:1px solid var(--border); box-shadow:0 2px 8px rgba(30,40,64,0.05); }
+  .diff-table th { text-align:left; padding:10px 14px; font-size:10px; font-weight:600; color:var(--text3); text-transform:uppercase; letter-spacing:.08em; border-bottom:1px solid var(--border2); background:var(--bg3); font-family:'IBM Plex Mono',monospace; }
+  .diff-table td { padding:10px 14px; font-size:12px; border-bottom:1px solid var(--border); color:var(--text1); }
+  .diff-table tr:last-child td { border-bottom:none; }
+  .diff-table tr:hover td { background:var(--bg3); }
+  .up     { color:#0A8558; font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:600; }
+  .down   { color:#C42E45; font-family:'IBM Plex Mono',monospace; font-size:11px; font-weight:600; }
+  .neutral{ color:var(--blue); font-family:'IBM Plex Mono',monospace; font-size:11px; }
+
+  /* 카테고리 바 */
+  .cat-section { background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:18px 20px; margin-bottom:12px; box-shadow:0 2px 6px rgba(30,40,64,0.05); }
+  .cat-title { font-size:11px; color:var(--text2); font-weight:600; margin-bottom:14px; }
+  .cat-row { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+  .cat-name { font-size:11px; color:var(--text2); width:64px; flex-shrink:0; text-align:right; }
+  .cat-bars { flex:1; display:flex; flex-direction:column; gap:3px; }
+  .cat-bar-wrap { display:flex; align-items:center; gap:6px; }
+  .cat-bar-track { flex:1; height:16px; background:var(--bg3); border-radius:4px; overflow:hidden; }
+  .cat-bar-fill { height:100%; border-radius:4px; display:flex; align-items:center; padding:0 6px; }
+  .cat-bar-label { font-size:9px; font-family:'IBM Plex Mono',monospace; white-space:nowrap; }
+
+  /* MD 집중도 게이지 */
+  .conc-row{ display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+  .conc-name{ width:54px; font-size:12px; font-weight:700; flex-shrink:0; }
+  .conc-bar-track{ flex:1; height:24px; background:var(--bg3); border-radius:6px; overflow:hidden; }
+  .conc-bar-fill{ height:100%; border-radius:6px; display:flex; align-items:center; padding:0 10px; transition:width .3s; min-width:46px; }
+  .conc-pct{ font-size:11px; font-weight:700; color:#fff; font-family:'IBM Plex Mono',monospace; white-space:nowrap; }
+  .conc-info{ width:260px; flex-shrink:0; font-size:11px; color:var(--text2); font-family:'IBM Plex Mono',monospace; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .conc-badge{ font-size:9px; font-weight:700; padding:3px 8px; border-radius:20px; margin-left:6px; }
+
+  /* 랭킹 리더보드 */
+  .lb-toolbar{ display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px; }
+  .cat-diff { font-size:10px; font-family:'IBM Plex Mono',monospace; width:68px; text-align:right; flex-shrink:0; font-weight:600; }
+
+  /* 인사이트 */
+  .insight-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:16px; }
+  .insight { padding:14px 16px; border-radius:10px; border-left:4px solid; }
+  .insight.good { background:linear-gradient(135deg,rgba(14,158,106,0.08),rgba(14,158,106,0.04)); border-color:var(--green); }
+  .insight.bad  { background:linear-gradient(135deg,rgba(214,58,82,0.08),rgba(214,58,82,0.04));  border-color:var(--red); }
+  .insight-title { font-size:12px; font-weight:700; margin-bottom:8px; }
+  .insight.good .insight-title { color:#0A8558; }
+  .insight.bad  .insight-title { color:#C42E45; }
+  .insight-body { font-size:11px; color:var(--text2); line-height:1.7; }
+  .insight-body li { margin-bottom:4px; list-style:none; padding-left:2px; }
+  .insight-body li::before { content:'› '; color:var(--text3); font-weight:700; }
+
+  /* 탭 버튼 */
+  .tab-btn { padding:5px 14px; font-size:11px; font-family:'IBM Plex Mono',monospace; background:var(--bg2); border:1px solid var(--border2); border-radius:6px; color:var(--text2); cursor:pointer; transition:all .15s; font-weight:500; }
+  .tab-btn:hover { background:var(--bg3); color:var(--text1); border-color:var(--border2); }
+  .active-tab { background:var(--blue-bg) !important; border-color:rgba(37,99,235,0.4) !important; color:var(--blue) !important; font-weight:600 !important; }
+
+  /* 랭크 카드 */
+  .rank-card { display:flex; align-items:center; gap:14px; background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:14px 18px; margin-bottom:8px; transition:all .2s; box-shadow:0 1px 4px rgba(30,40,64,0.05); }
+  .rank-card:hover { border-color:var(--border2); box-shadow:0 4px 12px rgba(30,40,64,0.10); transform:translateY(-1px); }
+  .rank-badge { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; font-family:'IBM Plex Mono',monospace; flex-shrink:0; }
+  .r1 { background:rgba(255,215,0,0.15); color:#B8860B; border:1.5px solid rgba(255,215,0,0.4); }
+  .r2 { background:rgba(192,192,192,0.15); color:#708090; border:1.5px solid rgba(192,192,192,0.4); }
+  .r3 { background:rgba(205,127,50,0.15); color:#8B6914; border:1.5px solid rgba(205,127,50,0.4); }
+  .rn { background:var(--bg3); color:var(--text3); border:1px solid var(--border); }
+  .rank-info { width:180px; flex-shrink:0; }
+  .rank-cat-badge { font-size:9px; font-family:'IBM Plex Mono',monospace; padding:2px 7px; border-radius:4px; display:inline-block; margin-bottom:5px; font-weight:600; }
+  .cat-주방용품 { background:var(--purple-bg); color:var(--purple); }
+  .cat-생활가전 { background:var(--blue-bg); color:var(--blue); }
+  .cat-주방가전 { background:var(--green-bg); color:var(--green); }
+  .cat-대형가전 { background:var(--amber-bg); color:var(--amber); }
+  .rank-name { font-size:12px; font-weight:600; color:var(--text1); margin-bottom:3px; }
+  .rank-meta { font-size:10px; color:var(--text3); font-family:'IBM Plex Mono',monospace; }
+  .rank-bars { flex:1; display:flex; flex-direction:column; gap:5px; }
+  .rank-bar-row { display:flex; align-items:center; gap:8px; }
+  .rank-bar-label { font-size:9px; color:var(--text3); width:36px; flex-shrink:0; text-align:right; font-family:'IBM Plex Mono',monospace; }
+  .rank-bar-track { flex:1; height:18px; background:var(--bg3); border-radius:4px; overflow:hidden; }
+  .rank-bar-fill { height:100%; border-radius:4px; display:flex; align-items:center; padding:0 7px; min-width:40px; }
+  .rank-bar-val { font-size:10px; font-family:'IBM Plex Mono',monospace; font-weight:600; color:#fff; white-space:nowrap; }
+  .rank-metrics { display:flex; flex-direction:column; gap:6px; width:120px; flex-shrink:0; }
+  .rank-metric { text-align:right; }
+  .rm-label { font-size:9px; color:var(--text3); font-family:'IBM Plex Mono',monospace; }
+  .rm-val { font-size:12px; font-weight:600; font-family:'IBM Plex Mono',monospace; color:var(--text1); }
+
+  /* 검색 */
+  .sr-card { background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:16px 18px; margin-bottom:10px; cursor:pointer; transition:all .2s; box-shadow:0 1px 4px rgba(30,40,64,0.05); }
+  .sr-card:hover { border-color:var(--border2); box-shadow:0 4px 14px rgba(30,40,64,0.10); transform:translateY(-1px); }
+  .sr-header { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:12px; }
+  .sr-name { font-size:13px; font-weight:600; color:var(--text1); }
+  .sr-meta { font-size:10px; color:var(--text3); font-family:'IBM Plex Mono',monospace; margin-top:3px; }
+  .sr-badges { display:flex; gap:5px; flex-shrink:0; margin-left:10px; }
+  .sr-badge { font-size:9px; font-family:'IBM Plex Mono',monospace; padding:2px 7px; border-radius:4px; font-weight:600; }
+  .sr-metrics { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:12px; }
+  .sr-metric { background:var(--bg3); border-radius:7px; padding:8px 10px; border:1px solid var(--border); }
+  .sr-mlabel { font-size:9px; color:var(--text3); font-family:'IBM Plex Mono',monospace; margin-bottom:3px; }
+  .sr-mval { font-size:13px; font-weight:700; font-family:'IBM Plex Mono',monospace; color:var(--text1); }
+  .sr-chart { display:flex; gap:3px; align-items:flex-end; height:40px; margin-top:4px; }
+  .sr-bar-wrap { flex:1; display:flex; flex-direction:column; align-items:center; gap:2px; }
+  .sr-bar { width:100%; border-radius:3px 3px 0 0; min-height:2px; }
+  .sr-blabel { font-size:8px; color:var(--text3); font-family:'IBM Plex Mono',monospace; }
+  .no-result { text-align:center; padding:40px; color:var(--text3); font-family:'IBM Plex Mono',monospace; font-size:12px; }
+  .highlight { background:rgba(37,99,235,0.15); border-radius:2px; padding:0 2px; color:var(--blue); font-weight:600; }
+
+  /* db-wrap (dark 테마용 잔여) */
+  .db-wrap { background:var(--bg); border-radius:12px; padding:20px 22px 28px; font-family:'IBM Plex Mono',monospace; color:var(--text1); }
+  .db-header { display:flex; justify-content:space-between; align-items:flex-end; padding-bottom:16px; border-bottom:1px solid var(--border2); margin-bottom:20px; }
+  .db-title { font-size:16px; font-weight:700; letter-spacing:-0.3px; color:var(--text1); }
+  .db-sub { font-size:11px; color:var(--text3); margin-top:3px; }
+  .db-tags { display:flex; gap:6px; }
+  .db-tag { font-size:10px; padding:3px 9px; border-radius:4px; border:1px solid var(--border2); color:var(--text2); }
+  .db-tag.vat { border-color:rgba(37,99,235,0.35); color:var(--blue); background:var(--blue-bg); }
+  .sl { font-size:10px; color:var(--text3); text-transform:uppercase; letter-spacing:.1em; margin:18px 0 10px; display:flex; align-items:center; gap:8px; font-weight:600; }
+  .sl::after { content:''; flex:1; height:1px; background:var(--border2); }
+  .kpi { background:var(--bg2); border:1px solid var(--border); border-radius:8px; padding:12px 10px; }
+  .kpi-lbl { font-size:10px; color:var(--text3); margin-bottom:6px; font-family:'IBM Plex Mono',monospace; }
+  .kpi-diff { font-size:10px; margin-top:4px; font-weight:600; }
+  .kpi-prev { font-size:10px; color:var(--text3); margin-top:2px; }
+  .ccard { background:var(--bg2); border:1px solid var(--border); border-radius:10px; padding:14px 16px; }
+  .cweek { font-size:10px; color:var(--text3); text-transform:uppercase; letter-spacing:.06em; margin-bottom:10px; font-weight:600; }
+  .crow { display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; }
+  .clabel { font-size:11px; color:var(--text2); }
+  .cval { font-size:14px; font-weight:700; color:var(--text1); }
+  .bar-row { display:flex; align-items:center; gap:8px; margin-bottom:8px; }
+  .bar-lbl { font-size:10px; color:var(--text2); width:56px; flex-shrink:0; text-align:right; }
+  .bar-track { flex:1; height:18px; background:var(--bg3); border-radius:4px; overflow:hidden; }
+  .bar-fill { height:100%; border-radius:4px; display:flex; align-items:center; padding:0 6px; }
+  .bar-txt { font-size:9px; font-weight:700; color:#fff; }
+  .diff { font-size:10px; font-weight:700; width:64px; text-align:right; flex-shrink:0; }
+  .prod-row { display:flex; align-items:center; gap:8px; padding:8px 0; border-bottom:1px solid var(--border); }
+  .prod-row:last-child { border-bottom:none; }
+  .prod-rank { font-size:11px; color:var(--text3); width:16px; flex-shrink:0; font-weight:600; }
+  .prod-info { flex:1; min-width:0; }
+  .prod-name { font-size:11px; color:var(--text1); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:500; }
+  .prod-meta { font-size:10px; color:var(--text3); margin-top:1px; }
+  .prod-val { font-size:12px; font-weight:700; }
+  .ins { border-radius:8px; padding:11px 13px; margin-bottom:8px; border-left:3px solid; }
+  .ins-g { background:rgba(14,158,106,0.08); border-color:var(--green); }
+  .ins-r { background:rgba(214,58,82,0.08);  border-color:var(--red); }
+  .ins-a { background:rgba(201,122,16,0.08); border-color:var(--amber); }
+  .ins-title { font-size:11px; font-weight:700; margin-bottom:4px; }
+  .ins-g .ins-title { color:#0A8558; }
+  .ins-r .ins-title { color:#C42E45; }
+  .ins-a .ins-title { color:#A8620A; }
+  .ins-body { font-size:10px; color:var(--text2); line-height:1.7; }
+  .ncat-badge { font-size:9px; font-family:'IBM Plex Mono',monospace; padding:2px 7px; border-radius:4px; display:inline-block; font-weight:600; }
+
+  /* 푸터 */
+  .footer { text-align:center; font-size:10px; color:var(--text3); font-family:'IBM Plex Mono',monospace; margin-top:40px; padding-top:20px; border-top:1px solid var(--border2); }
+</style>
+
+<style>
+  .side-nav{position:fixed;top:0;left:0;width:196px;height:100vh;background:#1E2840;display:flex;flex-direction:column;padding:18px 0;z-index:900;overflow-y:auto;font-family:'Noto Sans KR',sans-serif;}
+  .side-nav .sn-brand{padding:0 20px 16px;font-size:13px;font-weight:700;color:#fff;letter-spacing:-0.3px;border-bottom:1px solid rgba(255,255,255,0.1);margin-bottom:12px;}
+  .side-nav .sn-brand small{display:block;font-size:10px;font-weight:400;color:#8A97B0;margin-top:3px;font-family:'IBM Plex Mono',monospace;}
+  .side-nav .sn-group{font-size:9px;color:#5C6B8A;text-transform:uppercase;letter-spacing:.1em;padding:12px 20px 6px;font-weight:700;}
+  .side-nav a{display:flex;align-items:center;gap:9px;padding:10px 20px;font-size:12px;color:#C8D3E4;text-decoration:none;font-weight:500;border-left:3px solid transparent;transition:all .15s;}
+  .side-nav a:hover{background:rgba(255,255,255,0.07);color:#fff;}
+  .side-nav a.active{background:rgba(37,99,235,0.20);color:#fff;border-left-color:#4d8fff;font-weight:700;}
+  .main-wrap{margin-left:196px;min-height:100vh;box-sizing:border-box;}
+  @media(max-width:900px){
+    .side-nav{width:100%;height:auto;position:relative;flex-direction:row;overflow-x:auto;padding:6px;}
+    .side-nav .sn-brand,.side-nav .sn-group{display:none;}
+    .side-nav a{flex-direction:column;font-size:9px;gap:3px;padding:8px 10px;border-left:none;border-bottom:3px solid transparent;white-space:nowrap;}
+    .side-nav a.active{border-left:none;border-bottom-color:#4d8fff;}
+    .main-wrap{margin-left:0;}
+  }
+</style>
+</head>
+<body>
+<!-- ===== 비밀번호 게이트 ===== -->
+<div id="pwGateOverlay" style="position:fixed;inset:0;z-index:99999;background:#1E2840;display:flex;align-items:center;justify-content:center;font-family:'Noto Sans KR',sans-serif;">
+  <div style="background:#F8F9FC;border-radius:16px;padding:36px 32px;width:320px;box-shadow:0 12px 40px rgba(0,0,0,0.3);text-align:center;">
+    <div style="font-size:28px;margin-bottom:8px;">🔒</div>
+    <div style="font-size:15px;font-weight:700;color:#1E2840;margin-bottom:4px;">가전팀 전용 페이지</div>
+    <div style="font-size:11px;color:#8A97B0;margin-bottom:18px;">팀 비밀번호를 입력해주세요</div>
+    <input type="password" id="pwGateInput" placeholder="비밀번호" style="width:100%;padding:10px 12px;border:1px solid rgba(99,120,160,0.3);border-radius:8px;font-size:13px;margin-bottom:10px;box-sizing:border-box;outline:none;" autocomplete="off">
+    <button onclick="pwGateCheck()" style="width:100%;padding:10px;background:#2563EB;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">입장</button>
+    <div id="pwGateError" style="font-size:11px;color:#D63A52;margin-top:10px;display:none;">비밀번호가 올바르지 않습니다</div>
+  </div>
+</div>
+<script>
+(function(){
+  var PW_HASH = "ed268775853e8ce7516aca7017150b900240141f2e6d7273d8ea84dc6a7c2fdb";
+  var SESSION_KEY = "appliance_team_auth_2026";
+  function sha256(str){
+    return crypto.subtle.digest('SHA-256', new TextEncoder().encode(str)).then(function(buf){
+      return Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
+    });
+  }
+  function unlock(){
+    document.getElementById('pwGateOverlay').style.display = 'none';
+    document.documentElement.style.overflow = '';
+  }
+  // 이미 인증된 세션이면 바로 통과
+  if (sessionStorage.getItem(SESSION_KEY) === 'ok') {
+    unlock();
+  } else {
+    document.documentElement.style.overflow = 'hidden';
+  }
+  window.pwGateCheck = function(){
+    var val = document.getElementById('pwGateInput').value;
+    sha256(val).then(function(hash){
+      if (hash === PW_HASH) {
+        sessionStorage.setItem(SESSION_KEY, 'ok');
+        unlock();
+      } else {
+        document.getElementById('pwGateError').style.display = 'block';
+        document.getElementById('pwGateInput').value = '';
+      }
+    });
+  };
+  document.addEventListener('DOMContentLoaded', function(){
+    var input = document.getElementById('pwGateInput');
+    if (input) {
+      input.addEventListener('keydown', function(e){
+        if (e.key === 'Enter') pwGateCheck();
+      });
+      input.focus();
+    }
+  });
+})();
+</script>
+<!-- ===== /비밀번호 게이트 ===== -->
+<nav class="side-nav">
+  <div class="sn-brand">가전팀 대시보드<small>SK스토아 · 2026</small></div>
+  <div class="sn-group">실적 현황</div>
+  <a href="appliance-dashboard-77ac0c66.html">📊 개요</a>
+  <a href="appliance-monthly-77ac0c66.html">📅 월별 실적</a>
+  <a href="appliance-ranking-77ac0c66.html">🏆 상품 랭킹</a>
+  <a href="appliance-md-77ac0c66.html" class="active">👤 MD 실적</a>
+  <div class="sn-group">상세 도구</div>
+  <a href="appliance-newproduct-77ac0c66.html">🆕 신상품·재촬영</a>
+  <a href="appliance-search-77ac0c66.html">🔍 상품 검색</a>
+  <a href="appliance-heatmap-77ac0c66.html">🗺️ 편성 운영맵</a>
+</nav>
+<div class="main-wrap" style="padding:28px 24px 60px;"><div class="header" style="margin-bottom:28px;">
+  <div>
+    <h1>MD별 실적</h1>
+    <div class="sub">SK스토아 가전팀 · 2026년 1~6월3주차 누적 · VAT포함</div>
+  </div>
+  <div class="header-right">
+    <span class="tag vat">VAT INCLUDED</span>
+    <span class="tag">1~6월3주차</span>
+    <span class="tag">2026.06.22</span>
+  </div>
+</div>
+  <!-- MD별 실적 -->
+  <div class="section">
+    <div class="section-title">MD별 실적 현황 (2026년 1~6월3주차 누적 · VAT포함)</div>
+
+    <!-- MD 탭 -->
+    <div style="display:flex;gap:6px;margin-bottom:16px;">
+      <button onclick="showMD('all')"   id="mdtab-all"   class="tab-btn active-tab">전체 비교</button>
+      <button onclick="showMD('ko')"    id="mdtab-ko"    class="tab-btn">권오석</button>
+      <button onclick="showMD('ma')"    id="mdtab-ma"    class="tab-btn">마영호</button>
+      <button onclick="showMD('kim')"   id="mdtab-kim"   class="tab-btn">김응도</button>
+      <button onclick="showMD('lim')"   id="mdtab-lim"   class="tab-btn">임동진</button>
+      <button onclick="showMD('baek')"  id="mdtab-baek"  class="tab-btn">백혜정</button>
+    </div>
+
+    <!-- 전체 비교 뷰 -->
+    <div id="mdview-all">
+      <!-- 요약 카드 -->
+            <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px;">
+        <div class="kpi-card" style="border-color:rgba(77,143,255,0.3);">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <div class="kpi-name" style="color:#4d8fff;margin-bottom:0;">권오석</div>
+            <span style="font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 7px;border-radius:3px;background:rgba(77,143,255,0.1);color:#4d8fff;">주방가전·주방용품</span>
+          </div>
+          <div style="font-size:22px;font-weight:700;color:#1E2840;letter-spacing:-1px;">149.3억</div>
+          <div style="font-size:11px;color:#8A97B0;margin:4px 0 10px;">208건 · 11533분</div>
+          <div class="need-row">
+            <span class="need-label">분당취급고</span>
+            <span class="need-val" style="color:#4d8fff;">129.4만 </span>
+          </div>
+          <div class="need-row" style="margin-top:6px;">
+            <span class="need-label">한계이익</span>
+            <span class="need-val" style="color:#0E9E6A;">50.24억 · 43.6만/분</span>
+          </div>
+        </div>
+        <div class="kpi-card" style="border-color:rgba(255,77,106,0.3);">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <div class="kpi-name" style="color:#ff4d6a;margin-bottom:0;">마영호</div>
+            <span style="font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 7px;border-radius:3px;background:rgba(255,77,106,0.1);color:#ff4d6a;">주방용품·주방가전</span>
+          </div>
+          <div style="font-size:22px;font-weight:700;color:#1E2840;letter-spacing:-1px;">103.4억</div>
+          <div style="font-size:11px;color:#8A97B0;margin:4px 0 10px;">147건 · 6068분</div>
+          <div class="need-row">
+            <span class="need-label">분당취급고</span>
+            <span class="need-val" style="color:#ff4d6a;">170.4만 🏆</span>
+          </div>
+          <div class="need-row" style="margin-top:6px;">
+            <span class="need-label">한계이익</span>
+            <span class="need-val" style="color:#0E9E6A;">27.61억 · 45.5만/분</span>
+          </div>
+        </div>
+        <div class="kpi-card" style="border-color:rgba(34,200,122,0.3);">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <div class="kpi-name" style="color:#22c87a;margin-bottom:0;">김응도</div>
+            <span style="font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 7px;border-radius:3px;background:rgba(34,200,122,0.1);color:#22c87a;">생활가전</span>
+          </div>
+          <div style="font-size:22px;font-weight:700;color:#1E2840;letter-spacing:-1px;">125.5억</div>
+          <div style="font-size:11px;color:#8A97B0;margin:4px 0 10px;">148건 · 9118분</div>
+          <div class="need-row">
+            <span class="need-label">분당취급고</span>
+            <span class="need-val" style="color:#22c87a;">137.7만 </span>
+          </div>
+          <div class="need-row" style="margin-top:6px;">
+            <span class="need-label">한계이익</span>
+            <span class="need-val" style="color:#0E9E6A;">40.23억 · 44.1만/분</span>
+          </div>
+        </div>
+        <div class="kpi-card" style="border-color:rgba(245,166,35,0.3);">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <div class="kpi-name" style="color:#f5a623;margin-bottom:0;">임동진</div>
+            <span style="font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 7px;border-radius:3px;background:rgba(245,166,35,0.1);color:#f5a623;">생활가전</span>
+          </div>
+          <div style="font-size:22px;font-weight:700;color:#1E2840;letter-spacing:-1px;">70.1억</div>
+          <div style="font-size:11px;color:#8A97B0;margin:4px 0 10px;">93건 · 5628분</div>
+          <div class="need-row">
+            <span class="need-label">분당취급고</span>
+            <span class="need-val" style="color:#f5a623;">124.5만 </span>
+          </div>
+          <div class="need-row" style="margin-top:6px;">
+            <span class="need-label">한계이익</span>
+            <span class="need-val" style="color:#0E9E6A;">23.23억 · 41.3만/분</span>
+          </div>
+        </div>
+        <div class="kpi-card" style="border-color:rgba(155,127,255,0.3);">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <div class="kpi-name" style="color:#9b7fff;margin-bottom:0;">백혜정</div>
+            <span style="font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 7px;border-radius:3px;background:rgba(155,127,255,0.1);color:#9b7fff;">대형가전</span>
+          </div>
+          <div style="font-size:22px;font-weight:700;color:#1E2840;letter-spacing:-1px;">27.7억</div>
+          <div style="font-size:11px;color:#8A97B0;margin:4px 0 10px;">69건 · 1703분</div>
+          <div class="need-row">
+            <span class="need-label">분당취급고</span>
+            <span class="need-val" style="color:#9b7fff;">162.5만 🥈</span>
+          </div>
+          <div class="need-row" style="margin-top:6px;">
+            <span class="need-label">한계이익</span>
+            <span class="need-val" style="color:#0E9E6A;">6.82억 · 40.1만/분</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 월별 추이 차트 -->
+      <div class="chart-wrap" style="margin-bottom:16px;">
+        <div class="chart-header">
+          <span class="chart-title-text">MD별 월별 취급고 추이 (VAT포함)</span>
+          <div class="legend">
+            <span><span class="legend-dot" style="background:#4d8fff"></span>권오석</span>
+            <span><span class="legend-dot" style="background:#ff4d6a"></span>마영호</span>
+            <span><span class="legend-dot" style="background:#22c87a"></span>김응도</span>
+            <span><span class="legend-dot" style="background:#f5a623"></span>임동진</span>
+            <span><span class="legend-dot" style="background:#9b7fff"></span>백혜정</span>
+          </div>
+        </div>
+        <div style="position:relative;height:200px;">
+          <canvas id="mdChart"></canvas>
+        </div>
+      </div>
+
+      <!-- 분당취급고 비교 바 -->
+      <div class="chart-wrap">
+                <div class="chart-title-text" style="margin-bottom:14px;">분당취급고 비교 (VAT포함)</div>
+        <div class="cat-row">
+          <div class="cat-name" style="width:50px;">마영호</div>
+          <div class="cat-bars"><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:100%;background:#D63A52;"><span class="cat-bar-label" style="color:#fff;">170.4만원/분 🏆</span></div></div></div></div>
+          <div class="cat-diff" style="color:#D63A52;">주방용품·가전</div>
+        </div>
+        <div class="cat-row">
+          <div class="cat-name" style="width:50px;">백혜정</div>
+          <div class="cat-bars"><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:95%;background:#6D3FC8;"><span class="cat-bar-label" style="color:#fff;">162.5만원/분 🥈</span></div></div></div></div>
+          <div class="cat-diff" style="color:#6D3FC8;">대형가전</div>
+        </div>
+        <div class="cat-row">
+          <div class="cat-name" style="width:50px;">김응도</div>
+          <div class="cat-bars"><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:81%;background:#0E9E6A;"><span class="cat-bar-label" style="color:#fff;">137.7만원/분 </span></div></div></div></div>
+          <div class="cat-diff" style="color:#0E9E6A;">생활가전</div>
+        </div>
+        <div class="cat-row">
+          <div class="cat-name" style="width:50px;">권오석</div>
+          <div class="cat-bars"><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:76%;background:#2563EB;"><span class="cat-bar-label" style="color:#fff;">129.4만원/분 </span></div></div></div></div>
+          <div class="cat-diff" style="color:#2563EB;">주방가전·용품</div>
+        </div>
+        <div class="cat-row">
+          <div class="cat-name" style="width:50px;">임동진</div>
+          <div class="cat-bars"><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:73%;background:#C97A10;"><span class="cat-bar-label" style="color:#fff;">124.5만원/분 </span></div></div></div></div>
+          <div class="cat-diff" style="color:#C97A10;">생활가전</div>
+        </div>
+        <div style="font-size:10px;color:#8A97B0;margin-top:8px;font-family:'IBM Plex Mono',monospace;">※ 백혜정 분당 2위는 대형가전 카테고리 특성(고단가)에 기인</div>
+      </div>
+
+      <!-- 참고: 퇴사/이동 인원 -->
+      <div style="margin-top:14px;padding:14px 18px;background:rgba(138,151,176,0.07);border:1px dashed rgba(138,151,176,0.35);border-radius:10px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+          <span style="font-size:11px;font-weight:700;color:#8A97B0;">📋 참고 — 정수란 (前 가전팀, 4월 뷰티팀 이동)</span>
+          <span style="font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 8px;border-radius:10px;background:rgba(138,151,176,0.15);color:#8A97B0;">집계 제외</span>
+        </div>
+        <div style="font-size:11px;color:#6B7280;line-height:1.7;">
+          1~3월 운영 · 49건 · 1,893분 · <b style="color:#4A5568;">24.18억</b> · 분당 127.7만 · 한계이익 8.36억<br>
+          주력 상품 [AGK]멀티압력솥 21회 16.97억 → 4월 11일부터 <b style="color:#2563EB;">권오석</b> 인수인계 (이후 실적은 권오석 집계에 포함됨)
+        </div>
+      </div>
+    </div>
+
+    <!-- MD 개별 상세 뷰 -->
+    <div id="mdview-detail" style="display:none;">
+      <div id="md-detail-content"></div>
+    </div>
+  </div>
+
+  <script>
+        let mdData = {};
+
+    function showMD(key) {
+      document.querySelectorAll('.tab-btn').forEach(b => {
+        if (b.id && b.id.startsWith('mdtab-')) b.classList.remove('active-tab');
+      });
+      document.getElementById('mdtab-' + key).classList.add('active-tab');
+
+      if (key === 'all') {
+        document.getElementById('mdview-all').style.display = 'block';
+        document.getElementById('mdview-detail').style.display = 'none';
+        return;
+      }
+      document.getElementById('mdview-all').style.display = 'none';
+      document.getElementById('mdview-detail').style.display = 'block';
+
+      const d = mdData[key];
+      const months = ['1월','2월','3월','4월','5월','6월'];
+
+      let catsHtml = d.cats.map(c => `
+        <tr>
+          <td>${c.name}</td>
+          <td class="mono" style="color:#4d8fff;">${c.sales}</td>
+          <td class="mono" style="color:#6B7280;">${c.perMin}</td>
+          <td class="mono" style="color:#1E2840;">${c.margin}</td>
+          <td class="mono" style="color:${d.color};">${c.pct}</td>
+        </tr>`).join('');
+
+      let top5Html = d.top5.map((p,i) => `
+        <tr>
+          <td class="mono" style="color:#8A97B0;">${i+1}</td>
+          <td style="font-weight:500;">${p.name}</td>
+          <td class="mono" style="color:#4d8fff;">${p.sales}</td>
+          <td class="mono" style="color:#6B7280;">${p.perMin}</td>
+          <td class="mono" style="color:#22c87a;">${p.marginRate}</td>
+        </tr>`).join('');
+
+      let monthlyRows = months.map((m,i) => `
+        <tr>
+          <td>${m}</td>
+          <td class="mono" style="color:#4d8fff;">${d.monthly.sales[i]}억</td>
+          <td class="mono" style="color:#22c87a;">${d.monthly.margin[i]}억</td>
+        </tr>`).join('');
+
+      document.getElementById('md-detail-content').innerHTML = `
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;">
+          <div class="kpi-card" style="border-color:${d.color}33;">
+            <div class="kpi-name" style="color:${d.color};">${d.name} — ${d.cat}</div>
+            <div class="kpi-actual" style="font-size:22px;color:#1E2840;">${d.total.sales}</div>
+            <div class="kpi-target" style="margin:4px 0;">${d.total.cnt}건 · ${d.total.weight}</div>
+          </div>
+          <div class="kpi-card" style="border-color:rgba(77,143,255,0.2);">
+            <div class="kpi-name">분당취급고 (VAT포함)</div>
+            <div class="kpi-actual" style="font-size:22px;color:#4d8fff;">${d.total.perMin}</div>
+            <div class="kpi-target" style="margin-top:4px;">매출 ${d.total.revenue}</div>
+          </div>
+          <div class="kpi-card" style="border-color:rgba(34,200,122,0.2);">
+            <div class="kpi-name">한계이익</div>
+            <div class="kpi-actual" style="font-size:22px;color:#22c87a;">${d.total.margin}</div>
+            <div class="kpi-target" style="margin-top:4px;">분당 ${d.total.perMargin}</div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div>
+            <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px;">카테고리별 실적</div>
+            <table class="diff-table" style="margin-bottom:12px;">
+              <thead><tr><th>카테고리</th><th>취급고</th><th>분당취급고</th><th>한계이익</th><th>비중</th></tr></thead>
+              <tbody>${catsHtml}</tbody>
+            </table>
+            <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px;">월별 실적</div>
+            <table class="diff-table">
+              <thead><tr><th>월</th><th>취급고 (VAT포함)</th><th>한계이익</th></tr></thead>
+              <tbody>${monthlyRows}</tbody>
+            </table>
+          </div>
+          <div>
+            <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px;">취급고 TOP 5 상품</div>
+            <table class="diff-table">
+              <thead><tr><th>#</th><th>상품명</th><th>취급고</th><th>분당취급고</th><th>이익률</th></tr></thead>
+              <tbody>${top5Html}</tbody>
+            </table>
+          </div>
+        </div>`;
+    }
+
+    // MD별 월별 추이 차트
+    const mdCtx = document.getElementById('mdChart').getContext('2d');
+    new Chart(mdCtx, {
+      type: 'line',
+      data: {
+        labels: ['1월','2월','3월','4월','5월','6월'],
+        datasets: [
+          { label:'권오석', data:[45.2,32.5,14.3,9.6,26.8,20.8], borderColor:'#4d8fff', backgroundColor:'rgba(77,143,255,0.05)', tension:0.4, pointRadius:4, pointBackgroundColor:'#4d8fff' },
+          { label:'마영호', data:[22.8,14.5,15.3,17.7,23.7,9.4], borderColor:'#ff4d6a', backgroundColor:'rgba(255,77,106,0.05)', tension:0.4, pointRadius:4, pointBackgroundColor:'#ff4d6a' },
+          { label:'김응도', data:[16.9,25.1,26.5,19.4,19.4,18.1], borderColor:'#22c87a', backgroundColor:'rgba(34,200,122,0.05)', tension:0.4, pointRadius:4, pointBackgroundColor:'#22c87a' },
+          { label:'임동진', data:[7.8,1.6,4.0,15.5,23.9,17.2], borderColor:'#f5a623', backgroundColor:'rgba(245,166,35,0.05)', tension:0.4, pointRadius:4, pointBackgroundColor:'#f5a623' },
+          { label:'백혜정', data:[4.0,9.3,6.0,2.4,3.7,2.4], borderColor:'#9b7fff', backgroundColor:'rgba(155,127,255,0.05)', tension:0.4, pointRadius:4, pointBackgroundColor:'#9b7fff' }
+        ]
+      },
+      options: {
+        responsive:true, maintainAspectRatio:false,
+        plugins:{
+          legend:{display:false},
+          tooltip:{ backgroundColor:'#F8F9FC', borderColor:'rgba(99,120,160,0.2)', borderWidth:1, titleColor:'#8A97B0', bodyColor:'#1E2840', padding:10, callbacks:{ label:(ctx)=>`${ctx.dataset.label}: ${ctx.parsed.y}억원` } }
+        },
+        scales:{
+          x:{ grid:{color:'rgba(99,120,160,0.08)'}, ticks:{color:'#8A97B0',font:{family:'IBM Plex Mono',size:11}} },
+          y:{ grid:{color:'rgba(99,120,160,0.08)'}, ticks:{color:'#8A97B0',font:{family:'IBM Plex Mono',size:10},callback:v=>v+'억'}, min:0 }
+        }
+      }
+    });
+  </script>
+<div class="divider"></div><!-- MD별 포트폴리오 집중도 -->
+<div class="section">
+  <div class="section-title">MD별 포트폴리오 집중도 (TOP1 상품 비중 · 2026년 1~6월3주차 누적)</div>
+  <div class="chart-wrap" style="margin-bottom:24px;">
+    <div id="concGauges">불러오는 중...</div>
+    <div style="font-size:10px;color:var(--text3);margin-top:12px;font-family:'IBM Plex Mono',monospace;">
+      기준 · 25% 미만 안정 &nbsp;·&nbsp; 25~35% 주의 &nbsp;·&nbsp; 35%+ 위험-집중 (단일 상품 의존도 과다 → 분산 검토 필요)
+    </div>
+  </div>
+</div>
+<div class="divider"></div><div class="footer">SK스토아 가전팀 · 구글시트 PGM 실적 기준 · VAT포함 · 월 컬럼 기준 집계</div>
+</div><!-- /main-wrap --><script>
+fetch('data/dashboard-data.json').then(r=>r.json()).then(d=>{ mdData = d.mdData; renderConcentration(); }).catch(e=>console.error('dashboard-data load failed', e));
+</script>
+<script>
+function renderConcentration(){
+    const order = ['ko','ma','kim','lim','baek'];
+    if(!mdData || !Object.keys(mdData).length){ return; }
+    const html = order.map(key=>{
+      const d = mdData[key];
+      if(!d || !d.top5 || !d.top5.length) return '';
+      const totalSales = parseFloat(d.total.sales);
+      const top1 = d.top5[0];
+      const top1Sales = parseFloat(top1.sales);
+      const pct = totalSales>0 ? (top1Sales/totalSales*100) : 0;
+      let tierLabel='안정', barColor='#0E9E6A';
+      if(pct>=35){ tierLabel='위험-집중'; barColor='#D63A52'; }
+      else if(pct>=25){ tierLabel='주의'; barColor='#C97A10'; }
+      return `<div class="conc-row">
+        <div class="conc-name" style="color:${d.color};">${d.name}</div>
+        <div class="conc-bar-track"><div class="conc-bar-fill" style="width:${Math.min(pct,100).toFixed(1)}%;background:${barColor};"><span class="conc-pct">${pct.toFixed(1)}%</span></div></div>
+        <div class="conc-info">${top1.name} <span class="conc-badge" style="background:${barColor}22;color:${barColor};">${tierLabel}</span></div>
+      </div>`;
+    }).join('');
+    document.getElementById('concGauges').innerHTML = html;
+  }
+</script>
+</body>
+</html>
