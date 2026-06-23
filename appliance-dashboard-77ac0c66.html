@@ -320,9 +320,7 @@
 fetch('data/dashboard-data.json').then(r => r.json()).then(d => {
   monthData = d.monthData;
   mdData = d.mdData;
-  shinTrendData = d.shinTrendData;
   renderConcentration();
-  renderShinTrendChart();
   renderLeaderboard();
 }).catch(e => console.error('dashboard-data load failed', e));
 
@@ -1232,30 +1230,6 @@ fetch('data/search-data.json').then(r => r.json()).then(d => {
   </div>
 </div>
 
-<!-- 신상품 비율 월별 추이 -->
-<div class="section">
-  <div class="section-title">신상품 비율 월별 추이 (라이프타임 기준 · MD별)</div>
-  <div class="chart-wrap" style="margin-bottom:24px;">
-    <div class="chart-header">
-      <span class="chart-title-text">월별 신상품 비중(%) 추이</span>
-      <div class="legend">
-        <span><span class="legend-dot" style="background:#4d8fff"></span>권오석</span>
-        <span><span class="legend-dot" style="background:#ff4d6a"></span>마영호</span>
-        <span><span class="legend-dot" style="background:#22c87a"></span>김응도</span>
-        <span><span class="legend-dot" style="background:#f5a623"></span>임동진</span>
-        <span><span class="legend-dot" style="background:#9b7fff"></span>백혜정</span>
-      </div>
-    </div>
-    <div style="position:relative;height:220px;">
-      <canvas id="shinTrendChart"></canvas>
-    </div>
-    <div style="font-size:10px;color:var(--text3);margin:12px 0 10px;font-family:'IBM Plex Mono',monospace;">
-      기준 · 15% 미만 위험-고갈 &nbsp;·&nbsp; 15~30% 적정 &nbsp;·&nbsp; 30~45% 주의 &nbsp;·&nbsp; 45%+ 위험-과의존
-    </div>
-    <div id="shinTrendInsight"></div>
-  </div>
-</div>
-
 <!-- 분당취급고 · 분당한계이익 랭킹 -->
 <div class="section">
   <div class="section-title">분당취급고 · 분당한계이익 랭킹 (2026년 1~6월3주차 누적 · VAT포함)</div>
@@ -1281,12 +1255,9 @@ fetch('data/search-data.json').then(r => r.json()).then(d => {
 </div>
 
 <script>
-  let shinTrendData = {};
   let productData = [];
-  let shinChartInstance = null;
   let lbGroup = 'product';
   let lbSort = 's';
-  const MD_COLOR = {'권오석':'#4d8fff','마영호':'#ff4d6a','김응도':'#22c87a','임동진':'#f5a623','백혜정':'#9b7fff'};
 
   // ===== A. MD별 포트폴리오 집중도 게이지 =====
   function renderConcentration(){
@@ -1311,55 +1282,7 @@ fetch('data/search-data.json').then(r => r.json()).then(d => {
     document.getElementById('concGauges').innerHTML = html;
   }
 
-  // ===== B. 신상품 비율 월별 추이 차트 =====
-  function renderShinTrendChart(){
-    if(!shinTrendData || !Object.keys(shinTrendData).length){ return; }
-    const months = ['1월','2월','3월','4월','5월','6월'];
-    const mdKeys = Object.keys(shinTrendData);
-    const datasets = mdKeys.map(md=>{
-      const color = MD_COLOR[md] || '#8A97B0';
-      return {
-        label: md,
-        data: shinTrendData[md].map(x=>x.shin_pct),
-        borderColor: color,
-        backgroundColor: color+'0D',
-        tension:0.4, pointRadius:4, pointBackgroundColor:color
-      };
-    });
-    const ctx = document.getElementById('shinTrendChart').getContext('2d');
-    if(shinChartInstance) shinChartInstance.destroy();
-    shinChartInstance = new Chart(ctx, {
-      type:'line',
-      data:{ labels:months, datasets },
-      options:{
-        responsive:true, maintainAspectRatio:false,
-        plugins:{
-          legend:{display:false},
-          tooltip:{ backgroundColor:'#F8F9FC', borderColor:'rgba(99,120,160,0.2)', borderWidth:1, titleColor:'#8A97B0', bodyColor:'#1E2840', padding:10, callbacks:{ label:(c)=>`${c.dataset.label}: ${c.parsed.y}%` } }
-        },
-        scales:{
-          x:{ grid:{color:'rgba(99,120,160,0.08)'}, ticks:{color:'#8A97B0',font:{family:'IBM Plex Mono',size:11}} },
-          y:{ grid:{color:'rgba(99,120,160,0.08)'}, ticks:{color:'#8A97B0',font:{family:'IBM Plex Mono',size:10},callback:v=>v+'%'}, min:0, max:100 }
-        }
-      }
-    });
-
-    const latestIdx = months.length-1;
-    const badges = mdKeys.map(md=>{
-      const v = shinTrendData[md][latestIdx];
-      if(!v) return '';
-      const pct = v.shin_pct;
-      let tier='적정', color='#0E9E6A';
-      if(pct<15){ tier='위험-고갈'; color='#D63A52'; }
-      else if(pct<30){ tier='적정'; color='#0E9E6A'; }
-      else if(pct<45){ tier='주의'; color='#C97A10'; }
-      else { tier='위험-과의존'; color='#D63A52'; }
-      return `<span style="display:inline-flex;align-items:center;gap:5px;font-size:11px;font-family:'IBM Plex Mono',monospace;padding:5px 10px;border-radius:20px;background:${color}18;color:${color};font-weight:600;margin-right:6px;margin-bottom:6px;">${md} 6월 ${pct.toFixed(1)}% · ${tier}</span>`;
-    }).join('');
-    document.getElementById('shinTrendInsight').innerHTML = badges;
-  }
-
-  // ===== C. 분당취급고 · 분당한계이익 랭킹 리더보드 =====
+  // ===== B. 분당취급고 · 분당한계이익 랭킹 리더보드 =====
   function setLbGroup(g){
     lbGroup = g;
     document.querySelectorAll('[id^="lbg-"]').forEach(b=>b.classList.remove('active-tab'));
