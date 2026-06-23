@@ -105,6 +105,24 @@
     .page-header,.search-wrap,.content,.results-bar{padding-left:16px;padding-right:16px;}
   }
 </style>
+
+<style>
+  .side-nav{position:fixed;top:0;left:0;width:196px;height:100vh;background:#1E2840;display:flex;flex-direction:column;padding:18px 0;z-index:900;overflow-y:auto;font-family:'Noto Sans KR',sans-serif;}
+  .side-nav .sn-brand{padding:0 20px 16px;font-size:13px;font-weight:700;color:#fff;letter-spacing:-0.3px;border-bottom:1px solid rgba(255,255,255,0.1);margin-bottom:12px;}
+  .side-nav .sn-brand small{display:block;font-size:10px;font-weight:400;color:#8A97B0;margin-top:3px;font-family:'IBM Plex Mono',monospace;}
+  .side-nav .sn-group{font-size:9px;color:#5C6B8A;text-transform:uppercase;letter-spacing:.1em;padding:12px 20px 6px;font-weight:700;}
+  .side-nav a{display:flex;align-items:center;gap:9px;padding:10px 20px;font-size:12px;color:#C8D3E4;text-decoration:none;font-weight:500;border-left:3px solid transparent;transition:all .15s;}
+  .side-nav a:hover{background:rgba(255,255,255,0.07);color:#fff;}
+  .side-nav a.active{background:rgba(37,99,235,0.20);color:#fff;border-left-color:#4d8fff;font-weight:700;}
+  .main-wrap{margin-left:196px;min-height:100vh;box-sizing:border-box;}
+  @media(max-width:900px){
+    .side-nav{width:100%;height:auto;position:relative;flex-direction:row;overflow-x:auto;padding:6px;}
+    .side-nav .sn-brand,.side-nav .sn-group{display:none;}
+    .side-nav a{flex-direction:column;font-size:9px;gap:3px;padding:8px 10px;border-left:none;border-bottom:3px solid transparent;white-space:nowrap;}
+    .side-nav a.active{border-left:none;border-bottom-color:#4d8fff;}
+    .main-wrap{margin-left:0;}
+  }
+</style>
 </head>
 <body>
 <!-- ===== 비밀번호 게이트 ===== -->
@@ -161,21 +179,19 @@
 </script>
 <!-- ===== /비밀번호 게이트 ===== -->
 
-<div class="page-header">
-  <div class="page-header-left">
-    <a href="appliance-dashboard-77ac0c66.html" class="back-btn">← 대시보드</a>
-    <div>
-      <div class="page-title">📅 편성 운영맵 (요일×시간대 히트맵)</div>
-      <div class="page-sub">SK스토아 가전팀 · 2026년 1~6월3주차 · 가중분 기준</div>
-    </div>
-  </div>
-  <div class="header-right">
-    <a href="appliance-newproduct-77ac0c66.html" class="nav-link" style="background:var(--purple);box-shadow:0 2px 8px rgba(109,63,200,0.25);" onmouseover="this.style.background='#5b32a8'" onmouseout="this.style.background='var(--purple)'">🆕 신상품·재촬영</a>
-    <a href="appliance-search-77ac0c66.html" class="nav-link" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='var(--blue)'">🔍 상품 검색</a>
-    <span class="page-tag">VAT포함</span>
-  </div>
-</div>
-
+<nav class="side-nav">
+  <div class="sn-brand">가전팀 대시보드<small>SK스토아 · 2026</small></div>
+  <div class="sn-group">실적 현황</div>
+  <a href="appliance-dashboard-77ac0c66.html">📊 개요</a>
+  <a href="appliance-monthly-77ac0c66.html">📅 월별 실적</a>
+  <a href="appliance-ranking-77ac0c66.html">🏆 상품 랭킹</a>
+  <a href="appliance-md-77ac0c66.html">👤 MD 실적</a>
+  <div class="sn-group">상세 도구</div>
+  <a href="appliance-newproduct-77ac0c66.html">🆕 신상품·재촬영</a>
+  <a href="appliance-search-77ac0c66.html">🔍 상품 검색</a>
+  <a href="appliance-heatmap-77ac0c66.html" class="active">🗺️ 편성 운영맵</a>
+</nav>
+<div class="main-wrap">
 <div class="search-wrap">
   <div class="search-input-wrap">
     <span class="search-icon">🔍</span>
@@ -482,5 +498,6 @@ function selectProductByKey(brand, name){
   window.scrollTo({top: document.querySelector('.content').offsetTop - 80, behavior:'smooth'});
 }
 </script>
+</div><!-- /main-wrap -->
 </body>
 </html>
