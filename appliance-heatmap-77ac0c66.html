@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>가전팀 편성 운영맵</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:#EEF1F7; --bg2:#F8F9FC; --bg3:#F0F3F8;
+    --border:rgba(99,120,160,0.12); --border2:rgba(99,120,160,0.22);
+    --text1:#1E2840; --text2:#4A5568; --text3:#8A97B0;
+    --green:#0E9E6A; --green-bg:rgba(14,158,106,0.10);
+    --amber:#C97A10; --amber-bg:rgba(201,122,16,0.10);
+    --red:#D63A52;   --red-bg:rgba(214,58,82,0.10);
+    --blue:#2563EB;  --blue-bg:rgba(37,99,235,0.10);
+    --purple:#6D3FC8; --purple-bg:rgba(109,63,200,0.10);
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text1);font-family:'Noto Sans KR',sans-serif;font-size:13px;line-height:1.6;min-height:100vh;}
+  .mono{font-family:'IBM Plex Mono',monospace;}
+
+  /* 헤더 */
+  .page-header{background:var(--bg2);border-bottom:2px solid var(--border2);padding:16px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;box-shadow:0 2px 10px rgba(30,40,64,0.08);flex-wrap:wrap;gap:10px;}
+  .page-header-left{display:flex;align-items:center;gap:14px;}
+  .back-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;background:var(--bg3);border:1px solid var(--border2);border-radius:7px;color:var(--text2);font-size:12px;font-weight:500;text-decoration:none;transition:all .15s;font-family:'IBM Plex Mono',monospace;}
+  .back-btn:hover{background:var(--blue-bg);color:var(--blue);border-color:rgba(37,99,235,0.3);}
+  .page-title{font-size:18px;font-weight:700;color:var(--text1);letter-spacing:-0.3px;}
+  .page-sub{font-size:11px;color:var(--text3);margin-top:2px;font-family:'IBM Plex Mono',monospace;}
+  .page-tag{font-size:10px;font-family:'IBM Plex Mono',monospace;padding:4px 10px;border-radius:5px;border:1px solid rgba(37,99,235,0.35);color:var(--blue);background:var(--blue-bg);}
+  .header-right{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+  .nav-link{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:var(--blue);color:#fff;border-radius:7px;font-size:12px;font-weight:600;text-decoration:none;font-family:'IBM Plex Mono',monospace;box-shadow:0 2px 8px rgba(37,99,235,0.25);transition:all .2s;}
+  .nav-link:hover{transform:translateY(-1px);}
+
+  /* 검색 */
+  .search-wrap{background:var(--bg2);border-bottom:1px solid var(--border2);padding:18px 28px;box-shadow:0 2px 6px rgba(30,40,64,0.05);}
+  .search-input-wrap{position:relative;margin-bottom:14px;}
+  .search-input{width:100%;padding:13px 18px 13px 46px;background:var(--bg3);border:1.5px solid var(--border2);border-radius:10px;color:var(--text1);font-size:14px;font-family:'Noto Sans KR',sans-serif;outline:none;transition:all .2s;box-shadow:0 2px 6px rgba(30,40,64,0.06);}
+  .search-input:focus{border-color:rgba(37,99,235,0.5);background:#fff;box-shadow:0 0 0 3px rgba(37,99,235,0.12);}
+  .search-icon{position:absolute;left:15px;top:50%;transform:translateY(-50%);font-size:18px;opacity:.45;}
+  .search-clear{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:var(--bg3);border:1px solid var(--border2);border-radius:5px;color:var(--text3);font-size:11px;padding:3px 8px;cursor:pointer;display:none;font-family:'IBM Plex Mono',monospace;}
+  .search-clear:hover{background:var(--red-bg);color:var(--red);}
+  .filter-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+  .filter-label{font-size:11px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-right:4px;}
+  .tab-btn{padding:6px 16px;font-size:11px;font-family:'IBM Plex Mono',monospace;background:var(--bg3);border:1px solid var(--border2);border-radius:20px;color:var(--text2);cursor:pointer;transition:all .15s;font-weight:500;}
+  .tab-btn:hover{background:var(--bg2);color:var(--text1);}
+  .active-tab{background:var(--blue)!important;border-color:var(--blue)!important;color:#fff!important;font-weight:600!important;}
+
+  /* 검색 결과 칩 리스트 */
+  .results-bar{padding:14px 28px 0;}
+  .results-hint{font-size:11px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-bottom:10px;}
+  .pr-list{display:flex;flex-direction:column;gap:6px;max-height:260px;overflow-y:auto;margin-bottom:6px;}
+  .pr-item{display:flex;align-items:center;justify-content:space-between;gap:10px;background:var(--bg2);border:1.5px solid var(--border);border-radius:9px;padding:10px 14px;cursor:pointer;transition:all .15s;}
+  .pr-item:hover{border-color:rgba(37,99,235,0.35);background:var(--blue-bg);}
+  .pr-item.selected{border-color:var(--blue);background:var(--blue-bg);box-shadow:0 2px 8px rgba(37,99,235,0.15);}
+  .pr-left{display:flex;flex-direction:column;gap:2px;min-width:0;}
+  .pr-brand{font-size:10px;font-weight:700;color:var(--blue);font-family:'IBM Plex Mono',monospace;}
+  .pr-name{font-size:13px;font-weight:600;color:var(--text1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .pr-meta{font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;}
+  .pr-right{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+  .pr-cat{font-size:9px;font-family:'IBM Plex Mono',monospace;padding:3px 8px;border-radius:20px;font-weight:600;}
+  .pr-s{font-size:12px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--text1);min-width:54px;text-align:right;}
+
+  /* 본문 */
+  .content{padding:22px 28px 60px;}
+  .section-title{font-size:14px;font-weight:700;color:var(--text1);margin-bottom:4px;display:flex;align-items:center;gap:8px;}
+  .section-sub{font-size:11px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-bottom:16px;}
+  .target-badge{font-size:11px;font-family:'IBM Plex Mono',monospace;padding:4px 10px;border-radius:6px;background:var(--purple-bg);color:var(--purple);font-weight:700;}
+
+  /* 요약 지표 */
+  .summary-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:22px;}
+  .sum-card{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;}
+  .sum-label{font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-bottom:5px;font-weight:500;}
+  .sum-val{font-size:18px;font-weight:700;font-family:'IBM Plex Mono',monospace;color:var(--text1);}
+  .sum-unit{font-size:11px;font-weight:400;color:var(--text3);}
+
+  /* 히트맵 */
+  .hm-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:20px;box-shadow:0 2px 10px rgba(30,40,64,0.06);margin-bottom:20px;}
+  .hm-wrap{overflow-x:auto;padding-bottom:6px;}
+  .hm-grid{display:grid;grid-template-columns:64px repeat(24,44px) 72px;gap:3px;min-width:max-content;}
+  .hm-headcell{font-size:10px;color:var(--text3);text-align:center;font-family:'IBM Plex Mono',monospace;padding:4px 0;font-weight:600;}
+  .hm-corner{background:var(--bg2);}
+  .hm-daylabel{font-size:12px;font-weight:700;color:var(--text1);display:flex;align-items:center;justify-content:center;background:var(--bg3);border-radius:6px;min-height:42px;}
+  .hm-cell{border:2px solid var(--border2);border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:42px;font-family:'IBM Plex Mono',monospace;}
+  .hm-empty{background:var(--bg3);border:1px dashed var(--border);min-height:42px;border-radius:6px;}
+  .hm-pm{font-size:12px;font-weight:700;}
+  .hm-w{font-size:8px;opacity:.85;margin-top:1px;}
+  .hm-total{background:var(--bg3);border-radius:6px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:42px;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:700;color:var(--text1);}
+
+  .hm-legend{display:flex;align-items:center;gap:14px;margin-top:16px;flex-wrap:wrap;font-size:10.5px;color:var(--text2);font-family:'IBM Plex Mono',monospace;}
+  .legend-grad{display:flex;align-items:center;gap:6px;}
+  .grad-bar{width:90px;height:10px;border-radius:5px;background:linear-gradient(to right, rgba(37,99,235,0.10), rgba(37,99,235,0.90));}
+  .legend-dot{display:inline-block;width:9px;height:9px;border-radius:2px;border:2px solid;margin-right:3px;vertical-align:middle;}
+
+  /* 인사이트 */
+  .insight-box{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-top:14px;display:flex;flex-direction:column;gap:8px;}
+  .insight-line{font-size:12px;color:var(--text2);display:flex;align-items:flex-start;gap:7px;}
+  .insight-line b{color:var(--text1);}
+  .insight-warn{color:var(--red);font-weight:600;}
+
+  .empty-state{text-align:center;padding:50px 20px;color:var(--text3);}
+
+  @media(max-width:640px){
+    .summary-grid{grid-template-columns:repeat(2,1fr);}
+    .page-header,.search-wrap,.content,.results-bar{padding-left:16px;padding-right:16px;}
+  }
+</style>
+</head>
+<body>
+<!-- ===== 비밀번호 게이트 ===== -->
+<div id="pwGateOverlay" style="position:fixed;inset:0;z-index:99999;background:#1E2840;display:flex;align-items:center;justify-content:center;font-family:'Noto Sans KR',sans-serif;">
+  <div style="background:#F8F9FC;border-radius:16px;padding:36px 32px;width:320px;box-shadow:0 12px 40px rgba(0,0,0,0.3);text-align:center;">
+    <div style="font-size:28px;margin-bottom:8px;">🔒</div>
+    <div style="font-size:15px;font-weight:700;color:#1E2840;margin-bottom:4px;">가전팀 전용 페이지</div>
+    <div style="font-size:11px;color:#8A97B0;margin-bottom:18px;">팀 비밀번호를 입력해주세요</div>
+    <input type="password" id="pwGateInput" placeholder="비밀번호" style="width:100%;padding:10px 12px;border:1px solid rgba(99,120,160,0.3);border-radius:8px;font-size:13px;margin-bottom:10px;box-sizing:border-box;outline:none;" autocomplete="off">
+    <button onclick="pwGateCheck()" style="width:100%;padding:10px;background:#2563EB;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">입장</button>
+    <div id="pwGateError" style="font-size:11px;color:#D63A52;margin-top:10px;display:none;">비밀번호가 올바르지 않습니다</div>
+  </div>
+</div>
+<script>
+(function(){
+  var PW_HASH = "ed268775853e8ce7516aca7017150b900240141f2e6d7273d8ea84dc6a7c2fdb";
+  var SESSION_KEY = "appliance_team_auth_2026";
+  function sha256(str){
+    return crypto.subtle.digest('SHA-256', new TextEncoder().encode(str)).then(function(buf){
+      return Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
+    });
+  }
+  function unlock(){
+    document.getElementById('pwGateOverlay').style.display = 'none';
+    document.documentElement.style.overflow = '';
+  }
+  if (sessionStorage.getItem(SESSION_KEY) === 'ok') {
+    unlock();
+  } else {
+    document.documentElement.style.overflow = 'hidden';
+  }
+  window.pwGateCheck = function(){
+    var val = document.getElementById('pwGateInput').value;
+    sha256(val).then(function(hash){
+      if (hash === PW_HASH) {
+        sessionStorage.setItem(SESSION_KEY, 'ok');
+        unlock();
+      } else {
+        document.getElementById('pwGateError').style.display = 'block';
+        document.getElementById('pwGateInput').value = '';
+      }
+    });
+  };
+  document.addEventListener('DOMContentLoaded', function(){
+    var input = document.getElementById('pwGateInput');
+    if (input) {
+      input.addEventListener('keydown', function(e){
+        if (e.key === 'Enter') pwGateCheck();
+      });
+      input.focus();
+    }
+  });
+})();
+</script>
+<!-- ===== /비밀번호 게이트 ===== -->
+
+<div class="page-header">
+  <div class="page-header-left">
+    <a href="appliance-dashboard-77ac0c66.html" class="back-btn">← 대시보드</a>
+    <div>
+      <div class="page-title">📅 편성 운영맵 (요일×시간대 히트맵)</div>
+      <div class="page-sub">SK스토아 가전팀 · 2026년 1~6월3주차 · 가중분 기준</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <a href="appliance-newproduct-77ac0c66.html" class="nav-link" style="background:var(--purple);box-shadow:0 2px 8px rgba(109,63,200,0.25);" onmouseover="this.style.background='#5b32a8'" onmouseout="this.style.background='var(--purple)'">🆕 신상품·재촬영</a>
+    <a href="appliance-search-77ac0c66.html" class="nav-link" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='var(--blue)'">🔍 상품 검색</a>
+    <span class="page-tag">VAT포함</span>
+  </div>
+</div>
+
+<div class="search-wrap">
+  <div class="search-input-wrap">
+    <span class="search-icon">🔍</span>
+    <input id="searchInput" type="text" class="search-input"
+      placeholder="상품명 또는 브랜드 입력 → 선택하면 해당 상품의 편성 히트맵으로 전환됩니다 (예: 코지마, 히트락...)"
+      oninput="onInput(this.value)"/>
+    <button class="search-clear" id="clearBtn" onclick="clearSearch()">✕ 지우기</button>
+  </div>
+  <div class="filter-row">
+    <span class="filter-label">카테고리</span>
+    <button onclick="filterCat('')"       id="fc-all"    class="tab-btn active-tab">전체</button>
+    <button onclick="filterCat('생활가전')" id="fc-생활가전" class="tab-btn">🏠 생활가전</button>
+    <button onclick="filterCat('주방가전')" id="fc-주방가전" class="tab-btn">🍳 주방가전</button>
+    <button onclick="filterCat('주방용품')" id="fc-주방용품" class="tab-btn">🍳 주방용품</button>
+    <button onclick="filterCat('대형가전')" id="fc-대형가전" class="tab-btn">📦 대형가전</button>
+  </div>
+</div>
+
+<div class="results-bar" id="resultsBar" style="display:none;">
+  <div class="results-hint" id="resultsHint"></div>
+  <div class="pr-list" id="prList"></div>
+</div>
+
+<div class="content">
+  <div class="section-title">
+    <span id="targetTitle">전체 가전팀 합산</span>
+    <span class="target-badge" id="targetBadge">전체 합산</span>
+  </div>
+  <div class="section-sub" id="targetSub"></div>
+
+  <div class="summary-grid" id="summaryGrid"></div>
+
+  <div class="hm-card">
+    <div class="hm-wrap">
+      <div class="hm-grid" id="hmGrid"></div>
+    </div>
+    <div class="hm-legend">
+      <div class="legend-grad"><span>가중분 적음</span><span class="grad-bar"></span><span>가중분 많음</span></div>
+      <div><span class="legend-dot" style="border-color:var(--green);background:transparent;"></span>분당취급고 평균 대비 ↑ (115%+)</div>
+      <div><span class="legend-dot" style="border-color:var(--red);background:transparent;"></span>분당취급고 평균 대비 ↓ (85%-)</div>
+      <div>셀 상단 숫자 = 분당취급고(만원/분) · 하단 숫자 = 누적 가중분(분)</div>
+    </div>
+    <div class="insight-box" id="insightBox"></div>
+  </div>
+</div>
+
+<script>
+let DATA = [];
+let ALL_BC = [];
+let currentCat='', currentQ='';
+let currentTarget = null; // null = 전체 합산
+
+const DAY_LABELS = ['월','화','수','목','금','토','일'];
+const DAY_GETDAY = [1,2,3,4,5,6,0]; // Date.getDay() 매핑 (0=일)
+const CAT_COLORS = { '생활가전':'#2563EB','주방가전':'#0E9E6A','주방용품':'#6D3FC8','대형가전':'#C97A10' };
+
+fetch('data/search-data.json').then(r => r.json()).then(d => {
+  DATA = d;
+  ALL_BC = DATA.flatMap(p => (p.bc||[]).map(bc => bc));
+  renderHeatmapFor(null);
+}).catch(e => {
+  document.getElementById('hmGrid').innerHTML = '<div class="empty-state">⚠️ 데이터를 불러오지 못했습니다</div>';
+  console.error(e);
+});
+
+function parseHour(t){
+  if(!t) return null;
+  const start = t.split('~')[0].trim();
+  const hh = parseInt(start.substring(0,2), 10);
+  return isNaN(hh) ? null : hh;
+}
+function parseWeekdayIdx(d){
+  if(!d) return null;
+  const parts = d.split('/');
+  if(parts.length !== 3) return null;
+  const dt = new Date(parseInt(parts[0],10), parseInt(parts[1],10)-1, parseInt(parts[2],10));
+  const gd = dt.getDay();
+  const idx = DAY_GETDAY.indexOf(gd);
+  return idx === -1 ? null : idx;
+}
+
+function buildGrid(bcList){
+  const grid = Array.from({length:7}, () => Array.from({length:24}, () => ({w:0, s:0, cnt:0, pm:0})));
+  let totalW=0, totalS=0, totalCnt=0, maxW=0;
+  (bcList||[]).forEach(bc => {
+    const di = parseWeekdayIdx(bc.d);
+    const hi = parseHour(bc.t);
+    if(di===null || hi===null) return;
+    const c = grid[di][hi];
+    c.w += bc.w||0; c.s += bc.s||0; c.cnt += 1;
+    totalW += bc.w||0; totalS += bc.s||0; totalCnt += 1;
+  });
+  grid.forEach(row => row.forEach(c => {
+    c.pm = c.w>0 ? (c.s*10000/c.w) : 0;
+    if(c.w > maxW) maxW = c.w;
+  }));
+  const avgPm = totalW>0 ? (totalS*10000/totalW) : 0;
+  return { grid, totalW, totalS, totalCnt, avgPm, maxW };
+}
+
+function cellHTML(c, maxW, avgPm){
+  if(!c || c.w<=0){
+    return `<div class="hm-cell hm-empty"></div>`;
+  }
+  const intensity = maxW>0 ? Math.min(1, c.w/maxW) : 0;
+  const alpha = (0.12 + intensity*0.78).toFixed(2);
+  const textColor = intensity>0.55 ? '#fff' : 'var(--text1)';
+  let borderColor = 'var(--border2)';
+  if(avgPm>0){
+    if(c.pm >= avgPm*1.15) borderColor = 'var(--green)';
+    else if(c.pm <= avgPm*0.85) borderColor = 'var(--red)';
+  }
+  const tip = `가중분 ${c.w.toFixed(0)}분 · 취급고 ${c.s.toFixed(2)}억 · 분당취급고 ${c.pm.toFixed(1)}만 · 방송 ${c.cnt}회`;
+  return `<div class="hm-cell" style="background:rgba(37,99,235,${alpha});border-color:${borderColor};color:${textColor};" title="${tip}">
+    <div class="hm-pm">${c.pm.toFixed(0)}</div>
+    <div class="hm-w">${c.w.toFixed(0)}분</div>
+  </div>`;
+}
+
+function renderSummary(result, cnt){
+  const { totalW, totalS, totalCnt, avgPm } = result;
+  document.getElementById('summaryGrid').innerHTML = `
+    <div class="sum-card"><div class="sum-label">누적 가중분</div><div class="sum-val">${totalW.toFixed(0)}<span class="sum-unit">분</span></div></div>
+    <div class="sum-card"><div class="sum-label">누적 취급고 (VAT포함)</div><div class="sum-val" style="color:var(--blue);">${totalS.toFixed(2)}<span class="sum-unit">억</span></div></div>
+    <div class="sum-card"><div class="sum-label">통합 분당취급고</div><div class="sum-val">${avgPm.toFixed(1)}<span class="sum-unit">만/분</span></div></div>
+    <div class="sum-card"><div class="sum-label">방송 횟수</div><div class="sum-val">${totalCnt}<span class="sum-unit">회</span></div></div>
+    <div class="sum-card"><div class="sum-label">대상 상품 수</div><div class="sum-val">${cnt}<span class="sum-unit">개</span></div></div>
+  `;
+}
+
+function renderInsight(result){
+  const { grid, totalW, avgPm } = result;
+  if(totalW<=0){
+    document.getElementById('insightBox').innerHTML = `<div class="insight-line">⚠️ 편성 데이터가 없습니다.</div>`;
+    return;
+  }
+  let topPm=null, topW=null;
+  for(let di=0; di<7; di++){
+    for(let h=0; h<24; h++){
+      const c = grid[di][h];
+      if(c.w<=0) continue;
+      if(c.w >= 5 && (!topPm || c.pm > topPm.pm)) topPm = {di, h, pm:c.pm};
+      if(!topW || c.w > topW.w) topW = {di, h, w:c.w};
+    }
+  }
+  const lines = [];
+  if(topPm){
+    lines.push(`<div class="insight-line">📌 <b>${DAY_LABELS[topPm.di]}요일 ${topPm.h}시대</b>가 분당취급고 <b>${topPm.pm.toFixed(1)}만원</b>으로 가장 효율이 높습니다 (전체 평균 ${avgPm.toFixed(1)}만원 대비 ${(topPm.pm/avgPm*100).toFixed(0)}%).</div>`);
+  }
+  if(topW){
+    const conc = (topW.w/totalW*100);
+    lines.push(`<div class="insight-line">📌 가중분은 <b>${DAY_LABELS[topW.di]}요일 ${topW.h}시대</b>에 가장 많이 편성되어 있습니다 (${topW.w.toFixed(0)}분 · 전체의 ${conc.toFixed(1)}%).</div>`);
+    if(conc > 30){
+      lines.push(`<div class="insight-line insight-warn">⚠️ 특정 요일·시간대 편성 집중도가 ${conc.toFixed(0)}%로 높습니다 — 편성 분산 검토가 필요합니다.</div>`);
+    }
+  }
+  document.getElementById('insightBox').innerHTML = lines.join('');
+}
+
+function renderHeatmapGrid(result){
+  const { grid, maxW, avgPm } = result;
+  let headHTML = `<div class="hm-headcell hm-corner" style="position:sticky;left:0;z-index:3;">요일\\시</div>`;
+  for(let h=0; h<24; h++){ headHTML += `<div class="hm-headcell">${h}시</div>`; }
+  headHTML += `<div class="hm-headcell">합계</div>`;
+
+  let bodyHTML = '';
+  for(let di=0; di<7; di++){
+    let rowW=0, rowS=0, rowCells='';
+    for(let h=0; h<24; h++){
+      const c = grid[di][h];
+      rowW += c.w; rowS += c.s;
+      rowCells += cellHTML(c, maxW, avgPm);
+    }
+    const rowPm = rowW>0 ? (rowS*10000/rowW) : 0;
+    bodyHTML += `<div class="hm-daylabel" style="position:sticky;left:0;z-index:2;background:var(--bg3);">${DAY_LABELS[di]}</div>${rowCells}<div class="hm-total">${rowW>0?rowPm.toFixed(0):'-'}${rowW>0?'<span style="font-size:8px;font-weight:400;">만</span>':''}</div>`;
+  }
+
+  let colTotalsCells = '';
+  let grandW=0, grandS=0;
+  for(let h=0; h<24; h++){
+    let cw=0, cs=0;
+    for(let di=0; di<7; di++){ cw += grid[di][h].w; cs += grid[di][h].s; }
+    grandW += cw; grandS += cs;
+    const cpm = cw>0 ? (cs*10000/cw) : 0;
+    colTotalsCells += `<div class="hm-total">${cw>0?cpm.toFixed(0):'-'}</div>`;
+  }
+  const grandPm = grandW>0 ? (grandS*10000/grandW) : 0;
+  bodyHTML += `<div class="hm-daylabel" style="position:sticky;left:0;z-index:2;background:var(--bg3);">합계</div>${colTotalsCells}<div class="hm-total" style="background:var(--blue-bg);color:var(--blue);">${grandW>0?grandPm.toFixed(0):'-'}<span style="font-size:8px;">만</span></div>`;
+
+  document.getElementById('hmGrid').innerHTML = headHTML + bodyHTML;
+}
+
+function renderHeatmapFor(product){
+  currentTarget = product;
+  const bcList = product ? (product.bc||[]) : ALL_BC;
+  const result = buildGrid(bcList);
+  const cnt = product ? 1 : DATA.length;
+
+  if(product){
+    document.getElementById('targetTitle').textContent = `${product.brand} · ${product.name}`;
+    document.getElementById('targetBadge').textContent = product.cat;
+    document.getElementById('targetBadge').style.color = CAT_COLORS[product.cat]||'var(--purple)';
+    document.getElementById('targetBadge').style.background = (CAT_COLORS[product.cat]||'#6D3FC8')+'18';
+    document.getElementById('targetSub').textContent = `MD: ${product.md} · 누적 ${product.cnt}회 방송 · 이 상품의 요일×시간대별 편성 분포`;
+  } else {
+    document.getElementById('targetTitle').textContent = '전체 가전팀 합산';
+    document.getElementById('targetBadge').textContent = '전체 합산';
+    document.getElementById('targetBadge').style.color = 'var(--purple)';
+    document.getElementById('targetBadge').style.background = 'var(--purple-bg)';
+    document.getElementById('targetSub').textContent = '97개 상품 전체 누적 편성 — 상품을 검색해 특정 상품으로 전환할 수 있습니다';
+  }
+
+  renderSummary(result, cnt);
+  renderHeatmapGrid(result);
+  renderInsight(result);
+}
+
+function onInput(val){
+  currentQ = val.trim();
+  document.getElementById('clearBtn').style.display = currentQ ? 'block' : 'none';
+  renderResultsList();
+}
+function clearSearch(){
+  document.getElementById('searchInput').value = '';
+  document.getElementById('clearBtn').style.display = 'none';
+  currentQ = '';
+  renderResultsList();
+  renderHeatmapFor(null);
+}
+function filterCat(cat){
+  currentCat = cat;
+  document.querySelectorAll('[id^="fc-"]').forEach(b => b.classList.remove('active-tab'));
+  document.getElementById('fc-'+(cat||'all')).classList.add('active-tab');
+  renderResultsList();
+}
+
+function renderResultsList(){
+  const bar = document.getElementById('resultsBar');
+  if(!currentQ && !currentCat){
+    bar.style.display = 'none';
+    return;
+  }
+  const q = currentQ.toLowerCase();
+  let filtered = DATA.filter(p => {
+    const mc = !currentCat || p.cat === currentCat;
+    const mq = !q || p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q) ||
+               p.md.toLowerCase().includes(q) || p.cat.toLowerCase().includes(q);
+    return mc && mq;
+  });
+  filtered.sort((a,b) => b.s - a.s);
+  bar.style.display = 'block';
+
+  if(filtered.length === 0){
+    document.getElementById('resultsHint').textContent = `'${currentQ}'에 해당하는 상품이 없습니다`;
+    document.getElementById('prList').innerHTML = '';
+    return;
+  }
+  document.getElementById('resultsHint').innerHTML = `<b style="color:var(--blue);">${filtered.length}개</b> 상품 검색됨 — 클릭하면 해당 상품의 히트맵으로 전환됩니다`;
+  document.getElementById('prList').innerHTML = filtered.slice(0,40).map((p) => {
+    const catColor = CAT_COLORS[p.cat] || '#8A97B0';
+    const isSel = currentTarget && currentTarget.name===p.name && currentTarget.brand===p.brand;
+    return `<div class="pr-item ${isSel?'selected':''}" onclick='selectProductByKey(${JSON.stringify(p.brand)}, ${JSON.stringify(p.name)})'>
+      <div class="pr-left">
+        <div class="pr-brand">${p.brand}</div>
+        <div class="pr-name">${p.name}</div>
+        <div class="pr-meta">MD ${p.md} · ${p.cnt}회 방송</div>
+      </div>
+      <div class="pr-right">
+        <span class="pr-cat" style="color:${catColor};background:${catColor}18;">${p.cat}</span>
+        <span class="pr-s">${p.s.toFixed(2)}억</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function selectProductByKey(brand, name){
+  const p = DATA.find(d => d.brand===brand && d.name===name);
+  if(!p) return;
+  renderHeatmapFor(p);
+  renderResultsList();
+  window.scrollTo({top: document.querySelector('.content').offsetTop - 80, behavior:'smooth'});
+}
+</script>
+</body>
+</html>
