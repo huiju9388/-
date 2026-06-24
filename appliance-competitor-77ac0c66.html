@@ -78,6 +78,15 @@
   .footer { text-align:center; font-size:10px; color:var(--text3); font-family:'IBM Plex Mono',monospace; margin-top:40px; padding-top:20px; border-top:1px solid var(--border2); }
   .note { font-size:10.5px; color:var(--text3); margin-top:10px; line-height:1.6; }
   canvas { max-height:260px; }
+  /* 통합 히트맵 (시간대 x 요일) */
+  .hm-mini-card { background:var(--bg3); border:1px solid var(--border); border-radius:10px; padding:12px; }
+  .hm-mini-title { font-size:11.5px; font-weight:700; margin-bottom:8px; }
+  .hm-mini-scroll { overflow-x:auto; padding-bottom:4px; }
+  .hm-mini-grid { display:grid; grid-template-columns:24px repeat(24,18px); gap:2px; min-width:max-content; }
+  .hm-mini-headcell { font-size:7.5px; color:var(--text3); text-align:center; font-family:'IBM Plex Mono',monospace; }
+  .hm-mini-daylabel { font-size:9.5px; font-weight:700; color:var(--text2); display:flex; align-items:center; justify-content:center; }
+  .hm-mini-cell { border-radius:3px; min-height:18px; display:flex; align-items:center; justify-content:center; font-size:6.5px; font-family:'IBM Plex Mono',monospace; color:#fff; }
+  .hm-mini-empty { background:var(--bg2); border:1px dashed var(--border); min-height:18px; border-radius:3px; }
 </style>
 <style>
   .side-nav{position:fixed;top:0;left:0;width:196px;height:100vh;background:#1E2840;display:flex;flex-direction:column;padding:18px 0;z-index:900;overflow-y:auto;font-family:'Noto Sans KR',sans-serif;}
@@ -170,20 +179,22 @@
 
   <!-- 카테고리별 가중분 비중 -->
   <div class="section">
-    <div class="section-title">카테고리별 가중분 비중</div>
+    <div class="section-title">카테고리별 가중분 비중 (월별 조회)</div>
     <div class="card">
       <div class="legend-comp"><span><span class="dot sk"></span>SK스토아</span><span><span class="dot kt"></span>KT알파</span><span><span class="dot ssg"></span>SSG</span></div>
+      <div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap;" id="monthToggle"></div>
       <div id="catBars"></div>
       <div class="note">※ SSG는 IP/CA 동시송출 채널 포함. KT알파·SK스토아는 단일채널(일원) 기준. 3사의 가전 총 투입 가중분 규모가 달라 카테고리 "비중(%)" 중심으로 비교하는 것이 적절합니다.</div>
     </div>
   </div>
 
-  <!-- 시간대별 편성강도 -->
+  <!-- 시간대x요일 통합 편성 강도 -->
   <div class="section">
-    <div class="section-title">시간대별 편성 강도 (0~23시, 가중분)</div>
+    <div class="section-title">시간대 × 요일 편성 강도 (한눈에 보기)</div>
     <div class="card">
-      <div style="display:flex;gap:10px;margin-bottom:14px;" id="hourCatToggle"></div>
-      <canvas id="hourChart"></canvas>
+      <div style="display:flex;gap:10px;margin-bottom:16px;" id="hourCatToggle"></div>
+      <div class="grid3" id="heatmapGrid"></div>
+      <div class="note">※ 각 회사별로 자체 최댓값 기준 색상 농도를 정규화했습니다 (회사 간 절대량이 아닌 "편성 패턴"을 비교하기 위함). 셀 위 숫자는 누적 가중분(분)입니다.</div>
     </div>
   </div>
 
@@ -200,19 +211,6 @@
     <div class="card">
       <div class="section-title" style="margin-bottom:12px;">SSG TOP 브랜드 (가전3종, 가중분)</div>
       <div class="brand-list" id="brandSSG"></div>
-    </div>
-  </div>
-
-  <div class="grid2 section">
-    <!-- 요일별 -->
-    <div class="card">
-      <div class="section-title" style="margin-bottom:12px;">요일별 편성 밀도</div>
-      <canvas id="dowChart"></canvas>
-    </div>
-    <!-- 가격대 -->
-    <div class="card">
-      <div class="section-title" style="margin-bottom:12px;">가격대 분포 (가중분 기준 · KT알파/SSG만, SK스토아 가격 데이터 미수집)</div>
-      <canvas id="priceChart"></canvas>
     </div>
   </div>
 
@@ -251,49 +249,78 @@ function render(d){
     <div class="kpi-card"><div class="kpi-name">신상품 비중</div><div class="kpi-val" style="font-size:16px;">SK ${d.newProduct.sk_new_pct.toFixed(1)}% / KT ${d.newProduct.kt_new_pct.toFixed(1)}% / SSG ${d.newProduct.ssg_new_pct.toFixed(1)}%</div><div class="kpi-sub">산출 방식 상이 (하단 참고)</div></div>
   `;
 
-  // 카테고리 바 (3사)
-  let catHTML = '';
-  d.category.categories.forEach(c=>{
-    const skPct = d.category.sk_pct[c], ktPct = d.category.kt_pct[c], ssgPct = d.category.ssg_pct[c];
-    const skW = d.category.sk[c], ktW = d.category.kt[c], ssgW = d.category.ssg[c];
-    catHTML += `<div class="cat-row">
-      <div class="cat-name">${c}</div>
-      <div class="cat-bars">
-        <div class="cat-bar-wrap"><div class="cat-bar-lbl">SK</div><div class="cat-bar-track"><div class="cat-bar-fill" style="width:${skPct}%;background:${COLOR_SK};"><span class="cat-bar-label">${skPct.toFixed(1)}% (${skW.toFixed(0)}분)</span></div></div></div>
-        <div class="cat-bar-wrap"><div class="cat-bar-lbl">KT</div><div class="cat-bar-track"><div class="cat-bar-fill" style="width:${ktPct}%;background:${COLOR_KT};"><span class="cat-bar-label">${ktPct.toFixed(1)}% (${ktW.toFixed(0)}분)</span></div></div></div>
-        <div class="cat-bar-wrap"><div class="cat-bar-lbl">SSG</div><div class="cat-bar-track"><div class="cat-bar-fill" style="width:${ssgPct}%;background:${COLOR_SSG};"><span class="cat-bar-label">${ssgPct.toFixed(1)}% (${ssgW.toFixed(0)}분)</span></div></div></div>
-      </div>
-    </div>`;
+  // 카테고리 바 (3사, 월별 토글)
+  const months = [0,1,2,3,4,5,6];
+  const monthLabel = m => m===0 ? '전체' : m+'월';
+  let monthToggleHTML = '';
+  months.forEach(m=>{
+    const active = m===0;
+    monthToggleHTML += `<button class="tab-btn-m" data-m="${m}" onclick="window.__switchMonth(${m})" style="padding:5px 13px;font-size:11px;font-family:'IBM Plex Mono',monospace;background:${active?'rgba(37,99,235,0.12)':'var(--bg3)'};border:1px solid ${active?'rgba(37,99,235,0.4)':'var(--border2)'};border-radius:6px;color:${active?'var(--blue)':'var(--text2)'};cursor:pointer;font-weight:${active?'700':'500'};">${monthLabel(m)}</button>`;
   });
-  document.getElementById('catBars').innerHTML = catHTML;
+  document.getElementById('monthToggle').innerHTML = monthToggleHTML;
 
-  // 시간대 차트 (토글, 3사)
-  const cats = ['전체','생활가전','주방가전','주방용품'];
-  let toggleHTML = '';
-  cats.forEach((c,i)=>{
-    toggleHTML += `<button class="tab-btn-c" data-cat="${c}" onclick="window.__switchHourCat('${c}')" style="padding:5px 14px;font-size:11px;font-family:'IBM Plex Mono',monospace;background:${i===0?'rgba(37,99,235,0.12)':'var(--bg3)'};border:1px solid ${i===0?'rgba(37,99,235,0.4)':'var(--border2)'};border-radius:6px;color:${i===0?'var(--blue)':'var(--text2)'};cursor:pointer;font-weight:${i===0?'700':'500'};">${c}</button>`;
-  });
-  document.getElementById('hourCatToggle').innerHTML = toggleHTML;
-
-  let hourChart;
-  function drawHour(cat){
-    const ctx = document.getElementById('hourChart');
-    const skData = d.hourGrid['SK스토아'][cat];
-    const ktData = d.hourGrid['KT알파'][cat];
-    const ssgData = d.hourGrid['SSG'][cat];
-    if(hourChart) hourChart.destroy();
-    hourChart = new Chart(ctx, {
-      type:'bar',
-      data:{
-        labels:[...Array(24).keys()].map(h=>h+'시'),
-        datasets:[
-          {label:'SK스토아', data:skData, backgroundColor:COLOR_SK+'CC'},
-          {label:'KT알파', data:ktData, backgroundColor:COLOR_KT+'CC'},
-          {label:'SSG', data:ssgData, backgroundColor:COLOR_SSG+'CC'}
-        ]
-      },
-      options:{ responsive:true, plugins:{legend:{position:'top',labels:{font:{size:10}}}}, scales:{ y:{ title:{display:true,text:'가중분'} } } }
+  function drawCatBars(m){
+    const md = d.categoryMonthly;
+    let catHTML = '';
+    d.category.categories.forEach(c=>{
+      const skPct = md['SK스토아'][m].pct[c], ktPct = md['KT알파'][m].pct[c], ssgPct = md['SSG'][m].pct[c];
+      const skW = md['SK스토아'][m].w[c], ktW = md['KT알파'][m].w[c], ssgW = md['SSG'][m].w[c];
+      catHTML += `<div class="cat-row">
+        <div class="cat-name">${c}</div>
+        <div class="cat-bars">
+          <div class="cat-bar-wrap"><div class="cat-bar-lbl">SK</div><div class="cat-bar-track"><div class="cat-bar-fill" style="width:${skPct}%;background:${COLOR_SK};"><span class="cat-bar-label">${skPct.toFixed(1)}% (${skW.toFixed(0)}분)</span></div></div></div>
+          <div class="cat-bar-wrap"><div class="cat-bar-lbl">KT</div><div class="cat-bar-track"><div class="cat-bar-fill" style="width:${ktPct}%;background:${COLOR_KT};"><span class="cat-bar-label">${ktPct.toFixed(1)}% (${ktW.toFixed(0)}분)</span></div></div></div>
+          <div class="cat-bar-wrap"><div class="cat-bar-lbl">SSG</div><div class="cat-bar-track"><div class="cat-bar-fill" style="width:${ssgPct}%;background:${COLOR_SSG};"><span class="cat-bar-label">${ssgPct.toFixed(1)}% (${ssgW.toFixed(0)}분)</span></div></div></div>
+        </div>
+      </div>`;
     });
+    document.getElementById('catBars').innerHTML = catHTML;
+    document.querySelectorAll('.tab-btn-m').forEach(btn=>{
+      const active = Number(btn.dataset.m)===m;
+      btn.style.background = active?'rgba(37,99,235,0.12)':'var(--bg3)';
+      btn.style.borderColor = active?'rgba(37,99,235,0.4)':'var(--border2)';
+      btn.style.color = active?'var(--blue)':'var(--text2)';
+      btn.style.fontWeight = active?'700':'500';
+    });
+  }
+  window.__switchMonth = drawCatBars;
+  drawCatBars(0);
+
+  // 시간대 x 요일 통합 히트맵 (토글, 3사 한눈에)
+  const hmCats = ['전체','생활가전','주방가전','주방용품'];
+  let hmToggleHTML = '';
+  hmCats.forEach((c,i)=>{
+    hmToggleHTML += `<button class="tab-btn-c" data-cat="${c}" onclick="window.__switchHourCat('${c}')" style="padding:5px 14px;font-size:11px;font-family:'IBM Plex Mono',monospace;background:${i===0?'rgba(37,99,235,0.12)':'var(--bg3)'};border:1px solid ${i===0?'rgba(37,99,235,0.4)':'var(--border2)'};border-radius:6px;color:${i===0?'var(--blue)':'var(--text2)'};cursor:pointer;font-weight:${i===0?'700':'500'};">${c}</button>`;
+  });
+  document.getElementById('hourCatToggle').innerHTML = hmToggleHTML;
+
+  const HM_DAYS = d.hourDowDays;
+  const HM_COLORS = {'SK스토아':COLOR_SK,'KT알파':COLOR_KT,'SSG':COLOR_SSG};
+  function miniHeatmap(comp, cat){
+    const grid = d.hourDowGrid[comp][cat]; // 7 x 24
+    let maxV = 0;
+    grid.forEach(row=>row.forEach(v=>{ if(v>maxV) maxV=v; }));
+    const color = HM_COLORS[comp];
+    let head = `<div class="hm-mini-headcell"></div>`;
+    for(let h=0;h<24;h++) head += `<div class="hm-mini-headcell">${h%3===0?h:''}</div>`;
+    let body = '';
+    for(let day=0;day<7;day++){
+      body += `<div class="hm-mini-daylabel">${HM_DAYS[day]}</div>`;
+      for(let h=0;h<24;h++){
+        const v = grid[day][h];
+        if(v<=0){ body += `<div class="hm-mini-empty"></div>`; continue; }
+        const alpha = (0.15 + Math.min(1, v/maxV)*0.8).toFixed(2);
+        body += `<div class="hm-mini-cell" style="background:${color}${Math.round(alpha*255).toString(16).padStart(2,'0')};" title="${HM_DAYS[day]} ${h}시 · ${v.toFixed(0)}분"></div>`;
+      }
+    }
+    return `<div class="hm-mini-card">
+      <div class="hm-mini-title" style="color:${color};">${comp}</div>
+      <div class="hm-mini-scroll"><div class="hm-mini-grid">${head}${body}</div></div>
+    </div>`;
+  }
+  function drawHeatmaps(cat){
+    document.getElementById('heatmapGrid').innerHTML =
+      miniHeatmap('SK스토아', cat) + miniHeatmap('KT알파', cat) + miniHeatmap('SSG', cat);
     document.querySelectorAll('.tab-btn-c').forEach(btn=>{
       const active = btn.dataset.cat===cat;
       btn.style.background = active?'rgba(37,99,235,0.12)':'var(--bg3)';
@@ -302,8 +329,9 @@ function render(d){
       btn.style.fontWeight = active?'700':'500';
     });
   }
-  window.__switchHourCat = drawHour;
-  drawHour('전체');
+  window.__switchHourCat = drawHeatmaps;
+  drawHeatmaps('전체');
+
 
   // 브랜드
   function renderBrand(elId, list, color){
@@ -324,32 +352,23 @@ function render(d){
   renderBrand('brandKT', d.brands['KT알파'], COLOR_KT);
   renderBrand('brandSSG', d.brands['SSG'], COLOR_SSG);
 
-  // 요일 차트 (3사)
-  new Chart(document.getElementById('dowChart'), {
-    type:'bar',
-    data:{ labels:d.dow.days, datasets:[
-      {label:'SK스토아', data:d.dow.sk, backgroundColor:COLOR_SK+'CC'},
-      {label:'KT알파', data:d.dow.kt, backgroundColor:COLOR_KT+'CC'},
-      {label:'SSG', data:d.dow.ssg, backgroundColor:COLOR_SSG+'CC'}
-    ]},
-    options:{ responsive:true, plugins:{legend:{position:'top',labels:{font:{size:10}}}} }
-  });
-
-  // 가격대 차트 (KT/SSG만)
-  new Chart(document.getElementById('priceChart'), {
-    type:'bar',
-    data:{ labels:d.priceBand.labels, datasets:[
-      {label:'KT알파', data:d.priceBand.kt, backgroundColor:COLOR_KT+'CC'},
-      {label:'SSG', data:d.priceBand.ssg, backgroundColor:COLOR_SSG+'CC'}
-    ]},
-    options:{ responsive:true, plugins:{legend:{position:'top',labels:{font:{size:10}}}} }
-  });
-
   // 인사이트
   const topSkBrand = d.brands['SK스토아'][0], topKtBrand = d.brands['KT알파'][0], topSsgBrand = d.brands['SSG'][0];
-  const skSatHour = d.hourGrid['SK스토아']['전체'].reduce((a,v,i)=>v>a.v?{v,i}:a,{v:-1,i:0});
-  const ktSatHour = d.hourGrid['KT알파']['전체'].reduce((a,v,i)=>v>a.v?{v,i}:a,{v:-1,i:0});
-  const ssgSatHour = d.hourGrid['SSG']['전체'].reduce((a,v,i)=>v>a.v?{v,i}:a,{v:-1,i:0});
+  function peakHour(comp){
+    const grid = d.hourDowGrid[comp]['전체'];
+    const hourSum = new Array(24).fill(0);
+    grid.forEach(row=>row.forEach((v,h)=>{ hourSum[h]+=v; }));
+    let bi=0,bv=-1; hourSum.forEach((v,h)=>{ if(v>bv){bv=v;bi=h;} });
+    return bi;
+  }
+  function weekendShare(comp){
+    const grid = d.hourDowGrid[comp]['전체'];
+    let tot=0, wknd=0;
+    grid.forEach((row,day)=>{ const s=row.reduce((a,b)=>a+b,0); tot+=s; if(day===5||day===6) wknd+=s; });
+    return tot>0 ? (wknd/tot*100) : 0;
+  }
+  const skSatHour = peakHour('SK스토아'), ktSatHour = peakHour('KT알파'), ssgSatHour = peakHour('SSG');
+
   document.getElementById('insightGrid').innerHTML = `
     <div class="insight info">
       <div class="insight-title">📌 3사 가전 투입 가중분: SK ${skTot.toFixed(0)}분 &gt; KT ${ktTot.toFixed(0)}분 &gt; SSG ${ssgTot.toFixed(0)}분</div>
@@ -366,9 +385,10 @@ function render(d){
       </ul></div>
     </div>
     <div class="insight info">
-      <div class="insight-title">📌 3사 모두 토·일 편성 집중, 최다 시간대는 SK ${skSatHour.i}시 / KT ${ktSatHour.i}시 / SSG ${ssgSatHour.i}시</div>
+      <div class="insight-title">📌 3사 모두 토·일 편성 집중, 최다 시간대는 SK ${skSatHour}시 / KT ${ktSatHour}시 / SSG ${ssgSatHour}시</div>
       <div class="insight-body"><ul>
-        <li>요일별 편성 밀도는 3사 모두 토·일이 가장 높습니다 — 차트에서 막대 높이를 비교해보세요.</li>
+        <li>토·일 합산 비중은 SK ${weekendShare('SK스토아').toFixed(0)}% / KT알파 ${weekendShare('KT알파').toFixed(0)}% / SSG ${weekendShare('SSG').toFixed(0)}%로 3사 모두 절반 가까이 집중되어 있습니다.</li>
+        <li>위 히트맵에서 진한 색일수록 편성이 집중된 요일·시간대입니다.</li>
       </ul></div>
     </div>
     <div class="insight good">
