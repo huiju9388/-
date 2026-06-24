@@ -268,7 +268,13 @@
   <div class="section">
     <div class="section-title">상품별 실적</div>
     <div class="tab-row">
-      <button id="tab-shin" class="tab-btn active-tab" style="cursor:default;">🆕 신상품 라이프타임 (35개 품목 · 158건)</button>
+      <button id="tab-shin" class="tab-btn active-tab" style="cursor:default;">🆕 신상품 라이프타임 (<span id="filterCount">35개 품목 · 158건</span>)</button>
+    </div>
+    <div class="sort-row" style="flex-wrap:wrap;">
+      <span class="sort-label">편성월</span>
+      <div id="monthFilterRow" style="display:flex;gap:5px;"></div>
+      <span class="sort-label" style="margin-left:14px;">매니저</span>
+      <div id="mdFilterRow" style="display:flex;gap:5px;"></div>
     </div>
     <div class="sort-row">
       <span class="sort-label">정렬</span>
@@ -277,6 +283,7 @@
       <button onclick="setSort('mr')"  id="sort-mr"  class="sort-btn">이익률 ↓</button>
       <button onclick="setSort('cnt')" id="sort-cnt" class="sort-btn">방송횟수 ↓</button>
     </div>
+    <div class="note" style="font-size:10.5px;color:var(--text3);margin-bottom:10px;">※ 표시되는 취급고·분당취급고·이익률은 품목의 전체 라이프타임 누적 실적입니다. 편성월 필터는 "해당 월에 1회 이상 편성된 품목"을 추려서 보여줍니다 (월별로 실적이 쪼개지는 것은 아닙니다).</div>
     <div id="tableArea"></div>
   </div>
 
@@ -287,13 +294,39 @@ let MD_DATA = [];
 let SHIN_DATA = [];
 fetch('data/newproduct-data.json').then(r => r.json()).then(d => {
   MD_DATA = d.MD_DATA; SHIN_DATA = d.SHIN_DATA;
-  renderMdRatio(); render();
+  renderMdRatio(); renderFilters(); render();
 }).catch(e => console.error(e));
 
 const CAT_COLORS = {'생활가전':'#2563EB','주방가전':'#0E9E6A','주방용품':'#6D3FC8','대형가전':'#C97A10'};
 const MD_COLORS  = {'권오석':'#2563EB','마영호':'#D63A52','김응도':'#0E9E6A','임동진':'#C97A10','백혜정':'#6D3FC8','정수란':'#9CA3AF'};
 
 let currentSort = 's';
+let currentMonth = 'all';
+let currentMD = 'all';
+
+function renderFilters(){
+  const months = ['1','2','3','4','5','6'];
+  const mdList = [...new Set(SHIN_DATA.map(p=>p.md))];
+  // MD_DATA 순서를 우선 따르고, 거기 없는 MD는 뒤에 추가
+  const orderedMD = [...MD_DATA.map(d=>d.md), ...mdList.filter(m=>!MD_DATA.some(d=>d.md===m))];
+
+  const monthBtn = (label, val) => {
+    const active = currentMonth===val;
+    return `<button class="sort-btn${active?' sort-active':''}" onclick="window.__setMonth('${val}')">${label}</button>`;
+  };
+  document.getElementById('monthFilterRow').innerHTML =
+    monthBtn('전체','all') + months.map(m=>monthBtn(m+'월', m)).join('');
+
+  const mdBtn = (label, val) => {
+    const active = currentMD===val;
+    return `<button class="sort-btn${active?' sort-active':''}" onclick="window.__setMD('${val}')">${label}</button>`;
+  };
+  document.getElementById('mdFilterRow').innerHTML =
+    mdBtn('전체','all') + orderedMD.map(m=>mdBtn(m==='정수란'?'정수란(前)':m, m)).join('');
+}
+window.__setMonth = function(v){ currentMonth = v; renderFilters(); render(); };
+window.__setMD = function(v){ currentMD = v; renderFilters(); render(); };
+
 
 // ===== MD별 비중 카드 렌더링 (신상품 라이프타임 / 기존 2분할) =====
 function statusBadge(pct){
@@ -346,8 +379,19 @@ function setSort(key){
 }
 
 function render(){
-  const data = SHIN_DATA;
+  let data = SHIN_DATA;
+  if(currentMonth !== 'all') data = data.filter(p => p.months.includes(currentMonth));
+  if(currentMD !== 'all') data = data.filter(p => p.md === currentMD);
+
+  const totalCnt = data.reduce((a,p)=>a+p.cnt,0);
+  document.getElementById('filterCount').textContent = `${data.length}개 품목 · ${totalCnt}건`;
+
   const sorted = [...data].sort((a,b)=>b[currentSort]-a[currentSort]);
+
+  if(sorted.length === 0){
+    document.getElementById('tableArea').innerHTML = `<div style="text-align:center;padding:40px;color:var(--text3);font-family:'IBM Plex Mono',monospace;font-size:12px;">선택한 조건에 해당하는 신상품이 없습니다.</div>`;
+    return;
+  }
 
   const rows = sorted.map((p,i) => {
     const catColor = CAT_COLORS[p.cat] || '#8A97B0';
