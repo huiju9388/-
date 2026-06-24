@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SK스토아 가전팀 — 경쟁사 모니터링</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root {
+    --bg:  #EEF1F7; --bg2: #F8F9FC; --bg3: #F0F3F8;
+    --border:  rgba(99,120,160,0.12); --border2: rgba(99,120,160,0.22);
+    --text1: #1E2840; --text2: #4A5568; --text3: #8A97B0;
+    --green:  #0E9E6A; --green-bg:  rgba(14,158,106,0.10);
+    --amber:  #C97A10; --amber-bg:  rgba(201,122,16,0.10);
+    --red:    #D63A52; --red-bg:    rgba(214,58,82,0.10);
+    --blue:   #2563EB; --blue-bg:   rgba(37,99,235,0.10);
+    --purple: #6D3FC8; --purple-bg: rgba(109,63,200,0.10);
+    --kt: #2563EB; --ssg: #D63A52;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text1); font-family:'Noto Sans KR',sans-serif; font-size:13px; line-height:1.6; }
+  .mono { font-family:'IBM Plex Mono',monospace; }
+  .header { display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:28px; padding-bottom:20px; border-bottom:2px solid var(--border2); }
+  .header h1 { font-size:22px; font-weight:700; letter-spacing:-0.5px; }
+  .header .sub { font-size:12px; color:var(--text3); margin-top:4px; font-family:'IBM Plex Mono',monospace; }
+  .header-right { display:flex; gap:8px; }
+  .tag { font-size:10px; font-family:'IBM Plex Mono',monospace; padding:3px 10px; border-radius:5px; border:1px solid var(--border2); color:var(--text2); background:var(--bg2); }
+  .tag.vat { border-color:rgba(37,99,235,0.35); color:var(--blue); background:var(--blue-bg); }
+  .tag.warn { border-color:rgba(201,122,16,0.4); color:var(--amber); background:var(--amber-bg); }
+  .section { margin-bottom:34px; }
+  .section-title { font-size:10px; font-weight:600; color:var(--text3); text-transform:uppercase; letter-spacing:.12em; margin-bottom:14px; display:flex; align-items:center; gap:10px; }
+  .section-title::after { content:''; flex:1; height:1px; background:var(--border2); }
+  .card { background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:20px; box-shadow:0 2px 8px rgba(30,40,64,0.06); }
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .kpi-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+  .kpi-card { background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:16px 18px; box-shadow:0 2px 8px rgba(30,40,64,0.06); }
+  .kpi-name { font-size:11px; color:var(--text3); margin-bottom:8px; font-family:'IBM Plex Mono',monospace; font-weight:500; }
+  .kpi-val { font-size:22px; font-weight:700; letter-spacing:-0.5px; }
+  .kpi-sub { font-size:10.5px; color:var(--text3); margin-top:6px; }
+  .legend-comp { display:flex; gap:16px; font-size:11px; font-family:'IBM Plex Mono',monospace; color:var(--text2); margin-bottom:14px;}
+  .legend-comp span { display:flex; align-items:center; gap:6px; }
+  .dot { width:9px; height:9px; border-radius:3px; display:inline-block; }
+  .dot.kt { background:var(--kt); }
+  .dot.ssg { background:var(--ssg); }
+  /* 카테고리 바 */
+  .cat-row { display:flex; align-items:center; gap:10px; margin-bottom:14px; }
+  .cat-name { font-size:12px; font-weight:600; color:var(--text2); width:64px; flex-shrink:0; }
+  .cat-bars { flex:1; display:flex; flex-direction:column; gap:4px; }
+  .cat-bar-wrap { display:flex; align-items:center; gap:8px; }
+  .cat-bar-lbl { font-size:10px; width:30px; flex-shrink:0; font-family:'IBM Plex Mono',monospace; color:var(--text3); }
+  .cat-bar-track { flex:1; height:18px; background:var(--bg3); border-radius:4px; overflow:hidden; }
+  .cat-bar-fill { height:100%; border-radius:4px; display:flex; align-items:center; padding:0 7px; }
+  .cat-bar-label { font-size:9.5px; font-family:'IBM Plex Mono',monospace; color:#fff; font-weight:700; white-space:nowrap; }
+  /* 브랜드 */
+  .brand-list { display:flex; flex-direction:column; gap:7px; }
+  .brand-row { display:flex; align-items:center; gap:8px; }
+  .brand-rank { width:18px; font-size:10px; color:var(--text3); font-weight:700; flex-shrink:0; }
+  .brand-name { width:84px; font-size:11.5px; font-weight:600; color:var(--text1); flex-shrink:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+  .brand-track { flex:1; height:16px; background:var(--bg3); border-radius:4px; overflow:hidden; }
+  .brand-fill { height:100%; border-radius:4px; }
+  .brand-meta { width:78px; font-size:9.5px; font-family:'IBM Plex Mono',monospace; color:var(--text3); text-align:right; flex-shrink:0; }
+  .insight-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:6px; }
+  .insight { padding:14px 16px; border-radius:10px; border-left:4px solid; }
+  .insight.good { background:linear-gradient(135deg,rgba(14,158,106,0.08),rgba(14,158,106,0.04)); border-color:var(--green); }
+  .insight.bad  { background:linear-gradient(135deg,rgba(214,58,82,0.08),rgba(214,58,82,0.04));  border-color:var(--red); }
+  .insight.info { background:linear-gradient(135deg,rgba(37,99,235,0.08),rgba(37,99,235,0.04)); border-color:var(--blue); }
+  .insight-title { font-size:12px; font-weight:700; margin-bottom:8px; }
+  .insight.good .insight-title { color:#0A8558; }
+  .insight.bad  .insight-title { color:#C42E45; }
+  .insight.info .insight-title { color:var(--blue); }
+  .insight-body { font-size:11.5px; color:var(--text2); line-height:1.75; }
+  .insight-body li { margin-bottom:4px; list-style:none; }
+  .insight-body li::before { content:'› '; color:var(--text3); font-weight:700; }
+  .footer { text-align:center; font-size:10px; color:var(--text3); font-family:'IBM Plex Mono',monospace; margin-top:40px; padding-top:20px; border-top:1px solid var(--border2); }
+  .note { font-size:10.5px; color:var(--text3); margin-top:10px; line-height:1.6; }
+  canvas { max-height:260px; }
+</style>
+<style>
+  .side-nav{position:fixed;top:0;left:0;width:196px;height:100vh;background:#1E2840;display:flex;flex-direction:column;padding:18px 0;z-index:900;overflow-y:auto;font-family:'Noto Sans KR',sans-serif;}
+  .side-nav .sn-brand{padding:0 20px 16px;font-size:13px;font-weight:700;color:#fff;letter-spacing:-0.3px;border-bottom:1px solid rgba(255,255,255,0.1);margin-bottom:12px;}
+  .side-nav .sn-brand small{display:block;font-size:10px;font-weight:400;color:#8A97B0;margin-top:3px;font-family:'IBM Plex Mono',monospace;}
+  .side-nav .sn-group{font-size:9px;color:#5C6B8A;text-transform:uppercase;letter-spacing:.1em;padding:12px 20px 6px;font-weight:700;}
+  .side-nav a{display:flex;align-items:center;gap:9px;padding:10px 20px;font-size:12px;color:#C8D3E4;text-decoration:none;font-weight:500;border-left:3px solid transparent;transition:all .15s;}
+  .side-nav a:hover{background:rgba(255,255,255,0.07);color:#fff;}
+  .side-nav a.active{background:rgba(37,99,235,0.20);color:#fff;border-left-color:#4d8fff;font-weight:700;}
+  .main-wrap{margin-left:196px;min-height:100vh;box-sizing:border-box;padding:28px 24px 60px;}
+  @media(max-width:900px){
+    .side-nav{width:100%;height:auto;position:relative;flex-direction:row;overflow-x:auto;padding:6px;}
+    .side-nav .sn-brand,.side-nav .sn-group{display:none;}
+    .side-nav a{flex-direction:column;font-size:9px;gap:3px;padding:8px 10px;border-left:none;border-bottom:3px solid transparent;white-space:nowrap;}
+    .side-nav a.active{border-left:none;border-bottom-color:#4d8fff;}
+    .main-wrap{margin-left:0;}
+    .kpi-grid{grid-template-columns:repeat(2,1fr);}
+    .grid2,.insight-grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+<div id="pwGateOverlay" style="position:fixed;inset:0;z-index:99999;background:#1E2840;display:flex;align-items:center;justify-content:center;font-family:'Noto Sans KR',sans-serif;">
+  <div style="background:#F8F9FC;border-radius:16px;padding:36px 32px;width:320px;box-shadow:0 12px 40px rgba(0,0,0,0.3);text-align:center;">
+    <div style="font-size:28px;margin-bottom:8px;">🔒</div>
+    <div style="font-size:15px;font-weight:700;color:#1E2840;margin-bottom:4px;">가전팀 전용 페이지</div>
+    <div style="font-size:11px;color:#8A97B0;margin-bottom:18px;">팀 비밀번호를 입력해주세요</div>
+    <input type="password" id="pwGateInput" placeholder="비밀번호" style="width:100%;padding:10px 12px;border:1px solid rgba(99,120,160,0.3);border-radius:8px;font-size:13px;margin-bottom:10px;box-sizing:border-box;outline:none;" autocomplete="off">
+    <button onclick="pwGateCheck()" style="width:100%;padding:10px;background:#2563EB;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">입장</button>
+    <div id="pwGateError" style="font-size:11px;color:#D63A52;margin-top:10px;display:none;">비밀번호가 올바르지 않습니다</div>
+  </div>
+</div>
+<script>
+(function(){
+  var PW_HASH = "ed268775853e8ce7516aca7017150b900240141f2e6d7273d8ea84dc6a7c2fdb";
+  var SESSION_KEY = "appliance_team_auth_2026";
+  function sha256(str){
+    return crypto.subtle.digest('SHA-256', new TextEncoder().encode(str)).then(function(buf){
+      return Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
+    });
+  }
+  function unlock(){
+    document.getElementById('pwGateOverlay').style.display = 'none';
+    document.documentElement.style.overflow = '';
+  }
+  if (sessionStorage.getItem(SESSION_KEY) === 'ok') { unlock(); }
+  else { document.documentElement.style.overflow = 'hidden'; }
+  window.pwGateCheck = function(){
+    var val = document.getElementById('pwGateInput').value;
+    sha256(val).then(function(hash){
+      if (hash === PW_HASH) { sessionStorage.setItem(SESSION_KEY, 'ok'); unlock(); }
+      else { document.getElementById('pwGateError').style.display = 'block'; document.getElementById('pwGateInput').value=''; }
+    });
+  };
+  document.addEventListener('DOMContentLoaded', function(){
+    var input = document.getElementById('pwGateInput');
+    if (input) { input.addEventListener('keydown', function(e){ if(e.key==='Enter') pwGateCheck(); }); input.focus(); }
+  });
+})();
+</script>
+<nav class="side-nav">
+  <div class="sn-brand">가전팀 대시보드<small>SK스토아 · 2026</small></div>
+  <div class="sn-group">실적 현황</div>
+  <a href="appliance-dashboard-77ac0c66.html">📊 개요</a>
+  <a href="appliance-monthly-77ac0c66.html">📅 월별 실적</a>
+  <a href="appliance-ranking-77ac0c66.html">🏆 상품 랭킹</a>
+  <a href="appliance-md-77ac0c66.html">👤 MD 실적</a>
+  <div class="sn-group">상세 도구</div>
+  <a href="appliance-newproduct-77ac0c66.html">🆕 신상품·재촬영</a>
+  <a href="appliance-search-77ac0c66.html">🔍 상품 검색</a>
+  <a href="appliance-heatmap-77ac0c66.html">🗺️ 편성 운영맵</a>
+  <a href="appliance-competitor-77ac0c66.html" class="active">⚔️ 경쟁사 모니터링</a>
+</nav>
+<div class="main-wrap">
+  <div class="header">
+    <div>
+      <h1>경쟁사 모니터링 — KT알파 vs SSG</h1>
+      <div class="sub" id="periodTag">가전 3개 카테고리(생활가전·주방가전·주방용품) 편성 비교 · 가중분 기준</div>
+    </div>
+    <div class="header-right">
+      <span class="tag warn">마진/매출 데이터 없음 — 편성(가중분) 기준</span>
+      <span class="tag" id="updTag">2026.06.25</span>
+    </div>
+  </div>
+
+  <!-- KPI -->
+  <div class="section">
+    <div class="kpi-grid" id="kpiGrid"></div>
+  </div>
+
+  <!-- 카테고리별 가중분 비중 -->
+  <div class="section">
+    <div class="section-title">카테고리별 가중분 비중</div>
+    <div class="card">
+      <div class="legend-comp"><span><span class="dot kt"></span>KT알파</span><span><span class="dot ssg"></span>SSG</span></div>
+      <div id="catBars"></div>
+      <div class="note">※ SSG는 IP/CA 동시송출 채널 포함. KT알파는 단일채널(일원) 기준. 두 회사의 가전 총 투입 가중분 규모가 달라 카테고리 "비중(%)" 중심으로 비교하는 것이 적절합니다.</div>
+    </div>
+  </div>
+
+  <!-- 시간대별 편성강도 -->
+  <div class="section">
+    <div class="section-title">시간대별 편성 강도 (0~23시, 가중분)</div>
+    <div class="card">
+      <div style="display:flex;gap:10px;margin-bottom:14px;" id="hourCatToggle"></div>
+      <canvas id="hourChart"></canvas>
+    </div>
+  </div>
+
+  <div class="grid2 section">
+    <!-- 브랜드 집중도 -->
+    <div class="card">
+      <div class="section-title" style="margin-bottom:12px;">KT알파 TOP 브랜드 (가전3종, 가중분)</div>
+      <div class="brand-list" id="brandKT"></div>
+    </div>
+    <div class="card">
+      <div class="section-title" style="margin-bottom:12px;">SSG TOP 브랜드 (가전3종, 가중분)</div>
+      <div class="brand-list" id="brandSSG"></div>
+    </div>
+  </div>
+
+  <div class="grid2 section">
+    <!-- 요일별 -->
+    <div class="card">
+      <div class="section-title" style="margin-bottom:12px;">요일별 편성 밀도</div>
+      <canvas id="dowChart"></canvas>
+    </div>
+    <!-- 가격대 -->
+    <div class="card">
+      <div class="section-title" style="margin-bottom:12px;">가격대 분포 (가중분 기준)</div>
+      <canvas id="priceChart"></canvas>
+    </div>
+  </div>
+
+  <!-- 인사이트 -->
+  <div class="section">
+    <div class="section-title">핵심 인사이트</div>
+    <div class="insight-grid" id="insightGrid"></div>
+  </div>
+
+  <div class="footer">SK스토아 가전팀 · 경쟁사 편성 현황(구글시트) 기준 · 마진/매출 데이터 미포함 · 가중분·시간대·브랜드 정보로만 추정 분석</div>
+</div>
+
+<script>
+const COLOR_KT = '#2563EB';
+const COLOR_SSG = '#D63A52';
+
+fetch('data/competitor-data.json').then(r=>r.json()).then(d=>{
+  render(d);
+}).catch(e=>{
+  document.getElementById('kpiGrid').innerHTML = '<div style="color:var(--red);">⚠️ 데이터를 불러오지 못했습니다</div>';
+  console.error(e);
+});
+
+function render(d){
+  document.getElementById('periodTag').textContent = d.meta.period + ' · 가전 3개 카테고리 편성 비교 · 가중분 기준';
+  document.getElementById('updTag').textContent = d.meta.updated;
+
+  // KPI
+  const ktTot = d.category.kt_total, ssgTot = d.category.ssg_total;
+  const ratio = (ktTot/ssgTot).toFixed(1);
+  document.getElementById('kpiGrid').innerHTML = `
+    <div class="kpi-card"><div class="kpi-name">KT알파 가전 누적 가중분</div><div class="kpi-val" style="color:${COLOR_KT};">${ktTot.toFixed(0)}<span style="font-size:12px;">분</span></div><div class="kpi-sub">SSG 대비 ${ratio}배 투입</div></div>
+    <div class="kpi-card"><div class="kpi-name">SSG 가전 누적 가중분</div><div class="kpi-val" style="color:${COLOR_SSG};">${ssgTot.toFixed(0)}<span style="font-size:12px;">분</span></div><div class="kpi-sub">IP/CA 동시송출 포함</div></div>
+    <div class="kpi-card"><div class="kpi-name">생활가전 비중</div><div class="kpi-val">${d.category.kt_pct['생활가전'].toFixed(0)}% <span class="mono" style="font-size:11px;color:var(--text3);">vs</span> ${d.category.ssg_pct['생활가전'].toFixed(0)}%</div><div class="kpi-sub">KT알파 vs SSG</div></div>
+    <div class="kpi-card"><div class="kpi-name">신상품 키워드 비중</div><div class="kpi-val">${d.newProduct.kt_new_pct.toFixed(1)}% <span class="mono" style="font-size:11px;color:var(--text3);">vs</span> ${d.newProduct.ssg_new_pct.toFixed(1)}%</div><div class="kpi-sub">상품명 신상 키워드 매칭 기준</div></div>
+  `;
+
+  // 카테고리 바
+  let catHTML = '';
+  d.category.categories.forEach(c=>{
+    const ktPct = d.category.kt_pct[c], ssgPct = d.category.ssg_pct[c];
+    const ktW = d.category.kt[c], ssgW = d.category.ssg[c];
+    catHTML += `<div class="cat-row">
+      <div class="cat-name">${c}</div>
+      <div class="cat-bars">
+        <div class="cat-bar-wrap"><div class="cat-bar-lbl">KT</div><div class="cat-bar-track"><div class="cat-bar-fill" style="width:${ktPct}%;background:${COLOR_KT};"><span class="cat-bar-label">${ktPct.toFixed(1)}% (${ktW.toFixed(0)}분)</span></div></div></div>
+        <div class="cat-bar-wrap"><div class="cat-bar-lbl">SSG</div><div class="cat-bar-track"><div class="cat-bar-fill" style="width:${ssgPct}%;background:${COLOR_SSG};"><span class="cat-bar-label">${ssgPct.toFixed(1)}% (${ssgW.toFixed(0)}분)</span></div></div></div>
+      </div>
+    </div>`;
+  });
+  document.getElementById('catBars').innerHTML = catHTML;
+
+  // 시간대 차트 (토글)
+  const cats = ['전체','생활가전','주방가전','주방용품'];
+  let toggleHTML = '';
+  cats.forEach((c,i)=>{
+    toggleHTML += `<button class="tab-btn-c" data-cat="${c}" onclick="window.__switchHourCat('${c}')" style="padding:5px 14px;font-size:11px;font-family:'IBM Plex Mono',monospace;background:${i===0?'rgba(37,99,235,0.12)':'var(--bg3)'};border:1px solid ${i===0?'rgba(37,99,235,0.4)':'var(--border2)'};border-radius:6px;color:${i===0?'var(--blue)':'var(--text2)'};cursor:pointer;font-weight:${i===0?'700':'500'};">${c}</button>`;
+  });
+  document.getElementById('hourCatToggle').innerHTML = toggleHTML;
+
+  let hourChart;
+  function drawHour(cat){
+    const ctx = document.getElementById('hourChart');
+    const ktData = d.hourGrid['KT알파'][cat];
+    const ssgData = d.hourGrid['SSG'][cat];
+    if(hourChart) hourChart.destroy();
+    hourChart = new Chart(ctx, {
+      type:'bar',
+      data:{
+        labels:[...Array(24).keys()].map(h=>h+'시'),
+        datasets:[
+          {label:'KT알파', data:ktData, backgroundColor:COLOR_KT+'CC'},
+          {label:'SSG', data:ssgData, backgroundColor:COLOR_SSG+'CC'}
+        ]
+      },
+      options:{ responsive:true, plugins:{legend:{display:false}}, scales:{ y:{ title:{display:true,text:'가중분'} } } }
+    });
+    document.querySelectorAll('.tab-btn-c').forEach(btn=>{
+      const active = btn.dataset.cat===cat;
+      btn.style.background = active?'rgba(37,99,235,0.12)':'var(--bg3)';
+      btn.style.borderColor = active?'rgba(37,99,235,0.4)':'var(--border2)';
+      btn.style.color = active?'var(--blue)':'var(--text2)';
+      btn.style.fontWeight = active?'700':'500';
+    });
+  }
+  window.__switchHourCat = drawHour;
+  drawHour('전체');
+
+  // 브랜드
+  function renderBrand(elId, list, color){
+    const maxW = Math.max(...list.map(b=>b.w));
+    let html='';
+    list.forEach((b,i)=>{
+      const pct = (b.w/maxW*100).toFixed(0);
+      html += `<div class="brand-row">
+        <div class="brand-rank">${i+1}</div>
+        <div class="brand-name" title="${b.brand}">${b.brand}</div>
+        <div class="brand-track"><div class="brand-fill" style="width:${pct}%;background:${color};"></div></div>
+        <div class="brand-meta">${b.w.toFixed(0)}분 · ${b.cnt}회</div>
+      </div>`;
+    });
+    document.getElementById(elId).innerHTML = html;
+  }
+  renderBrand('brandKT', d.brands['KT알파'], COLOR_KT);
+  renderBrand('brandSSG', d.brands['SSG'], COLOR_SSG);
+
+  // 요일 차트
+  new Chart(document.getElementById('dowChart'), {
+    type:'bar',
+    data:{ labels:d.dow.days, datasets:[
+      {label:'KT알파', data:d.dow.kt, backgroundColor:COLOR_KT+'CC'},
+      {label:'SSG', data:d.dow.ssg, backgroundColor:COLOR_SSG+'CC'}
+    ]},
+    options:{ responsive:true, plugins:{legend:{position:'top',labels:{font:{size:10}}}} }
+  });
+
+  // 가격대 차트
+  new Chart(document.getElementById('priceChart'), {
+    type:'bar',
+    data:{ labels:d.priceBand.labels, datasets:[
+      {label:'KT알파', data:d.priceBand.kt, backgroundColor:COLOR_KT+'CC'},
+      {label:'SSG', data:d.priceBand.ssg, backgroundColor:COLOR_SSG+'CC'}
+    ]},
+    options:{ responsive:true, plugins:{legend:{position:'top',labels:{font:{size:10}}}} }
+  });
+
+  // 인사이트
+  const topKtBrand = d.brands['KT알파'][0], topSsgBrand = d.brands['SSG'][0];
+  const ktSatHour = d.hourGrid['KT알파']['전체'].reduce((a,v,i)=>v>a.v?{v,i}:a,{v:-1,i:0});
+  const ssgSatHour = d.hourGrid['SSG']['전체'].reduce((a,v,i)=>v>a.v?{v,i}:a,{v:-1,i:0});
+  document.getElementById('insightGrid').innerHTML = `
+    <div class="insight bad">
+      <div class="insight-title">⚠️ KT알파, 가전 전체 투입 ${(d.category.kt_total/d.category.ssg_total).toFixed(1)}배</div>
+      <div class="insight-body"><ul>
+        <li>같은 기간 KT알파는 가전 3종에 ${d.category.kt_total.toFixed(0)}분, SSG는 ${d.category.ssg_total.toFixed(0)}분을 투입했습니다.</li>
+        <li>특히 주방가전 비중은 KT알파 ${d.category.kt_pct['주방가전'].toFixed(0)}% vs SSG ${d.category.ssg_pct['주방가전'].toFixed(0)}%로 격차가 큽니다.</li>
+      </ul></div>
+    </div>
+    <div class="insight info">
+      <div class="insight-title">📌 양사 모두 토·일 편성 집중 (50%대)</div>
+      <div class="insight-body"><ul>
+        <li>KT알파는 토·일 합산 비중이 전체의 약 53%, SSG는 약 48%입니다.</li>
+        <li>KT알파 최다 편성 시간대는 ${ktSatHour.i}시, SSG는 ${ssgSatHour.i}시입니다.</li>
+      </ul></div>
+    </div>
+    <div class="insight bad">
+      <div class="insight-title">⚠️ 브랜드 집중 — ${topKtBrand.brand}(KT) / ${topSsgBrand.brand}(SSG)</div>
+      <div class="insight-body"><ul>
+        <li>KT알파 가전 TOP 브랜드는 <b>${topKtBrand.brand}</b>(${topKtBrand.w.toFixed(0)}분, ${topKtBrand.cnt}회)입니다.</li>
+        <li>SSG는 <b>${topSsgBrand.brand}</b>(${topSsgBrand.w.toFixed(0)}분, ${topSsgBrand.cnt}회)이며, 우리 팀 주력 브랜드인 히트락도 SSG 상위권에 포함되어 동일 카테고리 경쟁이 확인됩니다.</li>
+      </ul></div>
+    </div>
+    <div class="insight good">
+      <div class="insight-title">✅ SSG, 신상품 키워드 비중 ${d.newProduct.ssg_new_pct.toFixed(0)}% — KT알파는 ${d.newProduct.kt_new_pct.toFixed(1)}%</div>
+      <div class="insight-body"><ul>
+        <li>SSG는 상품명에 "최신상/런칭가/NEW" 등 신상품 키워드를 적극 노출하는 반면, KT알파는 거의 사용하지 않아 신상품 전략 차이가 뚜렷합니다.</li>
+        <li>단, 이는 상품명 표기 관행 차이일 수 있어 실제 신상품 비중과는 별개로 해석할 필요가 있습니다.</li>
+      </ul></div>
+    </div>
+  `;
+}
+</script>
+</body>
+</html>
