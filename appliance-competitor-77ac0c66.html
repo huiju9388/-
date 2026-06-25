@@ -87,6 +87,21 @@
   .hm-mini-daylabel { font-size:9.5px; font-weight:700; color:var(--text2); display:flex; align-items:center; justify-content:center; }
   .hm-mini-cell { border-radius:3px; min-height:18px; display:flex; align-items:center; justify-content:center; font-size:6.5px; font-family:'IBM Plex Mono',monospace; color:#fff; }
   .hm-mini-empty { background:var(--bg2); border:1px dashed var(--border); min-height:18px; border-radius:3px; }
+  /* 운영상품 검색 */
+  .ps-controls { display:flex; flex-wrap:wrap; gap:10px; align-items:center; margin-bottom:14px; }
+  .ps-group { display:flex; align-items:center; gap:6px; }
+  .ps-label { font-size:11px; color:var(--text3); font-family:'IBM Plex Mono',monospace; }
+  .ps-input { padding:6px 10px; font-size:12px; border:1px solid var(--border2); border-radius:6px; background:var(--bg2); color:var(--text1); width:200px; outline:none; }
+  .ps-input:focus { border-color:var(--blue); }
+  .ps-table { width:100%; border-collapse:collapse; background:var(--bg2); border-radius:10px; overflow:hidden; border:1px solid var(--border); }
+  .ps-table th { text-align:left; padding:9px 12px; font-size:10px; font-weight:600; color:var(--text3); text-transform:uppercase; letter-spacing:.06em; border-bottom:1px solid var(--border2); background:var(--bg3); font-family:'IBM Plex Mono',monospace; }
+  .ps-table td { padding:9px 12px; font-size:12px; border-bottom:1px solid var(--border); color:var(--text1); }
+  .ps-table tr:last-child td { border-bottom:none; }
+  .ps-table tr:hover td { background:rgba(99,120,160,0.05); }
+  .ps-co-badge { font-size:9.5px; font-family:'IBM Plex Mono',monospace; padding:2px 8px; border-radius:10px; font-weight:700; color:#fff; }
+  .ps-cat-badge { font-size:9px; font-family:'IBM Plex Mono',monospace; padding:2px 7px; border-radius:4px; font-weight:600; }
+  .ps-empty { text-align:center; padding:32px; color:var(--text3); font-family:'IBM Plex Mono',monospace; font-size:12px; }
+  .ps-scroll { max-height:480px; overflow-y:auto; border-radius:10px; }
 </style>
 <style>
   .side-nav{position:fixed;top:0;left:0;width:196px;height:100vh;background:#1E2840;display:flex;flex-direction:column;padding:18px 0;z-index:900;overflow-y:auto;font-family:'Noto Sans KR',sans-serif;}
@@ -211,6 +226,23 @@
     <div class="card">
       <div class="section-title" style="margin-bottom:12px;">SSG TOP 브랜드 (가전3종, 가중분)</div>
       <div class="brand-list" id="brandSSG"></div>
+    </div>
+  </div>
+
+  <!-- 운영상품 검색 -->
+  <div class="section">
+    <div class="section-title">회사 × 카테고리 × 월별 운영 상품 검색</div>
+    <div class="card">
+      <div class="ps-controls">
+        <div class="ps-group"><span class="ps-label">회사</span><div id="psCoToggle" style="display:flex;gap:5px;"></div></div>
+        <div class="ps-group"><span class="ps-label">카테고리</span><div id="psCatToggle" style="display:flex;gap:5px;"></div></div>
+        <div class="ps-group"><span class="ps-label">편성월</span><div id="psMonthToggle" style="display:flex;gap:5px;"></div></div>
+        <div class="ps-group" style="margin-left:auto;">
+          <input id="psSearchInput" class="ps-input" type="text" placeholder="상품명 · 브랜드 검색">
+        </div>
+      </div>
+      <div class="note" id="psCount" style="margin-bottom:10px;"></div>
+      <div class="ps-scroll"><div id="psTableArea"></div></div>
     </div>
   </div>
 
@@ -351,6 +383,68 @@ function render(d){
   renderBrand('brandSK', d.brands['SK스토아'], COLOR_SK);
   renderBrand('brandKT', d.brands['KT알파'], COLOR_KT);
   renderBrand('brandSSG', d.brands['SSG'], COLOR_SSG);
+
+  // ===== 운영상품 검색 =====
+  const PS_DATA = d.productList || [];
+  const PS_CO_COLOR = {'SK스토아':COLOR_SK,'KT알파':COLOR_KT,'SSG':COLOR_SSG};
+  const PS_CAT_COLORS = {'생활가전':'#2563EB','주방가전':'#0E9E6A','주방용품':'#6D3FC8'};
+  let psCo='all', psCat='all', psMonth='all', psQuery='';
+
+  function psToggleBtn(label, active, onclick){
+    return `<button class="sort-btn${active?' sort-active':''}" style="padding:5px 12px;font-size:11px;" onclick="${onclick}">${label}</button>`;
+  }
+  function renderPsToggles(){
+    document.getElementById('psCoToggle').innerHTML =
+      psToggleBtn('전체', psCo==='all', "window.__psSetCo('all')") +
+      ['SK스토아','KT알파','SSG'].map(c=>psToggleBtn(c, psCo===c, `window.__psSetCo('${c}')`)).join('');
+    document.getElementById('psCatToggle').innerHTML =
+      psToggleBtn('전체', psCat==='all', "window.__psSetCat('all')") +
+      ['생활가전','주방가전','주방용품'].map(c=>psToggleBtn(c, psCat===c, `window.__psSetCat('${c}')`)).join('');
+    document.getElementById('psMonthToggle').innerHTML =
+      psToggleBtn('전체', psMonth==='all', "window.__psSetMonth('all')") +
+      [1,2,3,4,5,6].map(m=>psToggleBtn(m+'월', psMonth===m, `window.__psSetMonth(${m})`)).join('');
+  }
+  function renderPsTable(){
+    let rows = PS_DATA;
+    if(psCo!=='all') rows = rows.filter(r=>r.co===psCo);
+    if(psCat!=='all') rows = rows.filter(r=>r.cat===psCat);
+    if(psMonth!=='all') rows = rows.filter(r=>r.m===psMonth);
+    if(psQuery.trim()){
+      const q = psQuery.trim().toLowerCase();
+      rows = rows.filter(r => (r.name||'').toLowerCase().includes(q) || (r.brand||'').toLowerCase().includes(q));
+    }
+    rows = [...rows].sort((a,b)=>b.w-a.w);
+    document.getElementById('psCount').textContent = `검색 결과 ${rows.length}건 (가중분 합 ${rows.reduce((a,r)=>a+r.w,0).toFixed(0)}분)`;
+    if(rows.length===0){
+      document.getElementById('psTableArea').innerHTML = `<div class="ps-empty">조건에 맞는 운영 상품이 없습니다.</div>`;
+      return;
+    }
+    const body = rows.map(r=>{
+      const coColor = PS_CO_COLOR[r.co] || '#8A97B0';
+      const catColor = PS_CAT_COLORS[r.cat] || '#8A97B0';
+      return `<tr>
+        <td><span class="ps-co-badge" style="background:${coColor};">${r.co}</span></td>
+        <td class="mono">${r.m}월</td>
+        <td><span class="ps-cat-badge" style="background:${catColor}18;color:${catColor};">${r.cat}</span></td>
+        <td class="mono" style="color:var(--text2);">${r.brand||'-'}</td>
+        <td style="font-weight:600;max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.name}">${r.name}</td>
+        <td class="mono" style="color:var(--text2);">${r.md||'-'}</td>
+        <td class="mono" style="font-weight:700;">${r.w.toFixed(0)}분</td>
+        <td class="mono" style="color:var(--text3);">${r.cnt}회</td>
+      </tr>`;
+    }).join('');
+    document.getElementById('psTableArea').innerHTML = `
+      <table class="ps-table">
+        <thead><tr><th>회사</th><th>월</th><th>카테고리</th><th>브랜드</th><th>상품명</th><th>매니저</th><th>가중분</th><th>방송횟수</th></tr></thead>
+        <tbody>${body}</tbody>
+      </table>`;
+  }
+  window.__psSetCo = v=>{ psCo=v; renderPsToggles(); renderPsTable(); };
+  window.__psSetCat = v=>{ psCat=v; renderPsToggles(); renderPsTable(); };
+  window.__psSetMonth = v=>{ psMonth=v; renderPsToggles(); renderPsTable(); };
+  document.getElementById('psSearchInput').addEventListener('input', e=>{ psQuery=e.target.value; renderPsTable(); });
+  renderPsToggles();
+  renderPsTable();
 
   // 인사이트
   const topSkBrand = d.brands['SK스토아'][0], topKtBrand = d.brands['KT알파'][0], topSsgBrand = d.brands['SSG'][0];
