@@ -261,7 +261,7 @@ const COLOR_SK = '#0E9E6A';
 const COLOR_KT = '#2563EB';
 const COLOR_SSG = '#D63A52';
 
-fetch('data/competitor-data.json').then(r=>r.json()).then(d=>{
+fetch('data/competitor-data.json', {cache:'no-store'}).then(r=>r.json()).then(d=>{
   render(d);
 }).catch(e=>{
   document.getElementById('kpiGrid').innerHTML = '<div style="color:var(--red);">⚠️ 데이터를 불러오지 못했습니다</div>';
