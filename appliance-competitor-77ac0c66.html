@@ -237,6 +237,7 @@
         <div class="ps-group"><span class="ps-label">회사</span><div id="psCoToggle" style="display:flex;gap:5px;"></div></div>
         <div class="ps-group"><span class="ps-label">카테고리</span><div id="psCatToggle" style="display:flex;gap:5px;"></div></div>
         <div class="ps-group"><span class="ps-label">편성월</span><div id="psMonthToggle" style="display:flex;gap:5px;"></div></div>
+        <div class="ps-group"><span class="ps-label">주차</span><select id="psWeekSelect" class="ps-input" style="padding:5px 10px;font-size:11px;"></select></div>
         <div class="ps-group" style="margin-left:auto;">
           <input id="psSearchInput" class="ps-input" type="text" placeholder="상품명 · 브랜드 검색">
         </div>
@@ -388,7 +389,26 @@ function render(d){
   const PS_DATA = d.productList || [];
   const PS_CO_COLOR = {'SK스토아':COLOR_SK,'KT알파':COLOR_KT,'SSG':COLOR_SSG};
   const PS_CAT_COLORS = {'생활가전':'#2563EB','주방가전':'#0E9E6A','주방용품':'#6D3FC8'};
-  let psCo='all', psCat='all', psMonth='all', psQuery='';
+  let psCo='all', psCat='all', psMonth='all', psWeek='all', psQuery='';
+
+  function weekSortKey(row){
+    const wn = parseInt((row.wk||'').match(/(\d+)주차$/)?.[1] || '0', 10);
+    return row.m*10 + wn;
+  }
+  function getAvailableWeeks(){
+    let base = PS_DATA;
+    if(psMonth!=='all') base = base.filter(r=>r.m===psMonth);
+    const seen = new Map();
+    base.forEach(r=>{ if(!seen.has(r.wk)) seen.set(r.wk, weekSortKey(r)); });
+    return [...seen.entries()].sort((a,b)=>a[1]-b[1]).map(e=>e[0]);
+  }
+  function renderPsWeekSelect(){
+    const weeks = getAvailableWeeks();
+    if(!weeks.includes(psWeek)) psWeek='all';
+    document.getElementById('psWeekSelect').innerHTML =
+      `<option value="all">전체</option>` +
+      weeks.map(w=>`<option value="${w}" ${psWeek===w?'selected':''}>${w}</option>`).join('');
+  }
 
   function psToggleBtn(label, active, onclick){
     return `<button class="sort-btn${active?' sort-active':''}" style="padding:5px 12px;font-size:11px;" onclick="${onclick}">${label}</button>`;
@@ -409,6 +429,7 @@ function render(d){
     if(psCo!=='all') rows = rows.filter(r=>r.co===psCo);
     if(psCat!=='all') rows = rows.filter(r=>r.cat===psCat);
     if(psMonth!=='all') rows = rows.filter(r=>r.m===psMonth);
+    if(psWeek!=='all') rows = rows.filter(r=>r.wk===psWeek);
     if(psQuery.trim()){
       const q = psQuery.trim().toLowerCase();
       rows = rows.filter(r => (r.name||'').toLowerCase().includes(q) || (r.brand||'').toLowerCase().includes(q));
@@ -425,6 +446,7 @@ function render(d){
       return `<tr>
         <td><span class="ps-co-badge" style="background:${coColor};">${r.co}</span></td>
         <td class="mono">${r.m}월</td>
+        <td class="mono" style="color:var(--text3);">${r.wk||'-'}</td>
         <td><span class="ps-cat-badge" style="background:${catColor}18;color:${catColor};">${r.cat}</span></td>
         <td class="mono" style="color:var(--text2);">${r.brand||'-'}</td>
         <td style="font-weight:600;max-width:320px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.name}">${r.name}</td>
@@ -435,15 +457,17 @@ function render(d){
     }).join('');
     document.getElementById('psTableArea').innerHTML = `
       <table class="ps-table">
-        <thead><tr><th>회사</th><th>월</th><th>카테고리</th><th>브랜드</th><th>상품명</th><th>매니저</th><th>가중분</th><th>방송횟수</th></tr></thead>
+        <thead><tr><th>회사</th><th>월</th><th>주차</th><th>카테고리</th><th>브랜드</th><th>상품명</th><th>매니저</th><th>가중분</th><th>방송횟수</th></tr></thead>
         <tbody>${body}</tbody>
       </table>`;
   }
   window.__psSetCo = v=>{ psCo=v; renderPsToggles(); renderPsTable(); };
   window.__psSetCat = v=>{ psCat=v; renderPsToggles(); renderPsTable(); };
-  window.__psSetMonth = v=>{ psMonth=v; renderPsToggles(); renderPsTable(); };
+  window.__psSetMonth = v=>{ psMonth=v; renderPsToggles(); renderPsWeekSelect(); renderPsTable(); };
   document.getElementById('psSearchInput').addEventListener('input', e=>{ psQuery=e.target.value; renderPsTable(); });
+  document.getElementById('psWeekSelect').addEventListener('change', e=>{ psWeek=e.target.value; renderPsTable(); });
   renderPsToggles();
+  renderPsWeekSelect();
   renderPsTable();
 
   // 인사이트
