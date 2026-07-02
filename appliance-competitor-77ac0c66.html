@@ -102,6 +102,21 @@
   .ps-cat-badge { font-size:9px; font-family:'IBM Plex Mono',monospace; padding:2px 7px; border-radius:4px; font-weight:600; }
   .ps-empty { text-align:center; padding:32px; color:var(--text3); font-family:'IBM Plex Mono',monospace; font-size:12px; }
   .ps-scroll { max-height:480px; overflow-y:auto; border-radius:10px; }
+  /* 상품별 편성 히트맵 검색 */
+  .ph-input { padding:8px 12px; font-size:13px; border:1px solid var(--border2); border-radius:7px; background:var(--bg2); color:var(--text1); width:280px; outline:none; }
+  .ph-input:focus { border-color:var(--blue); }
+  .ph-co-toggle { display:flex; gap:5px; }
+  .ph-summary { font-size:11.5px; color:var(--text2); margin:12px 0; font-family:'IBM Plex Mono',monospace; }
+  .ph-grid { display:grid; grid-template-columns:32px repeat(24,1fr); gap:3px; min-width:720px; }
+  .ph-headcell { font-size:9px; color:var(--text3); text-align:center; font-family:'IBM Plex Mono',monospace; padding-bottom:2px; }
+  .ph-daylabel { font-size:11px; font-weight:700; color:var(--text2); display:flex; align-items:center; justify-content:center; }
+  .ph-cell { border-radius:4px; min-height:30px; display:flex; align-items:center; justify-content:center; font-size:9px; font-family:'IBM Plex Mono',monospace; color:#fff; font-weight:600; cursor:default; }
+  .ph-empty { background:var(--bg3); border:1px dashed var(--border); min-height:30px; border-radius:4px; }
+  .ph-scroll { overflow-x:auto; padding-bottom:6px; }
+  .ph-match-table { width:100%; border-collapse:collapse; margin-top:14px; }
+  .ph-match-table th { text-align:left; padding:7px 10px; font-size:9.5px; font-weight:600; color:var(--text3); text-transform:uppercase; letter-spacing:.05em; border-bottom:1px solid var(--border2); font-family:'IBM Plex Mono',monospace; }
+  .ph-match-table td { padding:7px 10px; font-size:11.5px; border-bottom:1px solid var(--border); color:var(--text1); }
+  .ph-empty-state { text-align:center; padding:36px; color:var(--text3); font-family:'IBM Plex Mono',monospace; font-size:12px; }
 </style>
 <style>
   .side-nav{position:fixed;top:0;left:0;width:196px;height:100vh;background:#1E2840;display:flex;flex-direction:column;padding:18px 0;z-index:900;overflow-y:auto;font-family:'Noto Sans KR',sans-serif;}
@@ -244,6 +259,23 @@
       </div>
       <div class="note" id="psCount" style="margin-bottom:10px;"></div>
       <div class="ps-scroll"><div id="psTableArea"></div></div>
+    </div>
+  </div>
+
+  <!-- 경쟁사 상품별 편성 히트맵 -->
+  <div class="section">
+    <div class="section-title">경쟁사 상품별 편성 시간대 히트맵</div>
+    <div class="card">
+      <div class="ps-controls">
+        <div class="ps-group" style="flex:1;">
+          <input id="phSearchInput" class="ph-input" type="text" placeholder="상품명 또는 브랜드로 검색 (예: 무선청소기, 히트락)">
+        </div>
+        <div class="ps-group"><span class="ps-label">회사</span><div id="phCoToggle" class="ph-co-toggle"></div></div>
+      </div>
+      <div id="phBody">
+        <div class="ph-empty-state">상품명이나 브랜드를 검색하면 해당 상품의 요일 × 시간대 편성 히트맵이 표시됩니다.</div>
+      </div>
+      <div class="note">※ 데이터: 경쟁사 편성 현황 시트(KT알파·SSG) · 2026년 1~6월 · 가전 3개 카테고리(생활가전·주방가전·주방용품) 한정 · 셀 색상은 검색 결과 내 최댓값 기준 정규화, 셀 안 숫자는 누적 가중분(분)입니다. SK스토아는 자체 편성이라 이 히트맵 검색 대상에서 제외했습니다(경쟁사 모니터링 목적).</div>
     </div>
   </div>
 
@@ -518,6 +550,111 @@ function render(d){
     </div>
   `;
 }
+</script>
+<script>
+// ===== 경쟁사 상품별 편성 시간대 히트맵 =====
+(function(){
+  const PH_COLOR = { 'KT알파': '#2563EB', 'SSG': '#D63A52' };
+  let phData = null, phCo = 'all', phQuery = '';
+
+  fetch('data/product-heatmap-data.json', {cache:'no-store'}).then(r=>r.json()).then(d=>{
+    phData = d;
+    renderPhToggles();
+  }).catch(e=>{
+    document.getElementById('phBody').innerHTML = '<div class="ph-empty-state" style="color:var(--red);">⚠️ 히트맵 데이터를 불러오지 못했습니다</div>';
+    console.error(e);
+  });
+
+  function renderPhToggles(){
+    const cos = ['all','KT알파','SSG'];
+    document.getElementById('phCoToggle').innerHTML = cos.map(c=>{
+      const label = c==='all' ? '전체' : c;
+      const active = phCo===c;
+      return `<button class="sort-btn${active?' sort-active':''}" style="padding:5px 12px;font-size:11px;" onclick="window.__phSetCo('${c}')">${label}</button>`;
+    }).join('');
+  }
+  window.__phSetCo = v => { phCo = v; renderPhToggles(); renderPhResult(); };
+
+  function matchRows(){
+    if(!phData) return [];
+    let rows = phData.broadcasts;
+    if(phCo !== 'all') rows = rows.filter(r => r.co === phCo);
+    const q = phQuery.trim().toLowerCase();
+    if(!q) return [];
+    rows = rows.filter(r => (r.name||'').toLowerCase().includes(q) || (r.brand||'').toLowerCase().includes(q));
+    return rows;
+  }
+
+  function renderPhResult(){
+    const body = document.getElementById('phBody');
+    const q = phQuery.trim();
+    if(!q){
+      body.innerHTML = '<div class="ph-empty-state">상품명이나 브랜드를 검색하면 해당 상품의 요일 × 시간대 편성 히트맵이 표시됩니다.</div>';
+      return;
+    }
+    const rows = matchRows();
+    if(rows.length === 0){
+      body.innerHTML = `<div class="ph-empty-state">"${q}"에 해당하는 경쟁사 편성 이력이 없습니다.</div>`;
+      return;
+    }
+    // 7 x 24 그리드 집계
+    const grid = Array.from({length:7}, () => new Array(24).fill(0));
+    const cellCnt = Array.from({length:7}, () => new Array(24).fill(0));
+    let totalW = 0, totalCnt = rows.length;
+    rows.forEach(r => { grid[r.dow][r.hour] += r.w; cellCnt[r.dow][r.hour] += 1; totalW += r.w; });
+    let maxV = 0;
+    grid.forEach(row => row.forEach(v => { if(v > maxV) maxV = v; }));
+
+    const days = phData.days;
+    let head = `<div class="ph-headcell"></div>`;
+    for(let h=0; h<24; h++) head += `<div class="ph-headcell">${h}</div>`;
+    let gridBody = '';
+    for(let day=0; day<7; day++){
+      gridBody += `<div class="ph-daylabel">${days[day]}</div>`;
+      for(let h=0; h<24; h++){
+        const v = grid[day][h];
+        if(v <= 0){ gridBody += `<div class="ph-empty"></div>`; continue; }
+        const alpha = (0.2 + Math.min(1, v/maxV)*0.75);
+        const hex = Math.round(alpha*255).toString(16).padStart(2,'0');
+        gridBody += `<div class="ph-cell" style="background:#6D3FC8${hex};" title="${days[day]} ${h}시 · ${v.toFixed(0)}분 · ${cellCnt[day][h]}회">${v.toFixed(0)}</div>`;
+      }
+    }
+
+    // 매칭된 개별 상품(회사+브랜드+상품명) 요약
+    const groups = new Map();
+    rows.forEach(r => {
+      const key = r.co + '||' + r.brand + '||' + r.name;
+      if(!groups.has(key)) groups.set(key, {co:r.co, brand:r.brand, name:r.name, cat:r.cat, w:0, cnt:0});
+      const g = groups.get(key); g.w += r.w; g.cnt += 1;
+    });
+    const groupList = [...groups.values()].sort((a,b)=>b.w-a.w);
+    const matchTable = groupList.map(g => {
+      const color = PH_COLOR[g.co] || '#8A97B0';
+      return `<tr>
+        <td><span class="ps-co-badge" style="background:${color};">${g.co}</span></td>
+        <td class="mono" style="color:var(--text2);">${g.brand||'-'}</td>
+        <td style="font-weight:600;">${g.name}</td>
+        <td class="mono" style="color:var(--text3);">${g.cat}</td>
+        <td class="mono" style="font-weight:700;">${g.w.toFixed(0)}분</td>
+        <td class="mono" style="color:var(--text3);">${g.cnt}회</td>
+      </tr>`;
+    }).join('');
+
+    body.innerHTML = `
+      <div class="ph-summary">검색 결과: "${q}" · 매칭 상품 ${groupList.length}종 · 총 방송 ${totalCnt}회 · 누적 가중분 ${totalW.toFixed(0)}분</div>
+      <div class="ph-scroll"><div class="ph-grid">${head}${gridBody}</div></div>
+      <table class="ph-match-table">
+        <thead><tr><th>회사</th><th>브랜드</th><th>상품명</th><th>카테고리</th><th>가중분</th><th>방송횟수</th></tr></thead>
+        <tbody>${matchTable}</tbody>
+      </table>
+    `;
+  }
+
+  document.getElementById('phSearchInput').addEventListener('input', e => {
+    phQuery = e.target.value;
+    renderPhResult();
+  });
+})();
 </script>
 </body>
 </html>
