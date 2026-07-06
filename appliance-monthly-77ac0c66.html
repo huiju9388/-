@@ -375,59 +375,7 @@
   <div id="view-all">
     <table class="diff-table">
       <thead><tr><th>월</th><th>가중분</th><th>취급고 (VAT포함)</th><th>분당취급고</th><th>매출 (V-)</th><th>한계이익</th><th>분당한계이익</th><th>누적취급고</th></tr></thead>
-      <tbody>
-        <tr><td>1월</td><td>7329분</td>
-          <td class="mono" style="color:#2563EB;">105.57억</td>
-          <td class="mono" style="color:#8A97B0;">144.0만</td>
-          <td>39.40억</td><td>34.06억</td>
-          <td class="mono" style="color:#0E9E6A;">46.5만</td>
-          <td class="mono" style="color:#8A97B0;">105.6억</td></tr>
-        <tr><td>2월</td><td>6436분</td>
-          <td class="mono" style="color:#2563EB;">88.83억</td>
-          <td class="mono" style="color:#8A97B0;">138.0만</td>
-          <td>33.20억</td><td>28.47억</td>
-          <td class="mono" style="color:#0E9E6A;">44.2만</td>
-          <td class="mono" style="color:#8A97B0;">194.4억</td></tr>
-        <tr><td>3월</td><td>5449분</td>
-          <td class="mono" style="color:#2563EB;">74.40억</td>
-          <td class="mono" style="color:#8A97B0;">136.5만</td>
-          <td>27.51억</td><td>23.28억</td>
-          <td class="mono" style="color:#0E9E6A;">42.7만</td>
-          <td class="mono" style="color:#8A97B0;">268.8억</td></tr>
-        <tr><td>4월</td><td>4975분</td>
-          <td class="mono" style="color:#D63A52;">65.82억</td>
-          <td class="mono" style="color:#8A97B0;">132.3만</td>
-          <td>24.71억</td><td>21.00억</td>
-          <td class="mono" style="color:#0E9E6A;">42.2만</td>
-          <td class="mono" style="color:#8A97B0;">334.6억</td></tr>
-        <tr><td>5월</td><td>7118분</td>
-          <td class="mono" style="color:#2563EB;">97.53억</td>
-          <td class="mono" style="color:#8A97B0;">137.0만</td>
-          <td>35.41억</td><td>29.71억</td>
-          <td class="mono" style="color:#0E9E6A;">41.7만</td>
-          <td class="mono" style="color:#8A97B0;">432.1억</td></tr>
-        <tr><td>6월</td><td>6642분</td>
-          <td class="mono" style="color:#2563EB;">103.40억</td>
-          <td class="mono" style="color:#8A97B0;">155.7만</td>
-          <td>34.56억</td><td>28.62억</td>
-          <td class="mono" style="color:#0E9E6A;">43.1만</td>
-          <td class="mono" style="color:#8A97B0;">535.6억</td></tr>
-        <tr><td>7월 <span style="font-size:9px;color:#C97A10;">(~7/5)</span></td><td>1338분</td>
-          <td class="mono" style="color:#2563EB;">30.65억</td>
-          <td class="mono" style="color:#8A97B0;">229.2만</td>
-          <td>7.80억</td><td>5.80억</td>
-          <td class="mono" style="color:#0E9E6A;">43.4만</td>
-          <td class="mono" style="color:#8A97B0;">566.2억</td></tr>
-        <tr style="border-top:1px solid rgba(99,120,160,0.3);">
-          <td style="font-weight:700;color:#1E2840;">YTD 합계</td>
-          <td style="font-weight:700;">39286분</td>
-          <td class="mono" style="color:#2563EB;font-weight:700;">566.21억</td>
-          <td class="mono" style="color:#8A97B0;font-weight:700;">144.1만</td>
-          <td style="font-weight:700;">202.59억</td>
-          <td style="font-weight:700;">170.93억</td>
-          <td class="mono" style="color:#0E9E6A;font-weight:700;">43.5만</td>
-          <td class="mono" style="color:#2563EB;font-weight:700;">566.2억</td>
-        </tr>      </tbody>
+      <tbody id="ytd-table-body"></tbody>
     </table>
   </div>
 
@@ -437,7 +385,49 @@
 </div>
 <div class="divider"></div><div class="footer">SK스토아 가전팀 · 구글시트 PGM 실적 기준 · VAT포함 · 월 컬럼 기준 집계</div>
 </div><!-- /main-wrap --><script>
-fetch('data/dashboard-data.json').then(r=>r.json()).then(d=>{ monthData = d.monthData; }).catch(e=>console.error('dashboard-data load failed', e));
+fetch('data/dashboard-data.json', {cache:'no-store'}).then(r=>r.json()).then(d=>{
+  monthData = d.monthData;
+  renderYtdTable();
+}).catch(e=>console.error('dashboard-data load failed', e));
+
+function renderYtdTable(){
+  var months = Object.keys(monthData).map(Number).sort(function(a,b){return a-b;});
+  var lastM = months[months.length-1];
+  var salesArr = months.map(function(m){ return parseFloat(monthData[m].total.sales); });
+  var minVal = Math.min.apply(null, salesArr);
+  var cum = 0;
+  var rows = '';
+  months.forEach(function(m, idx){
+    var d = monthData[m];
+    cum += parseFloat(d.total.sales);
+    var isCurrent = (m === lastM);
+    var isMin = (salesArr[idx] === minVal);
+    var salesColor = isMin ? '#D63A52' : '#2563EB';
+    var label = d.label + (isCurrent ? ' <span style="font-size:9px;color:#C97A10;">(진행중)</span>' : '');
+    rows += '<tr><td>' + label + '</td><td>' + d.total.weight + '</td>' +
+      '<td class="mono" style="color:' + salesColor + ';">' + d.total.sales + '</td>' +
+      '<td class="mono" style="color:#8A97B0;">' + d.total.perMin + '</td>' +
+      '<td>' + d.total.revenue + '</td><td>' + d.total.margin + '</td>' +
+      '<td class="mono" style="color:#0E9E6A;">' + d.total.perMargin + '</td>' +
+      '<td class="mono" style="color:#8A97B0;">' + cum.toFixed(1) + '억</td></tr>';
+  });
+  var ytdWeight = months.reduce(function(a,m){ return a + parseFloat(monthData[m].total.weight); }, 0);
+  var ytdSales = months.reduce(function(a,m){ return a + parseFloat(monthData[m].total.sales); }, 0);
+  var ytdRevenue = months.reduce(function(a,m){ return a + parseFloat(monthData[m].total.revenue); }, 0);
+  var ytdMargin = months.reduce(function(a,m){ return a + parseFloat(monthData[m].total.margin); }, 0);
+  var ytdPerMin = ytdSales / ytdWeight * 10000; // 억 -> 만 단위 변환 (억=1e8, 분모 분, 만=1e4)
+  var ytdPerMar = ytdMargin / ytdWeight * 10000;
+  rows += '<tr style="border-top:1px solid rgba(99,120,160,0.3);">' +
+    '<td style="font-weight:700;color:#1E2840;">YTD 합계</td>' +
+    '<td style="font-weight:700;">' + Math.round(ytdWeight).toLocaleString() + '분</td>' +
+    '<td class="mono" style="color:#2563EB;font-weight:700;">' + ytdSales.toFixed(2) + '억</td>' +
+    '<td class="mono" style="color:#8A97B0;font-weight:700;">' + ytdPerMin.toFixed(1) + '만</td>' +
+    '<td style="font-weight:700;">' + ytdRevenue.toFixed(2) + '억</td>' +
+    '<td style="font-weight:700;">' + ytdMargin.toFixed(2) + '억</td>' +
+    '<td class="mono" style="color:#0E9E6A;font-weight:700;">' + ytdPerMar.toFixed(1) + '만</td>' +
+    '<td class="mono" style="color:#2563EB;font-weight:700;">' + ytdSales.toFixed(1) + '억</td></tr>';
+  document.getElementById('ytd-table-body').innerHTML = rows;
+}
 </script>
 <script>
 let monthData = {};
