@@ -362,45 +362,9 @@
 <div class="section">
   <div class="section-title">2026 KPI 진척도 — 1~7월(~7/5) 누적 / 잔여 6개월</div>
   <div class="kpi-grid">
-    <div class="kpi-card red">
-      <div class="kpi-name">취급고 (VAT포함)</div>
-      <div class="kpi-row">
-        <div class="kpi-actual">566.2억</div>
-        <div class="kpi-pct">45.8%</div>
-      </div>
-      <div class="prog-track"><div class="prog-fill" style="width:45.8%"></div></div>
-      <div class="kpi-target" style="margin-bottom:10px;">목표 1,235억 · 연말 추정 1,071억 · 부족 164억</div>
-      <div class="need-row">
-        <span class="need-label">월 필요 취급고</span>
-        <span class="need-val">116.6억 <span style="color:#8A97B0;font-size:10px;">/ 현재 월평균 89.3억</span></span>
-      </div>
-    </div>
-    <div class="kpi-card amber">
-      <div class="kpi-name">매출 (V-)</div>
-      <div class="kpi-row">
-        <div class="kpi-actual">202.6억</div>
-        <div class="kpi-pct">50.3%</div>
-      </div>
-      <div class="prog-track"><div class="prog-fill" style="width:50.3%"></div></div>
-      <div class="kpi-target" style="margin-bottom:10px;">목표 403억 · 연말 추정 390억 · 부족 13억</div>
-      <div class="need-row">
-        <span class="need-label">월 필요 매출</span>
-        <span class="need-val">34.7억 <span style="color:#8A97B0;font-size:10px;">/ 현재 월평균 32.5억</span></span>
-      </div>
-    </div>
-    <div class="kpi-card green">
-      <div class="kpi-name">한계이익</div>
-      <div class="kpi-row">
-        <div class="kpi-actual">170.9억</div>
-        <div class="kpi-pct">52.9%</div>
-      </div>
-      <div class="prog-track"><div class="prog-fill" style="width:52.9%"></div></div>
-      <div class="kpi-target" style="margin-bottom:10px;">목표 323억 · 연말 추정 330억 · 초과 7억</div>
-      <div class="need-row">
-        <span class="need-label">월 필요 한계이익</span>
-        <span class="need-val">26.3억 <span style="color:#8A97B0;font-size:10px;">/ 현재 월평균 27.5억</span></span>
-      </div>
-    </div>
+    <div id="kpi-card-sales" class="kpi-card red"></div>
+    <div id="kpi-card-revenue" class="kpi-card amber"></div>
+    <div id="kpi-card-margin" class="kpi-card green"></div>
   </div>
 </div>
 <!-- 월별 차트 -->
@@ -408,15 +372,15 @@
   <div class="section-title">월별 취급고 · 한계이익 추이</div>
   <div class="chart-wrap">
     <div class="chart-header">
-      <span class="chart-title-text">1~7월 월별 실적 (VAT포함, 7월은 7/5일까지)</span>
+      <span class="chart-title-text" id="monthly-chart-title">월별 실적 (VAT포함)</span>
       <div class="legend">
         <span><span class="legend-dot" style="background:#4d8fff"></span>취급고</span>
         <span><span class="legend-dot" style="background:#22c87a"></span>한계이익</span>
-        <span style="border-left:1px solid #333;padding-left:14px;"><span class="legend-dot" style="background:#ff4d6a;border-radius:0;width:2px;height:12px;"></span>필요 월평균 116.6억</span>
+        <span style="border-left:1px solid #333;padding-left:14px;"><span class="legend-dot" style="background:#ff4d6a;border-radius:0;width:2px;height:12px;"></span><span id="legend-need-avg">필요 월평균 -</span></span>
       </div>
     </div>
     <div style="position:relative;height:220px;">
-      <canvas id="monthlyChart" role="img" aria-label="월별 취급고와 한계이익 추이">1월 105.6억, 2월 88.8억, 3월 74.4억, 4월 65.8억, 5월 97.5억, 6월 103.4억, 7월(~7/5) 30.7억</canvas>
+      <canvas id="monthlyChart" role="img" aria-label="월별 취급고와 한계이익 추이"></canvas>
     </div>
   </div>
 </div>
@@ -486,35 +450,7 @@
     <div class="section-title">신상품 · 재촬영 실적 (2026년 1~7월(~7/5) 누적 · VAT포함)</div>
 
     <!-- 요약 카드 3개 -->
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;">
-      <div class="kpi-card" style="border-color:rgba(155,127,255,0.3);">
-        <div class="kpi-name" style="color:#9b7fff;">신상품</div>
-        <div class="kpi-actual" style="font-size:22px;color:#9b7fff;">23.0억</div>
-        <div class="kpi-target" style="margin:6px 0;">37건 · 1,931분 · 분당 119.3만</div>
-        <div class="need-row" style="border-color:rgba(155,127,255,0.2);">
-          <span class="need-label">한계이익</span>
-          <span class="need-val" style="color:#9b7fff;">7.64억 · 분당 39.6만</span>
-        </div>
-      </div>
-      <div class="kpi-card" style="border-color:rgba(77,143,255,0.3);">
-        <div class="kpi-name" style="color:#4d8fff;">재녹화 · 재편집</div>
-        <div class="kpi-actual" style="font-size:22px;color:#4d8fff;">67.4억</div>
-        <div class="kpi-target" style="margin:6px 0;">77건 · 4,354분 · 분당 154.7만</div>
-        <div class="need-row" style="border-color:rgba(77,143,255,0.2);">
-          <span class="need-label">한계이익</span>
-          <span class="need-val" style="color:#4d8fff;">18.66억 · 분당 42.8만</span>
-        </div>
-      </div>
-      <div class="kpi-card" style="border-color:rgba(255,255,255,0.08);">
-        <div class="kpi-name" style="color:#6B7280;">기존 상품</div>
-        <div class="kpi-actual" style="font-size:22px;color:#6B7280;">475.8억</div>
-        <div class="kpi-target" style="margin:6px 0;">666건 · 33,000분 · 분당 144.2만</div>
-        <div class="need-row">
-          <span class="need-label">한계이익</span>
-          <span class="need-val" style="color:#6B7280;">144.63억 · 분당 43.8만</span>
-        </div>
-      </div>
-    </div>
+    <div id="shin-summary-cards" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;"></div>
 
     <!-- 월별 추이 차트 -->
     <div class="chart-wrap" style="margin-bottom:20px;">
@@ -526,7 +462,7 @@
         </div>
       </div>
       <div style="position:relative;height:180px;">
-        <canvas id="newProdChart" role="img" aria-label="월별 신상품 재촬영 취급고 추이">신상품: 1월 2.9억, 2월 6.1억, 3월 1.0억, 4월 3.6억, 5월 6.1억, 6월 3.3억, 7월(~7/5) 0.0억, 재녹화+재편집: 6월 13.7억, 7월(~7/5) 2.0억</canvas>
+        <canvas id="newProdChart" role="img" aria-label="월별 신상품 재촬영 취급고 추이"></canvas>
       </div>
       <div style="text-align:right;margin-top:10px;">
         <a href="appliance-newproduct-77ac0c66.html" style="font-size:11px;color:#6D3FC8;font-family:'IBM Plex Mono',monospace;text-decoration:none;">신상품 상세 분석 보기 (MD별 비중 · 라이프타임 실적) →</a>
@@ -540,56 +476,129 @@
   </style>
 
   <script>
-    // 월별 추이 차트
-    const ctx2 = document.getElementById('newProdChart').getContext('2d');
-    new Chart(ctx2, {
-      type: 'bar',
-      data: {
-        labels: ['1월','2월','3월','4월','5월','6월','7월(~7/5)'],
-        datasets: [
-          { label:'신상품', data:[2.92,6.06,1.02,3.62,6.08,3.33,0.00], backgroundColor:'rgba(155,127,255,0.7)', borderRadius:4, borderSkipped:false },
-          { label:'재녹화+재편집', data:[13.62,10.72,6.25,11.29,9.8,13.68,2.00], backgroundColor:'rgba(77,143,255,0.6)', borderRadius:4, borderSkipped:false }
-        ]
-      },
-      options: {
-        responsive:true, maintainAspectRatio:false,
-        plugins:{
-          legend:{display:false},
-          tooltip:{ backgroundColor:'#F8F9FC', borderColor:'rgba(99,120,160,0.2)', borderWidth:1, titleColor:'#8A97B0', bodyColor:'#1E2840', padding:10, callbacks:{ label:(ctx)=>`${ctx.dataset.label}: ${ctx.parsed.y}억원` } }
-        },
-        scales:{
-          x:{ grid:{color:'rgba(99,120,160,0.08)'}, ticks:{color:'#8A97B0',font:{family:'IBM Plex Mono',size:11}}, stacked:false },
-          y:{ grid:{color:'rgba(99,120,160,0.08)'}, ticks:{color:'#8A97B0',font:{family:'IBM Plex Mono',size:10},callback:v=>v+'억'}, min:0, max:16 }
-        }
+  (function(){
+    fetch('data/dashboard-data.json', {cache:'no-store'}).then(r=>r.json()).then(d=>{
+      var monthData = d.monthData || {};
+      var months = Object.keys(monthData).map(Number).sort(function(a,b){return a-b;});
+      var labels = months.map(function(m){ return monthData[m].label + (m===months[months.length-1] ? ' (~진행중)' : ''); });
+
+      // ---- KPI 카드 (취급고/매출/한계이익) ----
+      var target = d.kpiTarget || {sales:1235, revenue:403, margin:323};
+      var lastM = months[months.length-1];
+      var completed = months.filter(function(m){ return m !== lastM; });
+      if (completed.length === 0) completed = months; // 데이터가 1개월뿐일 때 대비
+
+      function sumField(field, monthList){
+        return monthList.reduce(function(acc,m){ return acc + parseFloat(monthData[m].total[field]); }, 0);
       }
-    });
+      function fullYtd(field){ return sumField(field, months); }
+
+      function buildKpi(field, label, target, cls){
+        var actual = fullYtd(field);
+        var sumCompleted = sumField(field, completed);
+        var avgMonthly = sumCompleted / completed.length;
+        var remainMonths = 12 - completed.length;
+        var yearEnd = avgMonthly * 12;
+        var needMonthly = (target - sumCompleted) / remainMonths;
+        var pct = actual / target * 100;
+        var diff = target - yearEnd;
+        var diffLabel = diff >= 0 ? ('부족 ' + diff.toFixed(0) + '억') : ('초과 ' + Math.abs(diff).toFixed(0) + '억');
+        return {
+          html: '<div class="kpi-name">' + label + '</div>' +
+            '<div class="kpi-row"><div class="kpi-actual">' + actual.toFixed(1) + '억</div><div class="kpi-pct">' + pct.toFixed(1) + '%</div></div>' +
+            '<div class="prog-track"><div class="prog-fill" style="width:' + Math.min(pct,100).toFixed(1) + '%"></div></div>' +
+            '<div class="kpi-target" style="margin-bottom:10px;">목표 ' + target.toLocaleString() + '억 · 연말 추정 ' + yearEnd.toFixed(0) + '억 · ' + diffLabel + '</div>' +
+            '<div class="need-row"><span class="need-label">월 필요 ' + label.replace(' (VAT포함)','').replace(' (V-)','') + '</span>' +
+            '<span class="need-val">' + needMonthly.toFixed(1) + '억 <span style="color:#8A97B0;font-size:10px;">/ 현재 월평균 ' + avgMonthly.toFixed(1) + '억</span></span></div>',
+          needMonthly: needMonthly
+        };
+      }
+
+      var salesKpi = buildKpi('sales', '취급고 (VAT포함)', target.sales, 'red');
+      var revKpi   = buildKpi('revenue', '매출 (V-)', target.revenue, 'amber');
+      var marKpi   = buildKpi('margin', '한계이익', target.margin, 'green');
+      document.getElementById('kpi-card-sales').innerHTML = salesKpi.html;
+      document.getElementById('kpi-card-revenue').innerHTML = revKpi.html;
+      document.getElementById('kpi-card-margin').innerHTML = marKpi.html;
+      document.getElementById('legend-need-avg').textContent = '필요 월평균 ' + salesKpi.needMonthly.toFixed(1) + '억';
+      document.getElementById('monthly-chart-title').textContent = months[0] + '~' + lastM + '월 월별 실적 (VAT포함' + (months.length>completed.length ? ', ' + monthData[lastM].label + '은 진행중' : '') + ')';
+
+      // ---- 월별 취급고/한계이익 차트 ----
+      var salesArr = months.map(function(m){ return parseFloat(monthData[m].total.sales); });
+      var marginArr = months.map(function(m){ return parseFloat(monthData[m].total.margin); });
+      var barColors = salesArr.map(function(v,i){
+        if (i === salesArr.length-1) return '#f5a623'; // 진행중 월
+        return v < salesKpi.needMonthly ? '#ff4d6a' : '#4d8fff'; // 필요 월평균 미달 시 빨강
+      });
+      var ctx = document.getElementById('monthlyChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            { label:'취급고', data:salesArr, backgroundColor:barColors, borderRadius:4, borderSkipped:false },
+            { label:'한계이익', data:marginArr, backgroundColor:'rgba(34,200,122,0.6)', borderRadius:4, borderSkipped:false }
+          ]
+        },
+        options: {
+          responsive:true, maintainAspectRatio:false,
+          plugins: {
+            legend:{display:false},
+            tooltip:{ backgroundColor:'#F8F9FC', borderColor:'rgba(99,120,160,0.2)', borderWidth:1, titleColor:'#8A97B0', bodyColor:'#1E2840', padding:10, callbacks:{ label:(c)=>` ${c.dataset.label}: ${c.parsed.y}억원` } }
+          },
+          scales: {
+            x:{ grid:{color:'rgba(99,120,160,0.08)'}, ticks:{color:'#8A97B0',font:{family:'IBM Plex Mono',size:11}} },
+            y:{ grid:{color:'rgba(99,120,160,0.08)'}, ticks:{color:'#8A97B0',font:{family:'IBM Plex Mono',size:10},callback:v=>v+'억'}, min:0, suggestedMax: Math.max.apply(null, salesArr)*1.25 }
+          }
+        }
+      });
+
+      // ---- 신상품/재녹화/기존 요약 카드 ----
+      var ss = d.shinSummary || {};
+      function shinCard(key, label, color, border){
+        var v = ss[key] || {s:0,cnt:0,w:0,perMin:0,ma:0,perMar:0};
+        return '<div class="kpi-card" style="border-color:' + border + ';">' +
+          '<div class="kpi-name" style="color:' + color + ';">' + label + '</div>' +
+          '<div class="kpi-actual" style="font-size:22px;color:' + color + ';">' + v.s.toFixed(1) + '억</div>' +
+          '<div class="kpi-target" style="margin:6px 0;">' + v.cnt + '건 · ' + Math.round(v.w).toLocaleString() + '분 · 분당 ' + v.perMin.toFixed(1) + '만</div>' +
+          '<div class="need-row" style="border-color:' + border.replace('0.3','0.2') + ';">' +
+          '<span class="need-label">한계이익</span>' +
+          '<span class="need-val" style="color:' + color + ';">' + v.ma.toFixed(2) + '억 · 분당 ' + v.perMar.toFixed(1) + '만</span></div></div>';
+      }
+      document.getElementById('shin-summary-cards').innerHTML =
+        shinCard('shin','신상품','#9b7fff','rgba(155,127,255,0.3)') +
+        shinCard('redo','재녹화 · 재편집','#4d8fff','rgba(77,143,255,0.3)') +
+        shinCard('existing','기존 상품','#6B7280','rgba(255,255,255,0.08)');
+
+      // ---- 신상품/재녹화 월별 추이 차트 ----
+      var sm = d.shinMonthly || {shin:[], redo:[]};
+      var ctx2 = document.getElementById('newProdChart').getContext('2d');
+      new Chart(ctx2, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            { label:'신상품', data:sm.shin, backgroundColor:'rgba(155,127,255,0.7)', borderRadius:4, borderSkipped:false },
+            { label:'재녹화+재편집', data:sm.redo, backgroundColor:'rgba(77,143,255,0.6)', borderRadius:4, borderSkipped:false }
+          ]
+        },
+        options: {
+          responsive:true, maintainAspectRatio:false,
+          plugins:{
+            legend:{display:false},
+            tooltip:{ backgroundColor:'#F8F9FC', borderColor:'rgba(99,120,160,0.2)', borderWidth:1, titleColor:'#8A97B0', bodyColor:'#1E2840', padding:10, callbacks:{ label:(ctx)=>`${ctx.dataset.label}: ${ctx.parsed.y}억원` } }
+          },
+          scales:{
+            x:{ grid:{color:'rgba(99,120,160,0.08)'}, ticks:{color:'#8A97B0',font:{family:'IBM Plex Mono',size:11}}, stacked:false },
+            y:{ grid:{color:'rgba(99,120,160,0.08)'}, ticks:{color:'#8A97B0',font:{family:'IBM Plex Mono',size:10},callback:v=>v+'억'}, min:0, suggestedMax: Math.max.apply(null, sm.shin.concat(sm.redo))*1.3 }
+          }
+        }
+      });
+    }).catch(function(e){ console.error('dashboard-data load failed', e); });
+  })();
   </script>
 <div class="divider"></div><div class="footer">SK스토아 가전팀 · 구글시트 PGM 실적 기준 · VAT포함 · 월 컬럼 기준 집계</div>
-</div><!-- /main-wrap --><script>
-// Chart
-const ctx = document.getElementById('monthlyChart').getContext('2d');
-new Chart(ctx, {
-  type: 'bar',
-  data: {
-    labels: ['1월','2월','3월','4월','5월','6월','7월(~7/5)'],
-    datasets: [
-      { label:'취급고', data:[105.6,88.8,74.4,65.8,97.5,103.4,30.7], backgroundColor:['#4d8fff','#4d8fff','#4d8fff','#ff4d6a','#4d8fff','#4d8fff','#f5a623'], borderRadius:4, borderSkipped:false },
-      { label:'한계이익', data:[34.1,28.5,23.3,21.0,29.7,28.6,5.8], backgroundColor:'rgba(34,200,122,0.6)', borderRadius:4, borderSkipped:false }
-    ]
-  },
-  options: {
-    responsive:true, maintainAspectRatio:false,
-    plugins: {
-      legend:{display:false},
-      tooltip:{ backgroundColor:'#F8F9FC', borderColor:'rgba(99,120,160,0.2)', borderWidth:1, titleColor:'#8A97B0', bodyColor:'#1E2840', padding:10, callbacks:{ label:(ctx)=>` ${ctx.dataset.label}: ${ctx.parsed.y}억원` } }
-    },
-    scales: {
-      x:{ grid:{color:'rgba(99,120,160,0.08)'}, ticks:{color:'#8A97B0',font:{family:'IBM Plex Mono',size:11}} },
-      y:{ grid:{color:'rgba(99,120,160,0.08)'}, ticks:{color:'#8A97B0',font:{family:'IBM Plex Mono',size:10},callback:v=>v+'억'}, min:0, max:140 }
-    }
-  }
-});
-</script>
+</div><!-- /main-wrap -->
 </body>
 </html>
 <!-- rebuild trigger 2026-07-06 -->
