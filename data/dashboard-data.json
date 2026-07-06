@@ -1,1 +1,983 @@
-{"monthData":{"1":{"label":"1월","total":{"weight":"7,329분","sales":"105.6억","perMin":"144.0만","revenue":"39.4억","margin":"34.1억","perMargin":"46.5만"},"cats":[{"name":"🏠 생활가전","weight":"1,866분","sales":"24.7억","perMin":"132.4만","margin":"8.4억","perMargin":"44.9만"},{"name":"🍳 주방가전","weight":"3,191분","sales":"45.6억","perMin":"142.8만","margin":"14.5억","perMargin":"45.3만"},{"name":"🍳 주방용품","weight":"2,068분","sales":"31.3억","perMin":"151.3만","margin":"10.2억","perMargin":"49.3만"},{"name":"📦 대형가전","weight":"205분","sales":"4.0억","perMin":"195.3만","margin":"1.0억","perMargin":"49.6만"}]},"2":{"label":"2월","total":{"weight":"6,436분","sales":"88.8억","perMin":"138.0만","revenue":"33.2억","margin":"28.5억","perMargin":"44.2만"},"cats":[{"name":"🏠 생활가전","weight":"1,885분","sales":"26.7억","perMin":"141.8만","margin":"8.6억","perMargin":"45.6만"},{"name":"🍳 주방가전","weight":"2,362분","sales":"31.7억","perMin":"134.4만","margin":"10.7억","perMargin":"45.1만"},{"name":"🍳 주방용품","weight":"1,545분","sales":"21.1억","perMin":"136.7만","margin":"6.8억","perMargin":"44.3만"},{"name":"📦 대형가전","weight":"643분","sales":"9.3억","perMin":"143.8만","margin":"2.4억","perMargin":"36.8만"}]},"3":{"label":"3월","total":{"weight":"5,449분","sales":"74.4억","perMin":"136.5만","revenue":"27.5억","margin":"23.3억","perMargin":"42.7만"},"cats":[{"name":"🏠 생활가전","weight":"2,290분","sales":"30.6억","perMin":"133.5만","margin":"9.9억","perMargin":"43.4만"},{"name":"🍳 주방가전","weight":"1,433분","sales":"20.5억","perMin":"143.0만","margin":"6.2억","perMargin":"43.5만"},{"name":"🍳 주방용품","weight":"1,369분","sales":"17.3억","perMin":"126.6만","margin":"5.5억","perMargin":"40.3만"},{"name":"📦 대형가전","weight":"357분","sales":"6.0억","perMin":"168.4만","margin":"1.6억","perMargin":"44.3만"}]},"4":{"label":"4월","total":{"weight":"4,975분","sales":"65.8억","perMin":"132.3만","revenue":"24.7억","margin":"21.0억","perMargin":"42.2만"},"cats":[{"name":"🏠 생활가전","weight":"2,829분","sales":"34.9억","perMin":"123.4만","margin":"11.7억","perMargin":"41.5만"},{"name":"🍳 주방가전","weight":"1,035분","sales":"14.9억","perMin":"144.2만","margin":"4.5억","perMargin":"43.5만"},{"name":"🍳 주방용품","weight":"918분","sales":"13.6억","perMin":"148.1만","margin":"3.9억","perMargin":"42.4만"},{"name":"📦 대형가전","weight":"192분","sales":"2.4억","perMin":"122.9만","margin":"0.9억","perMargin":"45.3만"}]},"5":{"label":"5월","total":{"weight":"7,118분","sales":"97.5억","perMin":"137.0만","revenue":"35.4억","margin":"29.7억","perMargin":"41.7만"},"cats":[{"name":"🏠 생활가전","weight":"3,375분","sales":"43.3억","perMin":"128.3만","margin":"14.1억","perMargin":"41.7만"},{"name":"🍳 주방가전","weight":"1,404분","sales":"19.1억","perMin":"136.2만","margin":"6.1억","perMargin":"43.5만"},{"name":"🍳 주방용품","weight":"2,102분","sales":"31.4억","perMin":"149.4만","margin":"8.8억","perMargin":"41.8만"},{"name":"📦 대형가전","weight":"237분","sales":"3.7억","perMin":"155.5만","margin":"0.7억","perMargin":"30.7만"}]},"6":{"label":"6월","total":{"weight":"6,642분","sales":"103.4억","perMin":"155.7만","revenue":"34.6억","margin":"28.6억","perMargin":"43.1만"},"cats":[{"name":"🏠 생활가전","weight":"3,528분","sales":"46.8억","perMin":"132.8만","margin":"15.0억","perMargin":"42.5만"},{"name":"🍳 주방가전","weight":"760분","sales":"11.0억","perMin":"144.3만","margin":"3.3억","perMargin":"43.5만"},{"name":"🍳 주방용품","weight":"2,200분","sales":"32.7억","perMin":"148.6만","margin":"9.7억","perMargin":"44.3만"},{"name":"📦 대형가전","weight":"154분","sales":"12.9억","perMin":"836.2만","margin":"0.6억","perMargin":"37.9만"}]},"7":{"label":"7월","total":{"weight":"1,338분","sales":"30.7억","perMin":"229.2만","revenue":"7.8억","margin":"5.8억","perMargin":"43.4만"},"cats":[{"name":"🏠 생활가전","weight":"343분","sales":"4.1억","perMin":"120.3만","margin":"1.5억","perMargin":"43.3만"},{"name":"🍳 주방가전","weight":"337분","sales":"5.3억","perMin":"157.1만","margin":"1.5억","perMargin":"43.7만"},{"name":"🍳 주방용품","weight":"533분","sales":"8.0억","perMin":"150.5만","margin":"2.3억","perMargin":"43.1만"},{"name":"📦 대형가전","weight":"125분","sales":"13.2억","perMin":"1057.5만","margin":"0.5억","perMargin":"43.8만"}]}},"mdData":{"ko":{"name":"권오석","color":"#4d8fff","cat":"주방가전 · 주방용품","total":{"cnt":220,"weight":"12,144분","sales":"159.1억","perMin":"131.0만","margin":"52.94억","perMargin":"43.6만","revenue":"60.8억"},"monthly":{"sales":[45.2,32.5,14.3,9.5,22.0,28.0,7.5],"margin":[15.6,11.7,4.9,3.1,6.8,8.6,2.3]},"cats":[{"name":"🍳 주방가전","sales":"82.47억","perMin":"133.2만","margin":"27.43억","pct":"52%"},{"name":"🍳 주방용품","sales":"76.59억","perMin":"128.7만","margin":"25.51억","pct":"48%"}],"top5":[{"name":"[마이어]소형블렌더","sales":"13.64억","perMin":"155.4만","marginRate":"28.8%"},{"name":"[라포레]플레이팅팬","sales":"12.65억","perMin":"130.5만","marginRate":"29.1%"},{"name":"[파베르]엔드그레인도마세트","sales":"11.95억","perMin":"131.6만","marginRate":"34.5%"},{"name":"[마이어]생선그릴","sales":"11.65억","perMin":"129.1만","marginRate":"36.2%"},{"name":"[에버홈]올스텐찜기","sales":"10.82억","perMin":"137.6만","marginRate":"34.0%"}]},"ma":{"name":"마영호","color":"#ff4d6a","cat":"주방용품 · 주방가전","total":{"cnt":165,"weight":"6,758분","sales":"115.1억","perMin":"170.3만","margin":"30.77억","perMargin":"45.5만","revenue":"37.4억"},"monthly":{"sales":[22.8,14.5,15.3,17.3,23.7,15.6,5.8],"margin":[6.0,3.8,4.0,4.6,6.3,4.5,1.5]},"cats":[{"name":"🍳 주방용품","sales":"73.07억","perMin":"168.0만","margin":"20.13억","pct":"64%"},{"name":"🍳 주방가전","sales":"42.00억","perMin":"174.4만","margin":"10.63억","pct":"36%"}],"top5":[{"name":"[히트락]밀폐용기","sales":"54.95억","perMin":"158.4만","marginRate":"28.6%"},{"name":"[휴롬]프라임착즙기","sales":"18.46억","perMin":"161.6만","marginRate":"28.6%"},{"name":"[포트메리온]보타닉가든","sales":"13.92억","perMin":"230.0만","marginRate":"23.8%"},{"name":"[쿠쿠]올스텐밥솥","sales":"12.65억","perMin":"199.4만","marginRate":"20.8%"},{"name":"[쿠쿠]메탈릭에코밥솥","sales":"5.64억","perMin":"202.8만","marginRate":"19.7%"}]},"kim":{"name":"김응도","color":"#22c87a","cat":"생활가전","total":{"cnt":158,"weight":"9,680분","sales":"132.6억","perMin":"136.9만","margin":"42.66억","perMargin":"44.1만","revenue":"50.9억"},"monthly":{"sales":[16.9,25.1,26.5,19.4,19.4,23.8,1.4],"margin":[5.8,8.0,8.7,6.5,6.2,6.9,0.5]},"cats":[{"name":"🏠 생활가전","sales":"132.56억","perMin":"136.9만","margin":"42.66억","pct":"100%"}],"top5":[{"name":"[코지마]안마의자","sales":"26.05억","perMin":"168.7만","marginRate":"26.8%"},{"name":"[코지마]데코르안마의자","sales":"22.47억","perMin":"171.3만","marginRate":"26.6%"},{"name":"[코지마]복부마사지기","sales":"16.86억","perMin":"125.0만","marginRate":"36.5%"},{"name":"[코지마]가구형안마의자","sales":"13.94억","perMin":"129.7만","marginRate":"34.1%"},{"name":"[로보락]물걸레청소기","sales":"11.55억","perMin":"182.9만","marginRate":"22.0%"}]},"lim":{"name":"임동진","color":"#f5a623","cat":"생활가전","total":{"cnt":106,"weight":"6,436분","sales":"78.6억","perMin":"122.2만","margin":"26.54억","perMargin":"41.2만","revenue":"30.6억"},"monthly":{"sales":[7.8,1.6,4.0,15.5,23.9,23.0,2.7],"margin":[2.6,0.6,1.2,5.2,7.9,8.1,1.0]},"cats":[{"name":"🏠 생활가전","sales":"78.63억","perMin":"122.2만","margin":"26.54억","pct":"100%"}],"top5":[{"name":"[쿠진]마하라이트","sales":"25.59억","perMin":"142.7만","marginRate":"31.0%"},{"name":"[한경희]무선폴딩팬","sales":"11.26억","perMin":"115.0만","marginRate":"33.4%"},{"name":"[AGK]무선서큘레이터","sales":"9.42억","perMin":"100.0만","marginRate":"39.8%"},{"name":"[AGK]킵온팬큘레이터","sales":"8.10억","perMin":"113.3만","marginRate":"35.1%"},{"name":"[스타일리스]휴대용선풍기","sales":"7.57억","perMin":"131.8만","marginRate":"31.9%"}]},"baek":{"name":"백혜정","color":"#9b7fff","cat":"대형가전","total":{"cnt":76,"weight":"1,913분","sales":"51.4억","perMin":"268.8만","margin":"7.69억","perMargin":"40.2만","revenue":"11.2억"},"monthly":{"sales":[4.0,9.3,6.0,2.4,3.7,12.9,13.2],"margin":[1.0,2.4,1.6,0.9,0.7,0.6,0.5]},"cats":[{"name":"📦 대형가전","sales":"51.42억","perMin":"268.8만","margin":"7.69억","pct":"100%"}],"top5":[{"name":"[삼성전자]비스포크에어컨","sales":"22.08억","perMin":"320.0만","marginRate":"11.3%"},{"name":"[삼성전자]UHDTV","sales":"13.69억","perMin":"386.0만","marginRate":"12.5%"},{"name":"[삼성전자]제습기","sales":"3.47억","perMin":"870.1만","marginRate":"3.8%"},{"name":"[삼성전자]로봇청소기","sales":"3.09억","perMin":"173.7만","marginRate":"25.5%"},{"name":"[LG전자]세탁기","sales":"2.02억","perMin":"265.7만","marginRate":"15.3%"}]}},"shinTrendData":{"권오석":[{"month":"1","total_s":45.18,"shin_s":3.02,"shin_pct":6.7},{"month":"2","total_s":32.53,"shin_s":3.67,"shin_pct":11.3},{"month":"3","total_s":14.29,"shin_s":5.55,"shin_pct":38.8},{"month":"4","total_s":9.54,"shin_s":4.33,"shin_pct":45.4},{"month":"5","total_s":21.99,"shin_s":12.44,"shin_pct":56.6},{"month":"6","total_s":28.04,"shin_s":18.15,"shin_pct":64.7},{"month":"7","total_s":7.49,"shin_s":3.61,"shin_pct":48.1}],"마영호":[{"month":"1","total_s":22.79,"shin_s":0.01,"shin_pct":0.0},{"month":"2","total_s":14.55,"shin_s":5.9,"shin_pct":40.5},{"month":"3","total_s":15.29,"shin_s":0.2,"shin_pct":1.3},{"month":"4","total_s":17.28,"shin_s":1.74,"shin_pct":10.0},{"month":"5","total_s":23.72,"shin_s":0.27,"shin_pct":1.1},{"month":"6","total_s":15.61,"shin_s":0.0,"shin_pct":0.0},{"month":"7","total_s":5.82,"shin_s":0.0,"shin_pct":0.0}],"김응도":[{"month":"1","total_s":16.91,"shin_s":0.0,"shin_pct":0.0},{"month":"2","total_s":25.15,"shin_s":0.0,"shin_pct":0.0},{"month":"3","total_s":26.52,"shin_s":0.0,"shin_pct":0.0},{"month":"4","total_s":19.39,"shin_s":0.0,"shin_pct":0.0},{"month":"5","total_s":19.41,"shin_s":3.72,"shin_pct":19.2},{"month":"6","total_s":23.81,"shin_s":6.5,"shin_pct":27.3},{"month":"7","total_s":1.39,"shin_s":0.0,"shin_pct":0.0}],"임동진":[{"month":"1","total_s":7.8,"shin_s":4.01,"shin_pct":51.4},{"month":"2","total_s":1.57,"shin_s":0.0,"shin_pct":0.0},{"month":"3","total_s":4.05,"shin_s":2.71,"shin_pct":67.0},{"month":"4","total_s":15.53,"shin_s":6.57,"shin_pct":42.3},{"month":"5","total_s":23.9,"shin_s":21.09,"shin_pct":88.3},{"month":"6","total_s":23.03,"shin_s":22.35,"shin_pct":97.0},{"month":"7","total_s":2.74,"shin_s":2.74,"shin_pct":100.0}],"백혜정":[{"month":"1","total_s":4.0,"shin_s":0.0,"shin_pct":0.0},{"month":"2","total_s":9.25,"shin_s":0.0,"shin_pct":0.0},{"month":"3","total_s":6.0,"shin_s":0.0,"shin_pct":0.0},{"month":"4","total_s":2.36,"shin_s":0.0,"shin_pct":0.0},{"month":"5","total_s":3.69,"shin_s":0.0,"shin_pct":0.0},{"month":"6","total_s":12.91,"shin_s":0.0,"shin_pct":0.0},{"month":"7","total_s":13.21,"shin_s":0.0,"shin_pct":0.0}]}}
+{
+  "monthData": {
+    "1": {
+      "label": "1월",
+      "total": {
+        "weight": "7,329분",
+        "sales": "105.6억",
+        "perMin": "144.0만",
+        "revenue": "39.4억",
+        "margin": "34.1억",
+        "perMargin": "46.5만"
+      },
+      "cats": [
+        {
+          "name": "🏠 생활가전",
+          "weight": "1,866분",
+          "sales": "24.7억",
+          "perMin": "132.4만",
+          "margin": "8.4억",
+          "perMargin": "44.9만"
+        },
+        {
+          "name": "🍳 주방가전",
+          "weight": "3,191분",
+          "sales": "45.6억",
+          "perMin": "142.8만",
+          "margin": "14.5억",
+          "perMargin": "45.3만"
+        },
+        {
+          "name": "🍳 주방용품",
+          "weight": "2,068분",
+          "sales": "31.3억",
+          "perMin": "151.3만",
+          "margin": "10.2억",
+          "perMargin": "49.3만"
+        },
+        {
+          "name": "📦 대형가전",
+          "weight": "205분",
+          "sales": "4.0억",
+          "perMin": "195.3만",
+          "margin": "1.0억",
+          "perMargin": "49.6만"
+        }
+      ]
+    },
+    "2": {
+      "label": "2월",
+      "total": {
+        "weight": "6,436분",
+        "sales": "88.8억",
+        "perMin": "138.0만",
+        "revenue": "33.2억",
+        "margin": "28.5억",
+        "perMargin": "44.2만"
+      },
+      "cats": [
+        {
+          "name": "🏠 생활가전",
+          "weight": "1,885분",
+          "sales": "26.7억",
+          "perMin": "141.8만",
+          "margin": "8.6억",
+          "perMargin": "45.6만"
+        },
+        {
+          "name": "🍳 주방가전",
+          "weight": "2,362분",
+          "sales": "31.7억",
+          "perMin": "134.4만",
+          "margin": "10.7억",
+          "perMargin": "45.1만"
+        },
+        {
+          "name": "🍳 주방용품",
+          "weight": "1,545분",
+          "sales": "21.1억",
+          "perMin": "136.7만",
+          "margin": "6.8억",
+          "perMargin": "44.3만"
+        },
+        {
+          "name": "📦 대형가전",
+          "weight": "643분",
+          "sales": "9.3억",
+          "perMin": "143.8만",
+          "margin": "2.4억",
+          "perMargin": "36.8만"
+        }
+      ]
+    },
+    "3": {
+      "label": "3월",
+      "total": {
+        "weight": "5,449분",
+        "sales": "74.4억",
+        "perMin": "136.5만",
+        "revenue": "27.5억",
+        "margin": "23.3억",
+        "perMargin": "42.7만"
+      },
+      "cats": [
+        {
+          "name": "🏠 생활가전",
+          "weight": "2,290분",
+          "sales": "30.6억",
+          "perMin": "133.5만",
+          "margin": "9.9억",
+          "perMargin": "43.4만"
+        },
+        {
+          "name": "🍳 주방가전",
+          "weight": "1,433분",
+          "sales": "20.5억",
+          "perMin": "143.0만",
+          "margin": "6.2억",
+          "perMargin": "43.5만"
+        },
+        {
+          "name": "🍳 주방용품",
+          "weight": "1,369분",
+          "sales": "17.3억",
+          "perMin": "126.6만",
+          "margin": "5.5억",
+          "perMargin": "40.3만"
+        },
+        {
+          "name": "📦 대형가전",
+          "weight": "357분",
+          "sales": "6.0억",
+          "perMin": "168.4만",
+          "margin": "1.6억",
+          "perMargin": "44.3만"
+        }
+      ]
+    },
+    "4": {
+      "label": "4월",
+      "total": {
+        "weight": "4,975분",
+        "sales": "65.8억",
+        "perMin": "132.3만",
+        "revenue": "24.7억",
+        "margin": "21.0억",
+        "perMargin": "42.2만"
+      },
+      "cats": [
+        {
+          "name": "🏠 생활가전",
+          "weight": "2,829분",
+          "sales": "34.9억",
+          "perMin": "123.4만",
+          "margin": "11.7억",
+          "perMargin": "41.5만"
+        },
+        {
+          "name": "🍳 주방가전",
+          "weight": "1,035분",
+          "sales": "14.9억",
+          "perMin": "144.2만",
+          "margin": "4.5억",
+          "perMargin": "43.5만"
+        },
+        {
+          "name": "🍳 주방용품",
+          "weight": "918분",
+          "sales": "13.6억",
+          "perMin": "148.1만",
+          "margin": "3.9억",
+          "perMargin": "42.4만"
+        },
+        {
+          "name": "📦 대형가전",
+          "weight": "192분",
+          "sales": "2.4억",
+          "perMin": "122.9만",
+          "margin": "0.9억",
+          "perMargin": "45.3만"
+        }
+      ]
+    },
+    "5": {
+      "label": "5월",
+      "total": {
+        "weight": "7,118분",
+        "sales": "97.5억",
+        "perMin": "137.0만",
+        "revenue": "35.4억",
+        "margin": "29.7억",
+        "perMargin": "41.7만"
+      },
+      "cats": [
+        {
+          "name": "🏠 생활가전",
+          "weight": "3,375분",
+          "sales": "43.3억",
+          "perMin": "128.3만",
+          "margin": "14.1억",
+          "perMargin": "41.7만"
+        },
+        {
+          "name": "🍳 주방가전",
+          "weight": "1,404분",
+          "sales": "19.1억",
+          "perMin": "136.2만",
+          "margin": "6.1억",
+          "perMargin": "43.5만"
+        },
+        {
+          "name": "🍳 주방용품",
+          "weight": "2,102분",
+          "sales": "31.4억",
+          "perMin": "149.4만",
+          "margin": "8.8억",
+          "perMargin": "41.8만"
+        },
+        {
+          "name": "📦 대형가전",
+          "weight": "237분",
+          "sales": "3.7억",
+          "perMin": "155.5만",
+          "margin": "0.7억",
+          "perMargin": "30.7만"
+        }
+      ]
+    },
+    "6": {
+      "label": "6월",
+      "total": {
+        "weight": "6,642분",
+        "sales": "103.4억",
+        "perMin": "155.7만",
+        "revenue": "34.6억",
+        "margin": "28.6억",
+        "perMargin": "43.1만"
+      },
+      "cats": [
+        {
+          "name": "🏠 생활가전",
+          "weight": "3,528분",
+          "sales": "46.8억",
+          "perMin": "132.8만",
+          "margin": "15.0억",
+          "perMargin": "42.5만"
+        },
+        {
+          "name": "🍳 주방가전",
+          "weight": "760분",
+          "sales": "11.0억",
+          "perMin": "144.3만",
+          "margin": "3.3억",
+          "perMargin": "43.5만"
+        },
+        {
+          "name": "🍳 주방용품",
+          "weight": "2,200분",
+          "sales": "32.7억",
+          "perMin": "148.6만",
+          "margin": "9.7억",
+          "perMargin": "44.3만"
+        },
+        {
+          "name": "📦 대형가전",
+          "weight": "154분",
+          "sales": "12.9억",
+          "perMin": "836.2만",
+          "margin": "0.6억",
+          "perMargin": "37.9만"
+        }
+      ]
+    },
+    "7": {
+      "label": "7월",
+      "total": {
+        "weight": "1,338분",
+        "sales": "30.7억",
+        "perMin": "229.2만",
+        "revenue": "7.8억",
+        "margin": "5.8억",
+        "perMargin": "43.4만"
+      },
+      "cats": [
+        {
+          "name": "🏠 생활가전",
+          "weight": "343분",
+          "sales": "4.1억",
+          "perMin": "120.3만",
+          "margin": "1.5억",
+          "perMargin": "43.3만"
+        },
+        {
+          "name": "🍳 주방가전",
+          "weight": "337분",
+          "sales": "5.3억",
+          "perMin": "157.1만",
+          "margin": "1.5억",
+          "perMargin": "43.7만"
+        },
+        {
+          "name": "🍳 주방용품",
+          "weight": "533분",
+          "sales": "8.0억",
+          "perMin": "150.5만",
+          "margin": "2.3억",
+          "perMargin": "43.1만"
+        },
+        {
+          "name": "📦 대형가전",
+          "weight": "125분",
+          "sales": "13.2억",
+          "perMin": "1057.5만",
+          "margin": "0.5억",
+          "perMargin": "43.8만"
+        }
+      ]
+    }
+  },
+  "mdData": {
+    "ko": {
+      "name": "권오석",
+      "color": "#4d8fff",
+      "cat": "주방가전 · 주방용품",
+      "total": {
+        "cnt": 220,
+        "weight": "12,144분",
+        "sales": "159.1억",
+        "perMin": "131.0만",
+        "margin": "52.94억",
+        "perMargin": "43.6만",
+        "revenue": "60.8억"
+      },
+      "monthly": {
+        "sales": [
+          45.2,
+          32.5,
+          14.3,
+          9.5,
+          22.0,
+          28.0,
+          7.5
+        ],
+        "margin": [
+          15.6,
+          11.7,
+          4.9,
+          3.1,
+          6.8,
+          8.6,
+          2.3
+        ]
+      },
+      "cats": [
+        {
+          "name": "🍳 주방가전",
+          "sales": "82.47억",
+          "perMin": "133.2만",
+          "margin": "27.43억",
+          "pct": "52%"
+        },
+        {
+          "name": "🍳 주방용품",
+          "sales": "76.59억",
+          "perMin": "128.7만",
+          "margin": "25.51억",
+          "pct": "48%"
+        }
+      ],
+      "top5": [
+        {
+          "name": "[마이어]소형블렌더",
+          "sales": "13.64억",
+          "perMin": "155.4만",
+          "marginRate": "28.8%"
+        },
+        {
+          "name": "[라포레]플레이팅팬",
+          "sales": "12.65억",
+          "perMin": "130.5만",
+          "marginRate": "29.1%"
+        },
+        {
+          "name": "[파베르]엔드그레인도마세트",
+          "sales": "11.95억",
+          "perMin": "131.6만",
+          "marginRate": "34.5%"
+        },
+        {
+          "name": "[마이어]생선그릴",
+          "sales": "11.65억",
+          "perMin": "129.1만",
+          "marginRate": "36.2%"
+        },
+        {
+          "name": "[에버홈]올스텐찜기",
+          "sales": "10.82억",
+          "perMin": "137.6만",
+          "marginRate": "34.0%"
+        }
+      ]
+    },
+    "ma": {
+      "name": "마영호",
+      "color": "#ff4d6a",
+      "cat": "주방용품 · 주방가전",
+      "total": {
+        "cnt": 165,
+        "weight": "6,758분",
+        "sales": "115.1억",
+        "perMin": "170.3만",
+        "margin": "30.77억",
+        "perMargin": "45.5만",
+        "revenue": "37.4억"
+      },
+      "monthly": {
+        "sales": [
+          22.8,
+          14.5,
+          15.3,
+          17.3,
+          23.7,
+          15.6,
+          5.8
+        ],
+        "margin": [
+          6.0,
+          3.8,
+          4.0,
+          4.6,
+          6.3,
+          4.5,
+          1.5
+        ]
+      },
+      "cats": [
+        {
+          "name": "🍳 주방용품",
+          "sales": "73.07억",
+          "perMin": "168.0만",
+          "margin": "20.13억",
+          "pct": "64%"
+        },
+        {
+          "name": "🍳 주방가전",
+          "sales": "42.00억",
+          "perMin": "174.4만",
+          "margin": "10.63억",
+          "pct": "36%"
+        }
+      ],
+      "top5": [
+        {
+          "name": "[히트락]밀폐용기",
+          "sales": "54.95억",
+          "perMin": "158.4만",
+          "marginRate": "28.6%"
+        },
+        {
+          "name": "[휴롬]프라임착즙기",
+          "sales": "18.46억",
+          "perMin": "161.6만",
+          "marginRate": "28.6%"
+        },
+        {
+          "name": "[포트메리온]보타닉가든",
+          "sales": "13.92억",
+          "perMin": "230.0만",
+          "marginRate": "23.8%"
+        },
+        {
+          "name": "[쿠쿠]올스텐밥솥",
+          "sales": "12.65억",
+          "perMin": "199.4만",
+          "marginRate": "20.8%"
+        },
+        {
+          "name": "[쿠쿠]메탈릭에코밥솥",
+          "sales": "5.64억",
+          "perMin": "202.8만",
+          "marginRate": "19.7%"
+        }
+      ]
+    },
+    "kim": {
+      "name": "김응도",
+      "color": "#22c87a",
+      "cat": "생활가전",
+      "total": {
+        "cnt": 158,
+        "weight": "9,680분",
+        "sales": "132.6억",
+        "perMin": "136.9만",
+        "margin": "42.66억",
+        "perMargin": "44.1만",
+        "revenue": "50.9억"
+      },
+      "monthly": {
+        "sales": [
+          16.9,
+          25.1,
+          26.5,
+          19.4,
+          19.4,
+          23.8,
+          1.4
+        ],
+        "margin": [
+          5.8,
+          8.0,
+          8.7,
+          6.5,
+          6.2,
+          6.9,
+          0.5
+        ]
+      },
+      "cats": [
+        {
+          "name": "🏠 생활가전",
+          "sales": "132.56억",
+          "perMin": "136.9만",
+          "margin": "42.66억",
+          "pct": "100%"
+        }
+      ],
+      "top5": [
+        {
+          "name": "[코지마]안마의자",
+          "sales": "26.05억",
+          "perMin": "168.7만",
+          "marginRate": "26.8%"
+        },
+        {
+          "name": "[코지마]데코르안마의자",
+          "sales": "22.47억",
+          "perMin": "171.3만",
+          "marginRate": "26.6%"
+        },
+        {
+          "name": "[코지마]복부마사지기",
+          "sales": "16.86억",
+          "perMin": "125.0만",
+          "marginRate": "36.5%"
+        },
+        {
+          "name": "[코지마]가구형안마의자",
+          "sales": "13.94억",
+          "perMin": "129.7만",
+          "marginRate": "34.1%"
+        },
+        {
+          "name": "[로보락]물걸레청소기",
+          "sales": "11.55억",
+          "perMin": "182.9만",
+          "marginRate": "22.0%"
+        }
+      ]
+    },
+    "lim": {
+      "name": "임동진",
+      "color": "#f5a623",
+      "cat": "생활가전",
+      "total": {
+        "cnt": 106,
+        "weight": "6,436분",
+        "sales": "78.6억",
+        "perMin": "122.2만",
+        "margin": "26.54억",
+        "perMargin": "41.2만",
+        "revenue": "30.6억"
+      },
+      "monthly": {
+        "sales": [
+          7.8,
+          1.6,
+          4.0,
+          15.5,
+          23.9,
+          23.0,
+          2.7
+        ],
+        "margin": [
+          2.6,
+          0.6,
+          1.2,
+          5.2,
+          7.9,
+          8.1,
+          1.0
+        ]
+      },
+      "cats": [
+        {
+          "name": "🏠 생활가전",
+          "sales": "78.63억",
+          "perMin": "122.2만",
+          "margin": "26.54억",
+          "pct": "100%"
+        }
+      ],
+      "top5": [
+        {
+          "name": "[쿠진]마하라이트",
+          "sales": "25.59억",
+          "perMin": "142.7만",
+          "marginRate": "31.0%"
+        },
+        {
+          "name": "[한경희]무선폴딩팬",
+          "sales": "11.26억",
+          "perMin": "115.0만",
+          "marginRate": "33.4%"
+        },
+        {
+          "name": "[AGK]무선서큘레이터",
+          "sales": "9.42억",
+          "perMin": "100.0만",
+          "marginRate": "39.8%"
+        },
+        {
+          "name": "[AGK]킵온팬큘레이터",
+          "sales": "8.10억",
+          "perMin": "113.3만",
+          "marginRate": "35.1%"
+        },
+        {
+          "name": "[스타일리스]휴대용선풍기",
+          "sales": "7.57억",
+          "perMin": "131.8만",
+          "marginRate": "31.9%"
+        }
+      ]
+    },
+    "baek": {
+      "name": "백혜정",
+      "color": "#9b7fff",
+      "cat": "대형가전",
+      "total": {
+        "cnt": 76,
+        "weight": "1,913분",
+        "sales": "51.4억",
+        "perMin": "268.8만",
+        "margin": "7.69억",
+        "perMargin": "40.2만",
+        "revenue": "11.2억"
+      },
+      "monthly": {
+        "sales": [
+          4.0,
+          9.3,
+          6.0,
+          2.4,
+          3.7,
+          12.9,
+          13.2
+        ],
+        "margin": [
+          1.0,
+          2.4,
+          1.6,
+          0.9,
+          0.7,
+          0.6,
+          0.5
+        ]
+      },
+      "cats": [
+        {
+          "name": "📦 대형가전",
+          "sales": "51.42억",
+          "perMin": "268.8만",
+          "margin": "7.69억",
+          "pct": "100%"
+        }
+      ],
+      "top5": [
+        {
+          "name": "[삼성전자]비스포크에어컨",
+          "sales": "22.08억",
+          "perMin": "320.0만",
+          "marginRate": "11.3%"
+        },
+        {
+          "name": "[삼성전자]UHDTV",
+          "sales": "13.69억",
+          "perMin": "386.0만",
+          "marginRate": "12.5%"
+        },
+        {
+          "name": "[삼성전자]제습기",
+          "sales": "3.47억",
+          "perMin": "870.1만",
+          "marginRate": "3.8%"
+        },
+        {
+          "name": "[삼성전자]로봇청소기",
+          "sales": "3.09억",
+          "perMin": "173.7만",
+          "marginRate": "25.5%"
+        },
+        {
+          "name": "[LG전자]세탁기",
+          "sales": "2.02억",
+          "perMin": "265.7만",
+          "marginRate": "15.3%"
+        }
+      ]
+    }
+  },
+  "shinTrendData": {
+    "권오석": [
+      {
+        "month": "1",
+        "total_s": 45.18,
+        "shin_s": 3.02,
+        "shin_pct": 6.7
+      },
+      {
+        "month": "2",
+        "total_s": 32.53,
+        "shin_s": 3.67,
+        "shin_pct": 11.3
+      },
+      {
+        "month": "3",
+        "total_s": 14.29,
+        "shin_s": 5.55,
+        "shin_pct": 38.8
+      },
+      {
+        "month": "4",
+        "total_s": 9.54,
+        "shin_s": 4.33,
+        "shin_pct": 45.4
+      },
+      {
+        "month": "5",
+        "total_s": 21.99,
+        "shin_s": 12.44,
+        "shin_pct": 56.6
+      },
+      {
+        "month": "6",
+        "total_s": 28.04,
+        "shin_s": 18.15,
+        "shin_pct": 64.7
+      },
+      {
+        "month": "7",
+        "total_s": 7.49,
+        "shin_s": 3.61,
+        "shin_pct": 48.1
+      }
+    ],
+    "마영호": [
+      {
+        "month": "1",
+        "total_s": 22.79,
+        "shin_s": 0.01,
+        "shin_pct": 0.0
+      },
+      {
+        "month": "2",
+        "total_s": 14.55,
+        "shin_s": 5.9,
+        "shin_pct": 40.5
+      },
+      {
+        "month": "3",
+        "total_s": 15.29,
+        "shin_s": 0.2,
+        "shin_pct": 1.3
+      },
+      {
+        "month": "4",
+        "total_s": 17.28,
+        "shin_s": 1.74,
+        "shin_pct": 10.0
+      },
+      {
+        "month": "5",
+        "total_s": 23.72,
+        "shin_s": 0.27,
+        "shin_pct": 1.1
+      },
+      {
+        "month": "6",
+        "total_s": 15.61,
+        "shin_s": 0.0,
+        "shin_pct": 0.0
+      },
+      {
+        "month": "7",
+        "total_s": 5.82,
+        "shin_s": 0.0,
+        "shin_pct": 0.0
+      }
+    ],
+    "김응도": [
+      {
+        "month": "1",
+        "total_s": 16.91,
+        "shin_s": 0.0,
+        "shin_pct": 0.0
+      },
+      {
+        "month": "2",
+        "total_s": 25.15,
+        "shin_s": 0.0,
+        "shin_pct": 0.0
+      },
+      {
+        "month": "3",
+        "total_s": 26.52,
+        "shin_s": 0.0,
+        "shin_pct": 0.0
+      },
+      {
+        "month": "4",
+        "total_s": 19.39,
+        "shin_s": 0.0,
+        "shin_pct": 0.0
+      },
+      {
+        "month": "5",
+        "total_s": 19.41,
+        "shin_s": 3.72,
+        "shin_pct": 19.2
+      },
+      {
+        "month": "6",
+        "total_s": 23.81,
+        "shin_s": 6.5,
+        "shin_pct": 27.3
+      },
+      {
+        "month": "7",
+        "total_s": 1.39,
+        "shin_s": 0.0,
+        "shin_pct": 0.0
+      }
+    ],
+    "임동진": [
+      {
+        "month": "1",
+        "total_s": 7.8,
+        "shin_s": 4.01,
+        "shin_pct": 51.4
+      },
+      {
+        "month": "2",
+        "total_s": 1.57,
+        "shin_s": 0.0,
+        "shin_pct": 0.0
+      },
+      {
+        "month": "3",
+        "total_s": 4.05,
+        "shin_s": 2.71,
+        "shin_pct": 67.0
+      },
+      {
+        "month": "4",
+        "total_s": 15.53,
+        "shin_s": 6.57,
+        "shin_pct": 42.3
+      },
+      {
+        "month": "5",
+        "total_s": 23.9,
+        "shin_s": 21.09,
+        "shin_pct": 88.3
+      },
+      {
+        "month": "6",
+        "total_s": 23.03,
+        "shin_s": 22.35,
+        "shin_pct": 97.0
+      },
+      {
+        "month": "7",
+        "total_s": 2.74,
+        "shin_s": 2.74,
+        "shin_pct": 100.0
+      }
+    ],
+    "백혜정": [
+      {
+        "month": "1",
+        "total_s": 4.0,
+        "shin_s": 0.0,
+        "shin_pct": 0.0
+      },
+      {
+        "month": "2",
+        "total_s": 9.25,
+        "shin_s": 0.0,
+        "shin_pct": 0.0
+      },
+      {
+        "month": "3",
+        "total_s": 6.0,
+        "shin_s": 0.0,
+        "shin_pct": 0.0
+      },
+      {
+        "month": "4",
+        "total_s": 2.36,
+        "shin_s": 0.0,
+        "shin_pct": 0.0
+      },
+      {
+        "month": "5",
+        "total_s": 3.69,
+        "shin_s": 0.0,
+        "shin_pct": 0.0
+      },
+      {
+        "month": "6",
+        "total_s": 12.91,
+        "shin_s": 0.0,
+        "shin_pct": 0.0
+      },
+      {
+        "month": "7",
+        "total_s": 13.21,
+        "shin_s": 0.0,
+        "shin_pct": 0.0
+      }
+    ]
+  },
+  "kpiTarget": {
+    "sales": 1235,
+    "revenue": 403,
+    "margin": 323
+  },
+  "shinSummary": {
+    "shin": {
+      "cnt": 37,
+      "w": 1931.1899999999998,
+      "s": 23.03,
+      "ma": 7.64,
+      "perMin": 119.3,
+      "perMar": 39.6
+    },
+    "redo": {
+      "cnt": 77,
+      "w": 4354.24,
+      "s": 67.37,
+      "ma": 18.66,
+      "perMin": 154.7,
+      "perMar": 42.8
+    },
+    "existing": {
+      "cnt": 666,
+      "w": 33000.24,
+      "s": 475.81,
+      "ma": 144.63,
+      "perMin": 144.2,
+      "perMar": 43.8
+    }
+  },
+  "shinMonthly": {
+    "shin": [
+      2.92,
+      6.06,
+      1.02,
+      3.62,
+      6.08,
+      3.33,
+      0.0
+    ],
+    "redo": [
+      13.62,
+      10.72,
+      6.25,
+      11.29,
+      9.8,
+      13.68,
+      2.0
+    ]
+  }
+}
