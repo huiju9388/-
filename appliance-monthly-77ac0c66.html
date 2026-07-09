@@ -411,7 +411,7 @@ function renderYtdTable(){
       '<td class="mono" style="color:#0E9E6A;">' + d.total.perMargin + '</td>' +
       '<td class="mono" style="color:#8A97B0;">' + cum.toFixed(1) + '억</td></tr>';
   });
-  var ytdWeight = months.reduce(function(a,m){ return a + parseFloat(monthData[m].total.weight); }, 0);
+  var ytdWeight = months.reduce(function(a,m){ return a + parseFloat(String(monthData[m].total.weight).replace(/,/g,'')); }, 0);
   var ytdSales = months.reduce(function(a,m){ return a + parseFloat(monthData[m].total.sales); }, 0);
   var ytdRevenue = months.reduce(function(a,m){ return a + parseFloat(monthData[m].total.revenue); }, 0);
   var ytdMargin = months.reduce(function(a,m){ return a + parseFloat(monthData[m].total.margin); }, 0);
