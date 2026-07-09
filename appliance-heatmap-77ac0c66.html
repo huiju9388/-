@@ -100,6 +100,21 @@
 
   .empty-state{text-align:center;padding:50px 20px;color:var(--text3);}
 
+  /* 월별 흐름 차트 */
+  .flow-legend{display:flex;gap:18px;flex-wrap:wrap;margin-bottom:14px;font-size:12px;color:var(--text2);}
+  .fl-item{display:flex;align-items:center;gap:6px;font-weight:600;}
+  .fl-dot{width:11px;height:11px;border-radius:3px;display:inline-block;}
+  .fl-sub{font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;font-weight:400;}
+  .flow-chart-wrap{position:relative;width:100%;height:340px;margin-bottom:6px;}
+  .flow-text{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin-top:14px;font-size:12.5px;color:var(--text2);line-height:1.7;}
+  .flow-text h4{font-size:13px;color:var(--text1);font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:6px;}
+  .flow-text p{margin-bottom:9px;}
+  .flow-text p:last-child{margin-bottom:0;}
+  .flow-text b{color:var(--text1);font-weight:700;}
+  .flow-text .ft-up{color:var(--green);font-weight:700;}
+  .flow-text .ft-down{color:var(--red);font-weight:700;}
+  .flow-text .ft-note{font-size:11px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:4px;}
+
   @media(max-width:640px){
     .summary-grid{grid-template-columns:repeat(2,1fr);}
     .page-header,.search-wrap,.content,.results-bar{padding-left:16px;padding-right:16px;}
@@ -238,27 +253,28 @@
     <div class="insight-box" id="insightBox"></div>
   </div>
 
-  <!-- ===== 월×시간대 히트맵 (월별 흐름) ===== -->
+  <!-- ===== 월별 편성 흐름 (시간대 블록 스택 영역 차트) ===== -->
   <div class="section-title" style="margin-top:30px;">
-    <span>📅 월별 편성 흐름</span>
-    <span class="target-badge" id="mtargetBadge" style="background:var(--amber-bg);color:var(--amber);">월×시간대</span>
+    <span>📈 월별 편성 흐름</span>
+    <span class="target-badge" id="mtargetBadge" style="background:var(--amber-bg);color:var(--amber);">시간대 블록 흐름</span>
   </div>
-  <div class="section-sub" id="mtargetSub">1~7월(~7/5) 월별 편성 흐름 — 세로로 읽으면 달마다 편성 패턴이 어떻게 변해왔는지 보입니다</div>
+  <div class="section-sub" id="mtargetSub">시간대를 4개 블록으로 묶어 월별 편성량(가중분) 변화를 봅니다 — 전체 면적 = 그 달의 총 편성량</div>
 
   <div class="hm-card">
-    <div class="hm-wrap">
-      <div class="hm-grid" id="mhmGrid" style="grid-template-columns:56px repeat(24,44px) 72px;"></div>
+    <div class="flow-legend" id="flowLegend">
+      <span class="fl-item"><span class="fl-dot" style="background:#2563EB;"></span>오전 <span class="fl-sub">6~11시</span></span>
+      <span class="fl-item"><span class="fl-dot" style="background:#0E9E6A;"></span>오후 <span class="fl-sub">12~17시</span></span>
+      <span class="fl-item"><span class="fl-dot" style="background:#C97A10;"></span>프라임 <span class="fl-sub">18~23시</span></span>
+      <span class="fl-item"><span class="fl-dot" style="background:#8A97B0;"></span>심야 <span class="fl-sub">0~5시</span></span>
     </div>
-    <div class="hm-legend">
-      <div class="legend-grad"><span>가중분 적음</span><span class="grad-bar" style="background:linear-gradient(to right, rgba(201,122,16,0.10), rgba(201,122,16,0.90));"></span><span>가중분 많음</span></div>
-      <div><span class="legend-dot" style="border-color:var(--green);background:transparent;"></span>분당취급고 평균 대비 ↑ (115%+)</div>
-      <div><span class="legend-dot" style="border-color:var(--red);background:transparent;"></span>분당취급고 평균 대비 ↓ (85%-)</div>
-      <div>셀 상단 숫자 = 분당취급고(만원/분) · 하단 숫자 = 누적 가중분(분)</div>
+    <div class="flow-chart-wrap">
+      <canvas id="flowChart"></canvas>
     </div>
-    <div class="insight-box" id="minsightBox"></div>
+    <div class="flow-text" id="flowText"></div>
   </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
 let DATA = [];
 let ALL_BC = [];
@@ -314,116 +330,131 @@ function buildGrid(bcList){
   return { grid, totalW, totalS, totalCnt, avgPm, maxW };
 }
 
-// 월(0~11) × 시간(0~23) 집계
-function buildMonthGrid(bcList){
-  const grid = Array.from({length:12}, () => Array.from({length:24}, () => ({w:0, s:0, cnt:0, pm:0})));
+// 시간대 블록 정의: 오전(6~11) 오후(12~17) 프라임(18~23) 심야(0~5)
+const BLOCK_DEFS = [
+  { key:'오전',   color:'#2563EB', rgba:'rgba(37,99,235,0.82)',  test:h=>h>=6 && h<12 },
+  { key:'오후',   color:'#0E9E6A', rgba:'rgba(14,158,106,0.82)', test:h=>h>=12 && h<18 },
+  { key:'프라임', color:'#C97A10', rgba:'rgba(201,122,16,0.82)', test:h=>h>=18 && h<24 },
+  { key:'심야',   color:'#8A97B0', rgba:'rgba(138,151,176,0.82)', test:h=>h>=0 && h<6 }
+];
+function blockIndex(h){
+  for(let i=0;i<BLOCK_DEFS.length;i++){ if(BLOCK_DEFS[i].test(h)) return i; }
+  return -1;
+}
+
+// 월(0~11) × 블록(0~3) 가중분/취급고 집계
+function buildBlockFlow(bcList){
+  const w = Array.from({length:12}, () => [0,0,0,0]);
+  const s = Array.from({length:12}, () => [0,0,0,0]);
   const monthsSet = new Set();
-  let totalW=0, totalS=0, totalCnt=0, maxW=0;
+  let totalW=0, totalS=0;
   (bcList||[]).forEach(bc => {
-    const mi = parseInt(bc.m, 10) - 1; // 1월 -> 0
+    const mi = parseInt(bc.m, 10) - 1;
     const hi = parseHour(bc.t);
     if(isNaN(mi) || mi<0 || mi>11 || hi===null) return;
-    const c = grid[mi][hi];
-    c.w += bc.w||0; c.s += bc.s||0; c.cnt += 1;
-    totalW += bc.w||0; totalS += bc.s||0; totalCnt += 1;
+    const bi = blockIndex(hi);
+    if(bi<0) return;
+    w[mi][bi] += bc.w||0; s[mi][bi] += bc.s||0;
+    totalW += bc.w||0; totalS += bc.s||0;
     monthsSet.add(mi);
   });
-  grid.forEach(row => row.forEach(c => {
-    c.pm = c.w>0 ? (c.s*10000/c.w) : 0;
-    if(c.w > maxW) maxW = c.w;
-  }));
-  const avgPm = totalW>0 ? (totalS*10000/totalW) : 0;
   const activeMonths = [...monthsSet].sort((a,b)=>a-b);
-  return { grid, totalW, totalS, totalCnt, avgPm, maxW, activeMonths };
+  return { w, s, activeMonths, totalW, totalS };
 }
 
-// 월 히트맵 셀 (앰버 계열 강조)
-function cellHTMLMonth(c, maxW, avgPm){
-  if(!c || c.w<=0){
-    return `<div class="hm-cell hm-empty"></div>`;
-  }
-  const intensity = maxW>0 ? Math.min(1, c.w/maxW) : 0;
-  const alpha = (0.12 + intensity*0.78).toFixed(2);
-  const textColor = intensity>0.55 ? '#fff' : 'var(--text1)';
-  let borderColor = 'var(--border2)';
-  if(avgPm>0){
-    if(c.pm >= avgPm*1.15) borderColor = 'var(--green)';
-    else if(c.pm <= avgPm*0.85) borderColor = 'var(--red)';
-  }
-  const tip = `가중분 ${c.w.toFixed(0)}분 · 취급고 ${c.s.toFixed(2)}억 · 분당취급고 ${c.pm.toFixed(1)}만 · 방송 ${c.cnt}회`;
-  return `<div class="hm-cell" style="background:rgba(201,122,16,${alpha});border-color:${borderColor};color:${textColor};" title="${tip}">
-    <div class="hm-pm">${c.pm.toFixed(0)}</div>
-    <div class="hm-w">${c.w.toFixed(0)}분</div>
-  </div>`;
-}
-
-function renderMonthHeatmapGrid(result){
-  const { grid, maxW, avgPm, activeMonths } = result;
-  let headHTML = `<div class="hm-headcell hm-corner" style="position:sticky;left:0;z-index:3;">월\\시</div>`;
-  for(let h=0; h<24; h++){ headHTML += `<div class="hm-headcell">${h}시</div>`; }
-  headHTML += `<div class="hm-headcell">합계</div>`;
-
-  const rows = (activeMonths && activeMonths.length) ? activeMonths : [...Array(12).keys()];
-  let bodyHTML = '';
-  rows.forEach(mi => {
-    let rowW=0, rowS=0, rowCells='';
-    for(let h=0; h<24; h++){
-      const c = grid[mi][h];
-      rowW += c.w; rowS += c.s;
-      rowCells += cellHTMLMonth(c, maxW, avgPm);
+let flowChartInst = null;
+function renderFlowChart(result){
+  const { w, activeMonths } = result;
+  const labels = activeMonths.map(mi => MONTH_LABELS[mi]);
+  const datasets = BLOCK_DEFS.map((b, bi) => ({
+    label: b.key,
+    data: activeMonths.map(mi => Math.round(w[mi][bi])),
+    backgroundColor: b.rgba,
+    borderColor: b.color,
+    borderWidth: 1,
+    fill: true,
+    tension: 0.3,
+    pointRadius: 2,
+    pointBackgroundColor: b.color
+  }));
+  const canvas = document.getElementById('flowChart');
+  if(flowChartInst){ flowChartInst.destroy(); }
+  if(typeof Chart === 'undefined'){ return; }
+  flowChartInst = new Chart(canvas, {
+    type:'line',
+    data:{ labels, datasets },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      interaction:{ mode:'index', intersect:false },
+      plugins:{
+        legend:{ display:false },
+        tooltip:{ callbacks:{ label:(ctx)=> `${ctx.dataset.label}: ${ctx.parsed.y.toLocaleString()}분` } }
+      },
+      scales:{
+        x:{ stacked:true, grid:{ display:false }, ticks:{ color:'#8A97B0' } },
+        y:{ stacked:true, title:{ display:true, text:'가중분 (분)', color:'#8A97B0' }, grid:{ color:'rgba(99,120,160,0.15)' }, ticks:{ color:'#8A97B0' } }
+      }
     }
-    const rowPm = rowW>0 ? (rowS*10000/rowW) : 0;
-    bodyHTML += `<div class="hm-daylabel" style="position:sticky;left:0;z-index:2;background:var(--bg3);">${MONTH_LABELS[mi]}</div>${rowCells}<div class="hm-total">${rowW>0?rowPm.toFixed(0):'-'}${rowW>0?'<span style="font-size:8px;font-weight:400;">만</span>':''}</div>`;
   });
-
-  let colTotalsCells = '';
-  let grandW=0, grandS=0;
-  for(let h=0; h<24; h++){
-    let cw=0, cs=0;
-    rows.forEach(mi => { cw += grid[mi][h].w; cs += grid[mi][h].s; });
-    grandW += cw; grandS += cs;
-    const cpm = cw>0 ? (cs*10000/cw) : 0;
-    colTotalsCells += `<div class="hm-total">${cw>0?cpm.toFixed(0):'-'}</div>`;
-  }
-  const grandPm = grandW>0 ? (grandS*10000/grandW) : 0;
-  bodyHTML += `<div class="hm-daylabel" style="position:sticky;left:0;z-index:2;background:var(--bg3);">합계</div>${colTotalsCells}<div class="hm-total" style="background:var(--amber-bg);color:var(--amber);">${grandW>0?grandPm.toFixed(0):'-'}<span style="font-size:8px;">만</span></div>`;
-
-  document.getElementById('mhmGrid').innerHTML = headHTML + bodyHTML;
 }
 
-function renderMonthInsight(result){
-  const { grid, totalW, avgPm, activeMonths } = result;
-  const box = document.getElementById('minsightBox');
-  if(totalW<=0){
-    box.innerHTML = `<div class="insight-line">⚠️ 편성 데이터가 없습니다.</div>`;
+// 월별 흐름 설명 텍스트 동적 생성
+function renderFlowText(result, targetLabel){
+  const { w, s, activeMonths, totalW } = result;
+  const box = document.getElementById('flowText');
+  if(totalW<=0 || activeMonths.length===0){
+    box.innerHTML = `<p>편성 데이터가 없습니다.</p>`;
     return;
   }
-  const rows = (activeMonths && activeMonths.length) ? activeMonths : [...Array(12).keys()];
-  // 월별 가중분/분당취급고 요약
-  const monthStats = rows.map(mi => {
-    let w=0,s=0;
-    for(let h=0;h<24;h++){ w+=grid[mi][h].w; s+=grid[mi][h].s; }
-    return { mi, w, s, pm: w>0?(s*10000/w):0 };
+  // 월별 요약 (완결월/진행월 구분: 마지막 활성월은 진행중 가능성)
+  const ms = activeMonths.map(mi => {
+    const mw = w[mi].reduce((a,b)=>a+b,0);
+    const msales = s[mi].reduce((a,b)=>a+b,0);
+    return { mi, w:mw, s:msales, pm: mw>0?(msales*10000/mw):0, blocks:w[mi] };
   });
-  const lines = [];
-  // 최저 가중분 월 (편성 저점)
-  const active = monthStats.filter(m=>m.w>0);
-  if(active.length>=2){
-    const minMonth = active.reduce((a,b)=> b.w<a.w?b:a);
-    const maxMonth = active.reduce((a,b)=> b.w>a.w?b:a);
-    lines.push(`<div class="insight-line">📉 편성 저점은 <b>${MONTH_LABELS[minMonth.mi]}</b>(가중분 ${minMonth.w.toFixed(0)}분 · 취급고 ${minMonth.s.toFixed(1)}억)이고, 정점은 <b>${MONTH_LABELS[maxMonth.mi]}</b>(가중분 ${maxMonth.w.toFixed(0)}분 · 취급고 ${maxMonth.s.toFixed(1)}억)입니다.</div>`);
-    // 효율 최고 월
-    const bestPm = active.reduce((a,b)=> b.pm>a.pm?b:a);
-    lines.push(`<div class="insight-line">⚡ 분당취급고 효율이 가장 높은 달은 <b>${MONTH_LABELS[bestPm.mi]}</b>(${bestPm.pm.toFixed(1)}만원/분 · 전체 평균 ${avgPm.toFixed(1)}만원 대비 ${(bestPm.pm/avgPm*100).toFixed(0)}%)입니다.</div>`);
+  const lastMi = activeMonths[activeMonths.length-1];
+  // 진행중 판정: 마지막 달 가중분이 직전 달의 40% 미만이면 진행중으로 간주
+  const complete = ms.filter(m => m.mi !== lastMi || ms.length<2 || m.w >= (ms[ms.length-2].w*0.4));
+  const pool = complete.length>=2 ? complete : ms;
+
+  const minM = pool.reduce((a,b)=> b.w<a.w?b:a);
+  const maxM = pool.reduce((a,b)=> b.w>a.w?b:a);
+  const bestPm = pool.reduce((a,b)=> b.pm>a.pm?b:a);
+
+  // 프라임 비중 추세 (첫 완결월 vs 마지막 완결월)
+  const firstC = pool[0], lastC = pool[pool.length-1];
+  const primeFirst = firstC.w>0 ? firstC.blocks[2]/firstC.w*100 : 0;
+  const primeLast  = lastC.w>0 ? lastC.blocks[2]/lastC.w*100 : 0;
+  const primeDelta = primeLast - primeFirst;
+
+  // 저점월 대비 직전월 블록 감소 진단
+  let dropLine = '';
+  const minIdx = activeMonths.indexOf(minM.mi);
+  if(minIdx > 0){
+    const prevMi = activeMonths[minIdx-1];
+    const diffs = BLOCK_DEFS.map((b,bi)=>({ key:b.key, prev:w[prevMi][bi], cur:w[minM.mi][bi], d:w[minM.mi][bi]-w[prevMi][bi] }));
+    const worst = diffs.reduce((a,b)=> b.d<a.d?b:a);
+    if(worst.d < 0){
+      dropLine = `저점인 <b>${MONTH_LABELS[minM.mi]}</b>은 직전 <b>${MONTH_LABELS[prevMi]}</b> 대비 <b>${worst.key}</b> 편성이 <span class="ft-down">${Math.abs(worst.d).toFixed(0)}분(${(Math.abs(worst.d)/(worst.prev||1)*100).toFixed(0)}%) 감소</span>한 게 가장 컸습니다.`;
+    }
   }
-  box.innerHTML = lines.join('');
+
+  const noteProgress = (lastMi !== pool[pool.length-1].mi) ? `<div class="ft-note">※ ${MONTH_LABELS[lastMi]}은 아직 진행 중(월 마감 전)이라 흐름 판정에서 제외했습니다.</div>` : '';
+
+  box.innerHTML = `
+    <h4>📊 ${targetLabel} — 편성 흐름 요약</h4>
+    <p>총 편성량(가중분) 기준, 편성이 가장 많았던 달은 <b>${MONTH_LABELS[maxM.mi]}</b>(${maxM.w.toLocaleString(undefined,{maximumFractionDigits:0})}분 · 취급고 ${maxM.s.toFixed(1)}억)이고, 가장 적었던 <b>저점은 ${MONTH_LABELS[minM.mi]}</b>(${minM.w.toLocaleString(undefined,{maximumFractionDigits:0})}분 · 취급고 ${minM.s.toFixed(1)}억)입니다. ${dropLine}</p>
+    <p>시간대 구성을 보면, <b>오후(12~17시)가 모든 달에서 편성의 중심축</b>입니다. 효율(분당취급고)이 가장 높았던 달은 <b>${MONTH_LABELS[bestPm.mi]}</b>로 <span class="ft-up">${bestPm.pm.toFixed(1)}만원/분</span>이었습니다.</p>
+    <p>프라임(18~23시) 비중은 ${MONTH_LABELS[firstC.mi]} <b>${primeFirst.toFixed(0)}%</b> → ${MONTH_LABELS[lastC.mi]} <b>${primeLast.toFixed(0)}%</b>로 ${primeDelta>=1?`<span class="ft-up">${primeDelta.toFixed(0)}%p 확대</span>`:(primeDelta<=-1?`<span class="ft-down">${Math.abs(primeDelta).toFixed(0)}%p 축소</span>`:'큰 변화 없이 유지')}됐습니다. 프라임 층 두께가 얇아지는 달은 그 달의 전체 취급고 저하와 맞물리는 경향이 있어, 편성 저점 진단 시 프라임 편성 확보 여부를 우선 점검할 필요가 있습니다.</p>
+    ${noteProgress}
+  `;
 }
 
-function renderMonthHeatmap(bcList, labelText){
-  const result = buildMonthGrid(bcList);
-  document.getElementById('mtargetSub').textContent = labelText;
-  renderMonthHeatmapGrid(result);
-  renderMonthInsight(result);
+function renderMonthFlow(bcList, targetLabel, subText){
+  const result = buildBlockFlow(bcList);
+  document.getElementById('mtargetSub').textContent = subText;
+  renderFlowChart(result);
+  renderFlowText(result, targetLabel);
 }
 
 function cellHTML(c, maxW, avgPm){
@@ -543,9 +574,9 @@ function renderHeatmapFor(product){
   renderInsight(result);
 
   if(product){
-    renderMonthHeatmap(bcList, `${product.brand} · ${product.name} — 월별 편성 흐름 (세로로 읽으면 달마다 편성 패턴 변화가 보입니다)`);
+    renderMonthFlow(bcList, `${product.brand} · ${product.name}`, `${product.brand} · ${product.name} — 시간대 블록별 월간 편성량 흐름`);
   } else {
-    renderMonthHeatmap(bcList, `전체 가전팀 합산 · 1~7월(~7/5) 월별 편성 흐름 — 세로로 읽으면 달마다 편성 패턴이 어떻게 변해왔는지 보입니다`);
+    renderMonthFlow(bcList, `전체 가전팀 합산`, `시간대를 4개 블록으로 묶어 월별 편성량(가중분) 변화를 봅니다 — 전체 면적 = 그 달의 총 편성량`);
   }
 }
 
@@ -566,7 +597,7 @@ function renderHeatmapForCategory(cat){
   renderHeatmapGrid(result);
   renderInsight(result);
 
-  renderMonthHeatmap(bcList, `${cat} 카테고리 합산 — 월별 편성 흐름 (세로로 읽으면 달마다 편성 패턴 변화가 보입니다)`);
+  renderMonthFlow(bcList, `${cat} 카테고리 합산`, `${cat} 카테고리 — 시간대 블록별 월간 편성량 흐름`);
 }
 
 function onInput(val){
