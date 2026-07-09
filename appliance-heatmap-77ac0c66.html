@@ -237,6 +237,26 @@
     </div>
     <div class="insight-box" id="insightBox"></div>
   </div>
+
+  <!-- ===== 월×시간대 히트맵 (월별 흐름) ===== -->
+  <div class="section-title" style="margin-top:30px;">
+    <span>📅 월별 편성 흐름</span>
+    <span class="target-badge" id="mtargetBadge" style="background:var(--amber-bg);color:var(--amber);">월×시간대</span>
+  </div>
+  <div class="section-sub" id="mtargetSub">1~7월(~7/5) 월별 편성 흐름 — 세로로 읽으면 달마다 편성 패턴이 어떻게 변해왔는지 보입니다</div>
+
+  <div class="hm-card">
+    <div class="hm-wrap">
+      <div class="hm-grid" id="mhmGrid" style="grid-template-columns:56px repeat(24,44px) 72px;"></div>
+    </div>
+    <div class="hm-legend">
+      <div class="legend-grad"><span>가중분 적음</span><span class="grad-bar" style="background:linear-gradient(to right, rgba(201,122,16,0.10), rgba(201,122,16,0.90));"></span><span>가중분 많음</span></div>
+      <div><span class="legend-dot" style="border-color:var(--green);background:transparent;"></span>분당취급고 평균 대비 ↑ (115%+)</div>
+      <div><span class="legend-dot" style="border-color:var(--red);background:transparent;"></span>분당취급고 평균 대비 ↓ (85%-)</div>
+      <div>셀 상단 숫자 = 분당취급고(만원/분) · 하단 숫자 = 누적 가중분(분)</div>
+    </div>
+    <div class="insight-box" id="minsightBox"></div>
+  </div>
 </div>
 
 <script>
@@ -247,6 +267,7 @@ let currentTarget = null; // null = 전체 합산
 
 const DAY_LABELS = ['월','화','수','목','금','토','일'];
 const DAY_GETDAY = [1,2,3,4,5,6,0]; // Date.getDay() 매핑 (0=일)
+const MONTH_LABELS = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
 const CAT_COLORS = { '생활가전':'#2563EB','주방가전':'#0E9E6A','주방용품':'#6D3FC8','대형가전':'#C97A10' };
 
 fetch('data/search-data.json').then(r => r.json()).then(d => {
@@ -291,6 +312,118 @@ function buildGrid(bcList){
   }));
   const avgPm = totalW>0 ? (totalS*10000/totalW) : 0;
   return { grid, totalW, totalS, totalCnt, avgPm, maxW };
+}
+
+// 월(0~11) × 시간(0~23) 집계
+function buildMonthGrid(bcList){
+  const grid = Array.from({length:12}, () => Array.from({length:24}, () => ({w:0, s:0, cnt:0, pm:0})));
+  const monthsSet = new Set();
+  let totalW=0, totalS=0, totalCnt=0, maxW=0;
+  (bcList||[]).forEach(bc => {
+    const mi = parseInt(bc.m, 10) - 1; // 1월 -> 0
+    const hi = parseHour(bc.t);
+    if(isNaN(mi) || mi<0 || mi>11 || hi===null) return;
+    const c = grid[mi][hi];
+    c.w += bc.w||0; c.s += bc.s||0; c.cnt += 1;
+    totalW += bc.w||0; totalS += bc.s||0; totalCnt += 1;
+    monthsSet.add(mi);
+  });
+  grid.forEach(row => row.forEach(c => {
+    c.pm = c.w>0 ? (c.s*10000/c.w) : 0;
+    if(c.w > maxW) maxW = c.w;
+  }));
+  const avgPm = totalW>0 ? (totalS*10000/totalW) : 0;
+  const activeMonths = [...monthsSet].sort((a,b)=>a-b);
+  return { grid, totalW, totalS, totalCnt, avgPm, maxW, activeMonths };
+}
+
+// 월 히트맵 셀 (앰버 계열 강조)
+function cellHTMLMonth(c, maxW, avgPm){
+  if(!c || c.w<=0){
+    return `<div class="hm-cell hm-empty"></div>`;
+  }
+  const intensity = maxW>0 ? Math.min(1, c.w/maxW) : 0;
+  const alpha = (0.12 + intensity*0.78).toFixed(2);
+  const textColor = intensity>0.55 ? '#fff' : 'var(--text1)';
+  let borderColor = 'var(--border2)';
+  if(avgPm>0){
+    if(c.pm >= avgPm*1.15) borderColor = 'var(--green)';
+    else if(c.pm <= avgPm*0.85) borderColor = 'var(--red)';
+  }
+  const tip = `가중분 ${c.w.toFixed(0)}분 · 취급고 ${c.s.toFixed(2)}억 · 분당취급고 ${c.pm.toFixed(1)}만 · 방송 ${c.cnt}회`;
+  return `<div class="hm-cell" style="background:rgba(201,122,16,${alpha});border-color:${borderColor};color:${textColor};" title="${tip}">
+    <div class="hm-pm">${c.pm.toFixed(0)}</div>
+    <div class="hm-w">${c.w.toFixed(0)}분</div>
+  </div>`;
+}
+
+function renderMonthHeatmapGrid(result){
+  const { grid, maxW, avgPm, activeMonths } = result;
+  let headHTML = `<div class="hm-headcell hm-corner" style="position:sticky;left:0;z-index:3;">월\\시</div>`;
+  for(let h=0; h<24; h++){ headHTML += `<div class="hm-headcell">${h}시</div>`; }
+  headHTML += `<div class="hm-headcell">합계</div>`;
+
+  const rows = (activeMonths && activeMonths.length) ? activeMonths : [...Array(12).keys()];
+  let bodyHTML = '';
+  rows.forEach(mi => {
+    let rowW=0, rowS=0, rowCells='';
+    for(let h=0; h<24; h++){
+      const c = grid[mi][h];
+      rowW += c.w; rowS += c.s;
+      rowCells += cellHTMLMonth(c, maxW, avgPm);
+    }
+    const rowPm = rowW>0 ? (rowS*10000/rowW) : 0;
+    bodyHTML += `<div class="hm-daylabel" style="position:sticky;left:0;z-index:2;background:var(--bg3);">${MONTH_LABELS[mi]}</div>${rowCells}<div class="hm-total">${rowW>0?rowPm.toFixed(0):'-'}${rowW>0?'<span style="font-size:8px;font-weight:400;">만</span>':''}</div>`;
+  });
+
+  let colTotalsCells = '';
+  let grandW=0, grandS=0;
+  for(let h=0; h<24; h++){
+    let cw=0, cs=0;
+    rows.forEach(mi => { cw += grid[mi][h].w; cs += grid[mi][h].s; });
+    grandW += cw; grandS += cs;
+    const cpm = cw>0 ? (cs*10000/cw) : 0;
+    colTotalsCells += `<div class="hm-total">${cw>0?cpm.toFixed(0):'-'}</div>`;
+  }
+  const grandPm = grandW>0 ? (grandS*10000/grandW) : 0;
+  bodyHTML += `<div class="hm-daylabel" style="position:sticky;left:0;z-index:2;background:var(--bg3);">합계</div>${colTotalsCells}<div class="hm-total" style="background:var(--amber-bg);color:var(--amber);">${grandW>0?grandPm.toFixed(0):'-'}<span style="font-size:8px;">만</span></div>`;
+
+  document.getElementById('mhmGrid').innerHTML = headHTML + bodyHTML;
+}
+
+function renderMonthInsight(result){
+  const { grid, totalW, avgPm, activeMonths } = result;
+  const box = document.getElementById('minsightBox');
+  if(totalW<=0){
+    box.innerHTML = `<div class="insight-line">⚠️ 편성 데이터가 없습니다.</div>`;
+    return;
+  }
+  const rows = (activeMonths && activeMonths.length) ? activeMonths : [...Array(12).keys()];
+  // 월별 가중분/분당취급고 요약
+  const monthStats = rows.map(mi => {
+    let w=0,s=0;
+    for(let h=0;h<24;h++){ w+=grid[mi][h].w; s+=grid[mi][h].s; }
+    return { mi, w, s, pm: w>0?(s*10000/w):0 };
+  });
+  const lines = [];
+  // 최저 가중분 월 (편성 저점)
+  const active = monthStats.filter(m=>m.w>0);
+  if(active.length>=2){
+    const minMonth = active.reduce((a,b)=> b.w<a.w?b:a);
+    const maxMonth = active.reduce((a,b)=> b.w>a.w?b:a);
+    lines.push(`<div class="insight-line">📉 편성 저점은 <b>${MONTH_LABELS[minMonth.mi]}</b>(가중분 ${minMonth.w.toFixed(0)}분 · 취급고 ${minMonth.s.toFixed(1)}억)이고, 정점은 <b>${MONTH_LABELS[maxMonth.mi]}</b>(가중분 ${maxMonth.w.toFixed(0)}분 · 취급고 ${maxMonth.s.toFixed(1)}억)입니다.</div>`);
+    // 효율 최고 월
+    const bestPm = active.reduce((a,b)=> b.pm>a.pm?b:a);
+    lines.push(`<div class="insight-line">⚡ 분당취급고 효율이 가장 높은 달은 <b>${MONTH_LABELS[bestPm.mi]}</b>(${bestPm.pm.toFixed(1)}만원/분 · 전체 평균 ${avgPm.toFixed(1)}만원 대비 ${(bestPm.pm/avgPm*100).toFixed(0)}%)입니다.</div>`);
+  }
+  box.innerHTML = lines.join('');
+}
+
+function renderMonthHeatmap(bcList, labelText){
+  const result = buildMonthGrid(bcList);
+  document.getElementById('mtargetSub').textContent = labelText;
+  renderMonthHeatmapGrid(result);
+  renderMonthInsight(result);
 }
 
 function cellHTML(c, maxW, avgPm){
@@ -408,6 +541,12 @@ function renderHeatmapFor(product){
   renderSummary(result, cnt);
   renderHeatmapGrid(result);
   renderInsight(result);
+
+  if(product){
+    renderMonthHeatmap(bcList, `${product.brand} · ${product.name} — 월별 편성 흐름 (세로로 읽으면 달마다 편성 패턴 변화가 보입니다)`);
+  } else {
+    renderMonthHeatmap(bcList, `전체 가전팀 합산 · 1~7월(~7/5) 월별 편성 흐름 — 세로로 읽으면 달마다 편성 패턴이 어떻게 변해왔는지 보입니다`);
+  }
 }
 
 function renderHeatmapForCategory(cat){
@@ -426,6 +565,8 @@ function renderHeatmapForCategory(cat){
   renderSummary(result, catProducts.length);
   renderHeatmapGrid(result);
   renderInsight(result);
+
+  renderMonthHeatmap(bcList, `${cat} 카테고리 합산 — 월별 편성 흐름 (세로로 읽으면 달마다 편성 패턴 변화가 보입니다)`);
 }
 
 function onInput(val){
