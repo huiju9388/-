@@ -284,6 +284,10 @@ const DAY_GETDAY = [1,2,3,4,5,6,0]; // Date.getDay() 매핑 (0=일)
 const MONTH_LABELS = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
 const CAT_COLORS = { '생활가전':'#2563EB','주방가전':'#0E9E6A','주방용품':'#6D3FC8','대형가전':'#C97A10' };
 
+// 26년 가중분 목표(연계) — SK스토아 전사 및 가전팀 목표 가중분 시트 기준
+const COMPANY_ANNUAL_WEIGHT = 525600; // 전사 연간 가중분
+const TEAM_ANNUAL_TARGET_WEIGHT = 74277; // 가전팀 연간 목표 가중분
+
 fetch('data/search-data.json').then(r => r.json()).then(d => {
   DATA = d;
   ALL_BC = DATA.flatMap(p => (p.bc||[]).map(bc => bc));
@@ -491,8 +495,12 @@ function cellHTML(c, maxW, avgPm){
 
 function renderSummary(result, cnt){
   const { totalW, totalS, totalCnt, avgPm } = result;
+  const companyPct = COMPANY_ANNUAL_WEIGHT>0 ? (totalW / COMPANY_ANNUAL_WEIGHT * 100) : 0;
+  const teamPct = TEAM_ANNUAL_TARGET_WEIGHT>0 ? (totalW / TEAM_ANNUAL_TARGET_WEIGHT * 100) : 0;
   document.getElementById('summaryGrid').innerHTML = `
-    <div class="sum-card"><div class="sum-label">누적 가중분</div><div class="sum-val">${totalW.toFixed(0)}<span class="sum-unit">분</span></div></div>
+    <div class="sum-card"><div class="sum-label">누적 가중분</div><div class="sum-val">${totalW.toFixed(0)}<span class="sum-unit">분</span></div>
+      <div style="font-size:10px;color:var(--text3);margin-top:5px;font-family:'IBM Plex Mono',monospace;">전사 <span style="color:#4d8fff;font-weight:700;">${companyPct.toFixed(2)}%</span> · 팀목표 <span style="color:#0E9E6A;font-weight:700;">${teamPct.toFixed(1)}%</span></div>
+    </div>
     <div class="sum-card"><div class="sum-label">누적 취급고 (VAT포함)</div><div class="sum-val" style="color:var(--blue);">${totalS.toFixed(2)}<span class="sum-unit">억</span></div></div>
     <div class="sum-card"><div class="sum-label">통합 분당취급고</div><div class="sum-val">${avgPm.toFixed(1)}<span class="sum-unit">만/분</span></div></div>
     <div class="sum-card"><div class="sum-label">방송 횟수</div><div class="sum-val">${totalCnt}<span class="sum-unit">회</span></div></div>
