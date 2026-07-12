@@ -284,9 +284,23 @@ const DAY_GETDAY = [1,2,3,4,5,6,0]; // Date.getDay() 매핑 (0=일)
 const MONTH_LABELS = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
 const CAT_COLORS = { '생활가전':'#2563EB','주방가전':'#0E9E6A','주방용품':'#6D3FC8','대형가전':'#C97A10' };
 
-// 26년 가중분 목표(연계) — SK스토아 전사 및 가전팀 목표 가중분 시트 기준
-const COMPANY_ANNUAL_WEIGHT = 525600; // 전사 연간 가중분
+// 26년 가중분 목표 — SK스토아 전사 및 가전팀 목표 가중분 시트 기준 (전사는 월별 목표, 팀은 연간 목표)
+const MONTHLY_COMPANY_WEIGHT = {1:44640,2:40320,3:44640,4:43200,5:44640,6:43200,7:44640}; // 전사 월별 가중분 목표 (1~7월, 데이터 존재 구간)
 const TEAM_ANNUAL_TARGET_WEIGHT = 74277; // 가전팀 연간 목표 가중분
+
+// 현재 필터링 범위(bcList)의 '전사 편성비중' = 월별(해당 범위 사용분÷전사 월별 목표) 비율의 평균
+function avgCompanyPct(bcList){
+  const monthlyW = {};
+  (bcList||[]).forEach(bc => {
+    const m = parseInt(bc.m, 10);
+    if(!m || !MONTHLY_COMPANY_WEIGHT[m]) return; // 목표 데이터가 있는 1~7월만 집계
+    monthlyW[m] = (monthlyW[m]||0) + (bc.w||0);
+  });
+  const months = Object.keys(MONTHLY_COMPANY_WEIGHT).map(Number);
+  if(months.length === 0) return 0;
+  const sumRatio = months.reduce((acc, m) => acc + ((monthlyW[m]||0) / MONTHLY_COMPANY_WEIGHT[m] * 100), 0);
+  return sumRatio / months.length;
+}
 
 fetch('data/search-data.json').then(r => r.json()).then(d => {
   DATA = d;
@@ -493,9 +507,9 @@ function cellHTML(c, maxW, avgPm){
   </div>`;
 }
 
-function renderSummary(result, cnt){
+function renderSummary(result, cnt, bcList){
   const { totalW, totalS, totalCnt, avgPm } = result;
-  const companyPct = COMPANY_ANNUAL_WEIGHT>0 ? (totalW / COMPANY_ANNUAL_WEIGHT * 100) : 0;
+  const companyPct = avgCompanyPct(bcList);
   const teamPct = TEAM_ANNUAL_TARGET_WEIGHT>0 ? (totalW / TEAM_ANNUAL_TARGET_WEIGHT * 100) : 0;
   document.getElementById('summaryGrid').innerHTML = `
     <div class="sum-card"><div class="sum-label">누적 가중분</div><div class="sum-val">${totalW.toFixed(0)}<span class="sum-unit">분</span></div>
@@ -590,7 +604,7 @@ function renderHeatmapFor(product){
     document.getElementById('targetSub').textContent = '97개 상품 전체 누적 편성 — 상품을 검색해 특정 상품으로 전환할 수 있습니다';
   }
 
-  renderSummary(result, cnt);
+  renderSummary(result, cnt, bcList);
   renderHeatmapGrid(result);
   renderInsight(result);
 
@@ -614,7 +628,7 @@ function renderHeatmapForCategory(cat){
   document.getElementById('targetBadge').style.background = catColor+'18';
   document.getElementById('targetSub').textContent = `${catProducts.length}개 상품 누적 — 카테고리 전체의 요일×시간대별 편성 분포`;
 
-  renderSummary(result, catProducts.length);
+  renderSummary(result, catProducts.length, bcList);
   renderHeatmapGrid(result);
   renderInsight(result);
 
