@@ -374,7 +374,7 @@
 
   <div id="view-all">
     <table class="diff-table">
-      <thead><tr><th>월</th><th>가중분</th><th>취급고 (VAT포함)</th><th>분당취급고</th><th>매출 (V-)</th><th>한계이익</th><th>분당한계이익</th><th>누적취급고</th></tr></thead>
+      <thead><tr><th>월</th><th>가중분</th><th>전사비중</th><th>팀목표비중</th><th>취급고 (VAT포함)</th><th>분당취급고</th><th>매출 (V-)</th><th>한계이익</th><th>분당한계이익</th><th>누적취급고</th></tr></thead>
       <tbody id="ytd-table-body"></tbody>
     </table>
   </div>
@@ -385,8 +385,10 @@
 </div>
 <div class="divider"></div><div class="footer">SK스토아 가전팀 · 구글시트 PGM 실적 기준 · VAT포함 · 월 컬럼 기준 집계</div>
 </div><!-- /main-wrap --><script>
+let weightTargets = null;
 fetch('data/dashboard-data.json', {cache:'no-store'}).then(r=>r.json()).then(d=>{
   monthData = d.monthData;
+  weightTargets = d.weightTargets;
   renderYtdTable();
 }).catch(e=>console.error('dashboard-data load failed', e));
 
@@ -397,6 +399,7 @@ function renderYtdTable(){
   var minVal = Math.min.apply(null, salesArr);
   var cum = 0;
   var rows = '';
+  var cumCompanyTarget = 0, cumTeamTarget = 0;
   months.forEach(function(m, idx){
     var d = monthData[m];
     cum += parseFloat(d.total.sales);
@@ -404,7 +407,21 @@ function renderYtdTable(){
     var isMin = (salesArr[idx] === minVal);
     var salesColor = isMin ? '#D63A52' : '#2563EB';
     var label = d.label + (isCurrent ? ' <span style="font-size:9px;color:#C97A10;">(진행중)</span>' : '');
+    var usedW = parseFloat(String(d.total.weight).replace(/,/g,''));
+    var wt = weightTargets && weightTargets.monthly ? weightTargets.monthly[m] : null;
+    var companyPctTd = '<td class="mono" style="color:#8A97B0;">-</td>';
+    var teamPctTd = '<td class="mono" style="color:#8A97B0;">-</td>';
+    if(wt){
+      var companyPct = usedW / wt.company * 100;
+      var teamPct = usedW / wt.team * 100;
+      cumCompanyTarget += wt.company;
+      cumTeamTarget += wt.team;
+      companyPctTd = '<td class="mono" style="color:#8A97B0;">' + companyPct.toFixed(1) + '%</td>';
+      var teamColor = teamPct >= 100 ? '#0A8558' : '#4d8fff';
+      teamPctTd = '<td class="mono" style="color:' + teamColor + ';font-weight:600;">' + teamPct.toFixed(1) + '%</td>';
+    }
     rows += '<tr><td>' + label + '</td><td>' + d.total.weight + '</td>' +
+      companyPctTd + teamPctTd +
       '<td class="mono" style="color:' + salesColor + ';">' + d.total.sales + '</td>' +
       '<td class="mono" style="color:#8A97B0;">' + d.total.perMin + '</td>' +
       '<td>' + d.total.revenue + '</td><td>' + d.total.margin + '</td>' +
@@ -417,9 +434,13 @@ function renderYtdTable(){
   var ytdMargin = months.reduce(function(a,m){ return a + parseFloat(monthData[m].total.margin); }, 0);
   var ytdPerMin = ytdSales / ytdWeight * 10000; // 억 -> 만 단위 변환 (억=1e8, 분모 분, 만=1e4)
   var ytdPerMar = ytdMargin / ytdWeight * 10000;
+  var ytdCompanyPct = cumCompanyTarget>0 ? (ytdWeight / cumCompanyTarget * 100) : 0;
+  var ytdTeamPct = cumTeamTarget>0 ? (ytdWeight / cumTeamTarget * 100) : 0;
   rows += '<tr style="border-top:1px solid rgba(99,120,160,0.3);">' +
     '<td style="font-weight:700;color:#1E2840;">YTD 합계</td>' +
     '<td style="font-weight:700;">' + Math.round(ytdWeight).toLocaleString() + '분</td>' +
+    '<td class="mono" style="color:#8A97B0;font-weight:700;">' + ytdCompanyPct.toFixed(1) + '%</td>' +
+    '<td class="mono" style="color:#4d8fff;font-weight:700;">' + ytdTeamPct.toFixed(1) + '%</td>' +
     '<td class="mono" style="color:#2563EB;font-weight:700;">' + ytdSales.toFixed(2) + '억</td>' +
     '<td class="mono" style="color:#8A97B0;font-weight:700;">' + ytdPerMin.toFixed(1) + '만</td>' +
     '<td style="font-weight:700;">' + ytdRevenue.toFixed(2) + '억</td>' +
