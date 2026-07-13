@@ -388,6 +388,25 @@
 <div class="section">
   <div class="section-title" id="weeklyCompareTitle">주간 실적 비교 리뷰</div>
   <div id="weeklyCompareBody"><div style="color:var(--text3);font-size:12px;padding:12px 0;">주간 비교 데이터 로딩 중...</div></div>
+  <div class="insight-grid" id="weeklyCompareInsights">
+    <div class="insight good">
+      <div class="insight-title">✓ 개선된 점 (7월1주차)</div>
+      <ul class="insight-body">
+        <li>대형가전 제외 전 카테고리 분당취급고 개선 — 생활가전 114.1→117.6만(+3.1%), 주방가전 160.4→168.9만(+5.3%), 주방용품 148.1→155.0만(+4.7%)</li>
+        <li>취급고 급감에도 전체 분당한계이익은 43.1→43.9만(+1.8%)로 오히려 개선 — 마진 효율은 유지</li>
+        <li>주방용품 분당한계이익 43.2→45.9만(+6.3%)로 팀 내 최고 마진 카테고리로 등극</li>
+        <li>생활가전 취급고 6.47→7.89억(+22.0%) 반등</li>
+      </ul>
+    </div>
+    <div class="insight bad">
+      <div class="insight-title">✗ 부족한 점 / 주의 (7월1주차)</div>
+      <ul class="insight-body">
+        <li>전체 취급고 38.5→23.0억(-40.2%), 가중분도 1,746→1,561분(-10.6%)로 편성량 감소분보다 취급고 감소폭이 훨씬 커 분당효율(220.3→147.5만, -33.1%) 동반 하락</li>
+        <li>대형가전 급락이 핵심 원인 — 취급고 16.19→1.87억(-88.4%), 분당취급고 1,159.5→397.6만(-65.7%), 분당한계이익도 43.7→41.0만(-6.1%) 동반 하락</li>
+        <li>주방가전도 취급고 5.41→2.30억(-57.5%)로 대형가전 다음으로 큰 감소폭, 분당한계이익 44.3→43.0만(-3.0%) 하락</li>
+      </ul>
+    </div>
+  </div>
 </div>
 
 <div class="divider"></div>  <!-- 신상품 & 재촬영 실적 -->
@@ -615,56 +634,8 @@
         '<div style="display:flex;gap:12px;margin-top:10px;font-size:10px;color:var(--text3);"><span style="display:flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;background:#C8D3E4;border-radius:2px;display:inline-block;"></span>'+w1k+'</span><span style="display:flex;align-items:center;gap:4px;"><span style="width:8px;height:8px;background:#4d8fff;border-radius:2px;display:inline-block;"></span>'+w2k+'</span></div></div>' +
         '</div>';
 
-      var salesPct = pct(w1.total.sales, w2.total.sales);
-      var perMarginPct = pct(w1.total.perMargin, w2.total.perMargin);
-      var weightPct = pct(w1.total.weight, w2.total.weight);
-
-      var catDeltas = cats.map(function(c){
-        return {
-          name:c, delta: w2.cats[c].sales - w1.cats[c].sales, s1:w1.cats[c].sales, s2:w2.cats[c].sales,
-          pmPct: pct(w1.cats[c].perMin, w2.cats[c].perMin),
-          pmmPct: pct(w1.cats[c].perMargin, w2.cats[c].perMargin),
-          salesPct: pct(w1.cats[c].sales, w2.cats[c].sales)
-        };
-      });
-      catDeltas.sort(function(a,b){ return a.delta - b.delta; });
-
-      var goodPts = [];
-      var improvedCats = cats.filter(function(c){ return pct(w1.cats[c].perMin, w2.cats[c].perMin).up; });
-      if(improvedCats.length){
-        goodPts.push(improvedCats.map(function(c){
-          var p = pct(w1.cats[c].perMin, w2.cats[c].perMin);
-          return c + ' 분당취급고 ' + w1.cats[c].perMin.toFixed(1) + '→' + w2.cats[c].perMin.toFixed(1) + '만(' + p.txt + ')';
-        }).join(', ') + ' 개선');
-      }
-      if(perMarginPct.up){
-        goodPts.push('전체 분당한계이익 ' + w1.total.perMargin.toFixed(1) + '→' + w2.total.perMargin.toFixed(1) + '만(' + perMarginPct.txt + ')로 마진 효율 개선');
-      }
-      var bestMarginCat = cats.slice().sort(function(a,b){ return w2.cats[b].perMargin - w2.cats[a].perMargin; })[0];
-      goodPts.push(bestMarginCat + ' 분당한계이익 ' + w2.cats[bestMarginCat].perMargin.toFixed(1) + '만으로 팀 내 최고 마진 카테고리');
-      if(!goodPts.length) goodPts.push('뚜렷한 개선 지표 없음 — 전반적 정체 흐름');
-
-      var badPts = [];
-      if(!salesPct.up){
-        badPts.push('전체 취급고 ' + w1.total.sales.toFixed(1) + '→' + w2.total.sales.toFixed(1) + '억(' + salesPct.txt + '), 가중분 ' + Math.round(w1.total.weight).toLocaleString() + '→' + Math.round(w2.total.weight).toLocaleString() + '분(' + weightPct.txt + ')');
-      }
-      var worst = catDeltas[0];
-      if(worst && worst.delta < 0){
-        badPts.push(worst.name + ' 취급고 ' + worst.s1.toFixed(2) + '→' + worst.s2.toFixed(2) + '억(' + worst.salesPct.txt + '), 분당취급고 ' + worst.pmPct.txt + ', 분당한계이익 ' + worst.pmmPct.txt + ' — 팀 취급고 변동의 핵심 요인');
-      }
-      var second = catDeltas[1];
-      if(second && second.delta < 0){
-        badPts.push(second.name + ' 취급고 ' + second.s1.toFixed(2) + '→' + second.s2.toFixed(2) + '억(' + second.salesPct.txt + ')로 추가 감소');
-      }
-      if(!badPts.length){ badPts.push('특별한 주의 지표 없음 — 전 카테고리 안정적 흐름'); }
-
-      var insightHtml = '<div class="insight-grid">' +
-        '<div class="insight good"><div class="insight-title">✓ 개선된 점 ('+w2k+')</div><ul class="insight-body">' + goodPts.map(function(x){return '<li>'+x+'</li>';}).join('') + '</ul></div>' +
-        '<div class="insight bad"><div class="insight-title">✗ 부족한 점 / 주의 ('+w2k+')</div><ul class="insight-body">' + badPts.map(function(x){return '<li>'+x+'</li>';}).join('') + '</ul></div>' +
-        '</div>';
-
       var bodyEl = document.getElementById('weeklyCompareBody');
-      if(bodyEl) bodyEl.innerHTML = gridHtml + catsHtml + insightHtml;
+      if(bodyEl) bodyEl.innerHTML = gridHtml + catsHtml;
     }
     renderWeeklyCompare(d);
 
