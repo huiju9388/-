@@ -315,7 +315,7 @@ function render(d){
   `;
 
   // 카테고리 바 (3사, 월별 토글)
-  const months = [0,1,2,3,4,5,6];
+  const months = Object.keys(d.categoryMonthly['SK스토아']).map(Number).sort((a,b)=>a-b);
   const monthLabel = m => m===0 ? '전체' : m+'월';
   let monthToggleHTML = '';
   months.forEach(m=>{
@@ -454,7 +454,7 @@ function render(d){
       ['생활가전','주방가전','주방용품'].map(c=>psToggleBtn(c, psCat===c, `window.__psSetCat('${c}')`)).join('');
     document.getElementById('psMonthToggle').innerHTML =
       psToggleBtn('전체', psMonth==='all', "window.__psSetMonth('all')") +
-      [1,2,3,4,5,6].map(m=>psToggleBtn(m+'월', psMonth===m, `window.__psSetMonth(${m})`)).join('');
+      Array.from(new Set(PS_DATA.map(r=>r.m))).sort((a,b)=>a-b).map(m=>psToggleBtn(m+'월', psMonth===m, `window.__psSetMonth(${m})`)).join('');
   }
   function renderPsTable(){
     let rows = PS_DATA;
