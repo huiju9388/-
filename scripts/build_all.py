@@ -12,9 +12,9 @@
   - weight_targets.csv    : 가중분 목표 (fileId 1dTDL0L-ZilM7mBYq8QZ85iyE3gvtBygrsEByLs8dVOU, exportMimeType text/csv)
   - current_dashboard-data.json : 현재 배포된 dashboard-data.json (kpiTarget 등 고정값 유지용, GitHub Contents API로 미리 받아둘 것)
 
-출력: ./output/ 아래에 5개 JSON 생성
+출력: ./output/ 아래에 6개 JSON 생성
   dashboard-data.json, newproduct-data.json, search-data.json,
-  competitor-data.json, product-heatmap-data.json
+  competitor-data.json, product-heatmap-data.json, corevendor-data.json
 
 사용법 예:
   python3 build_all.py --today 2026-07-19
@@ -38,6 +38,19 @@ MDMAP = {'ko': '권오석', 'ma': '마영호', 'kim': '김응도', 'lim': '임�
 COLORS = {'ko': '#4d8fff', 'ma': '#ff4d6a', 'kim': '#22c87a', 'lim': '#f5a623', 'baek': '#9b7fff'}
 # 8월 개편 이후 이 라벨은 더 이상 고정 담당 의미가 없을 수 있음 — 매번 형님께 최신 담당 확인 후 갱신할 것
 CATLABEL = {'ko': '주방가전 · 주방용품', 'ma': '주방용품 · 주방가전', 'kim': '생활가전', 'lim': '생활가전', 'baek': '대형가전'}
+
+# 핵심 협력사 트래커 (2026-07-28 신설). 벤더명↔판매 브랜드명이 다른 경우가 있으니(예: 벤더 에코센스 =
+# 판매 브랜드 히트락) 별칭 목록으로 관리한다. 새 별칭이 발견되면 aliases 리스트에 한 줄만 추가할 것.
+# compareTarget은 벤더별로 실제 경쟁 중인 채널이 다르므로 개별 지정 (마이하우스/코지마=KT알파, 히트락=SSG).
+VENDOR_DEFS = [
+    {"id": "myhouse", "name": "마이하우스", "subLabel": "마이어·라포레·안방 등 9개 서브브랜드",
+     "aliases": ["마이어", "라포레", "파베르", "안방", "델리원", "프리파라", "렌지프로", "부가티", "모나쿡"],
+     "compareTarget": "KT알파"},
+    {"id": "kojima", "name": "코지마", "subLabel": "안마의자·목어깨마사지기·문체어 등",
+     "aliases": ["코지마"], "compareTarget": "KT알파"},
+    {"id": "hitrock", "name": "히트락", "subLabel": "벤더사: 에코센스 (올트라이탄 밀폐용기)",
+     "aliases": ["히트락", "에코센스", "조이락"], "compareTarget": "SSG"},
+]
 
 
 def num(s):
@@ -307,6 +320,67 @@ def build_competitor(f_all3, cols, kt, ssg):
            "productList": productList, "meta": meta}
 
 
+def build_corevendor(team_all, cols, kt_raw, ssg_raw, today):
+    """핵심 협력사(마이하우스/코지마/히트락) 자사 vs 지정 경쟁사 월별 비교.
+    벤더명↔판매 브랜드명 불일치 케이스(예: 에코센스=히트락)를 놓치지 않도록
+    브랜드/정제상품명/상품명 3개 컬럼에서 alias를 OR 검색한다."""
+    def contains_any(series, aliases):
+        pat = '|'.join(re.escape(a) for a in aliases)
+        return series.astype(str).str.contains(pat, na=False)
+
+    def self_monthly(aliases):
+        mask = contains_any(team_all[cols['BRAND']], aliases)
+        sub = team_all[mask]
+        out = {}
+        for m, g in sub.groupby('MONI'):
+            out[str(int(m))] = {"weight": round(float(g[cols['WMIN']].sum()), 1), "count": int(len(g))}
+        return out
+
+    def comp_monthly(dfc, aliases):
+        namecol = '정제상품명 (아이템명)' if '정제상품명 (아이템명)' in dfc.columns else '정제상품명(아이템명)'
+        cols_to_check = [c for c in ['brand', namecol, '상품명'] if c in dfc.columns]
+        mask = False
+        for c in cols_to_check:
+            m = contains_any(dfc[c], aliases)
+            mask = m if mask is False else (mask | m)
+        sub = dfc[mask]
+        out = {}
+        for m, g in sub.groupby('MON'):
+            out[str(int(m))] = {"weight": round(float(g['가중분'].sum()), 1), "count": int(len(g))}
+        return out
+
+    vendors_out = []
+    for vd in VENDOR_DEFS:
+        self_m = self_monthly(vd['aliases'])
+        comp_df = ssg_raw if vd['compareTarget'] == 'SSG' else kt_raw
+        comp_m = comp_monthly(comp_df, vd['aliases'])
+        months = sorted(set(self_m) | set(comp_m), key=lambda x: int(x))
+        self_series = [self_m.get(m, {"weight": 0.0})['weight'] for m in months]
+        comp_series = [comp_m.get(m, {"weight": 0.0})['weight'] for m in months]
+        last_self = self_series[-1] if self_series else 0.0
+        last_comp = comp_series[-1] if comp_series else 0.0
+        penetration = round(last_comp / last_self * 100, 1) if last_self else (0.0 if not last_comp else None)
+        vendors_out.append({
+            "id": vd['id'], "name": vd['name'], "subLabel": vd['subLabel'],
+            "aliases": vd['aliases'], "compareTarget": vd['compareTarget'],
+            "months": [f"2026-{int(m):02d}" for m in months],
+            "monthLabels": [f"{int(m)}월" for m in months],
+            "self": self_series, "comp": comp_series,
+            "penetration": penetration,
+            # risk/trendLabel/flags는 수치 변화 폭이 커서 매주 지미가 직접 판단 후 수기 갱신 권장
+            # (기본값만 채워두고, 이상 신호 있으면 대시보드 페이지에서 직접 수정)
+            "risk": "high" if (penetration or 0) >= 100 else ("mid" if (penetration or 0) >= 50 else "low"),
+            "trendLabel": "", "flags": []
+        })
+
+    return {
+        "meta": {"period": None, "updated": None,
+                 "note": "핵심 협력사(마이하우스/코지마/히트락) 자사 편성 vs 지정 경쟁사 편성 비교. 가중분 기준.",
+                 "matchRule": "브랜드/정제상품명/상품명 3개 컬럼 OR 검색 + 별칭(alias) 리스트 기반. 벤더마다 비교 경쟁사가 다름."},
+        "vendors": vendors_out
+    }
+
+
 def build_heatmap(kt, ssg):
     def rows(dfc, co):
         namecol = '정제상품명 (아이템명)' if '정제상품명 (아이템명)' in dfc.columns else '정제상품명(아이템명)'
@@ -395,6 +469,14 @@ def main():
         heatmap_data['meta']['period'] = period_str
         heatmap_data['meta']['updated'] = today.strftime('%Y.%m.%d')
         json.dump(heatmap_data, open(f'{args.outdir}/product-heatmap-data.json','w'), ensure_ascii=False, indent=1, allow_nan=False)
+
+        # ---- 핵심 협력사 (마이하우스/코지마/히트락) ----
+        corevendor_data = build_corevendor(f, cols, kt, ssg, today)
+        corevendor_data['meta']['period'] = period_str
+        corevendor_data['meta']['updated'] = today.strftime('%Y.%m.%d')
+        json.dump(corevendor_data, open(f'{args.outdir}/corevendor-data.json','w'), ensure_ascii=False, indent=1, allow_nan=False)
+        print("⚠ corevendor-data.json의 risk는 침투율로 자동 산출되지만 trendLabel/flags는 빈 값입니다 —",
+              "appliance-corevendor-77ac0c66.html 배포 전 지미가 직접 채워넣을 것 (다른 수동 영역과 동일한 패턴).")
     except FileNotFoundError:
         print("competitor.xlsx 없음 — 경쟁사 데이터는 건너뜀 (경쟁사 갱신 없는 주는 정상)")
 
