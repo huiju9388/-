@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SK스토아 가전팀 — 핵심 협력사 모니터링</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root {
+    --bg:  #EEF1F7; --bg2: #F8F9FC; --bg3: #F0F3F8;
+    --border:  rgba(99,120,160,0.12); --border2: rgba(99,120,160,0.22);
+    --text1: #1E2840; --text2: #4A5568; --text3: #8A97B0;
+    --green:  #0E9E6A; --green-bg:  rgba(14,158,106,0.10);
+    --amber:  #C97A10; --amber-bg:  rgba(201,122,16,0.10);
+    --red:    #D63A52; --red-bg:    rgba(214,58,82,0.10);
+    --blue:   #2563EB; --blue-bg:   rgba(37,99,235,0.10);
+    --purple: #6D3FC8; --purple-bg: rgba(109,63,200,0.10);
+    --kt: #2563EB; --ssg: #D63A52; --sk: #0E9E6A;
+  }
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { background:var(--bg); color:var(--text1); font-family:'Noto Sans KR',sans-serif; font-size:13px; line-height:1.6; }
+  .mono { font-family:'IBM Plex Mono',monospace; }
+  .side-nav{position:fixed;top:0;left:0;width:196px;height:100vh;background:#1E2840;display:flex;flex-direction:column;padding:18px 0;z-index:900;overflow-y:auto;font-family:'Noto Sans KR',sans-serif;}
+  .side-nav .sn-brand{padding:0 20px 16px;font-size:13px;font-weight:700;color:#fff;letter-spacing:-0.3px;border-bottom:1px solid rgba(255,255,255,0.1);margin-bottom:12px;}
+  .side-nav .sn-brand small{display:block;font-size:10px;font-weight:400;color:#8A97B0;margin-top:3px;font-family:'IBM Plex Mono',monospace;}
+  .side-nav .sn-group{font-size:9px;color:#5C6B8A;text-transform:uppercase;letter-spacing:.1em;padding:12px 20px 6px;font-weight:700;}
+  .side-nav a{display:flex;align-items:center;gap:9px;padding:10px 20px;font-size:12px;color:#C8D3E4;text-decoration:none;font-weight:500;border-left:3px solid transparent;transition:all .15s;}
+  .side-nav a:hover{background:rgba(255,255,255,0.07);color:#fff;}
+  .side-nav a.active{background:rgba(37,99,235,0.20);color:#fff;border-left-color:#4d8fff;font-weight:700;}
+  .main-wrap{margin-left:196px;min-height:100vh;box-sizing:border-box;padding:28px 24px 60px;}
+  .header { display:flex; align-items:flex-end; justify-content:space-between; margin-bottom:28px; padding-bottom:20px; border-bottom:2px solid var(--border2); flex-wrap:wrap; gap:12px;}
+  .header h1 { font-size:22px; font-weight:700; letter-spacing:-0.5px; }
+  .header .sub { font-size:12px; color:var(--text3); margin-top:4px; font-family:'IBM Plex Mono',monospace; }
+  .header-right { display:flex; gap:8px; }
+  .tag { font-size:10px; font-family:'IBM Plex Mono',monospace; padding:3px 10px; border-radius:5px; border:1px solid var(--border2); color:var(--text2); background:var(--bg2); }
+  .tag.warn { border-color:rgba(201,122,16,0.4); color:var(--amber); background:var(--amber-bg); }
+  .section { margin-bottom:34px; }
+  .section-title { font-size:10px; font-weight:600; color:var(--text3); text-transform:uppercase; letter-spacing:.12em; margin-bottom:14px; display:flex; align-items:center; gap:10px; }
+  .section-title::after { content:''; flex:1; height:1px; background:var(--border2); }
+  .card { background:var(--bg2); border:1px solid var(--border); border-radius:12px; padding:20px; box-shadow:0 2px 8px rgba(30,40,64,0.06); }
+  .note { font-size:10.5px; color:var(--text3); margin-top:10px; line-height:1.6; }
+  canvas { max-height:230px; }
+
+  .vendor-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+  @media(max-width:1100px){ .vendor-grid{grid-template-columns:1fr;} }
+  .vcard { background:var(--bg2); border:1px solid var(--border); border-radius:14px; padding:20px; box-shadow:0 2px 8px rgba(30,40,64,0.06); border-top:4px solid var(--border2); }
+  .vcard.risk-high { border-top-color:var(--red); }
+  .vcard.risk-mid { border-top-color:var(--amber); }
+  .vcard.risk-low { border-top-color:var(--green); }
+  .vcard-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px; }
+  .vcard-name { font-size:15px; font-weight:700; }
+  .vcard-target { font-size:10.5px; color:var(--text3); font-family:'IBM Plex Mono',monospace; margin-top:3px; }
+  .badge { font-size:9.5px; font-weight:700; padding:4px 9px; border-radius:20px; white-space:nowrap; font-family:'IBM Plex Mono',monospace; }
+  .badge.high { background:var(--red-bg); color:var(--red); }
+  .badge.mid  { background:var(--amber-bg); color:var(--amber); }
+  .badge.low  { background:var(--green-bg); color:var(--green); }
+  .vcard-metric { display:flex; align-items:baseline; gap:8px; margin-bottom:4px; }
+  .vcard-pen { font-size:32px; font-weight:700; letter-spacing:-1px; }
+  .vcard-pen.high { color:var(--red); }
+  .vcard-pen.mid { color:var(--amber); }
+  .vcard-pen.low { color:var(--green); }
+  .vcard-trend { font-size:11px; color:var(--text3); font-family:'IBM Plex Mono',monospace; margin-bottom:14px; }
+  .vcard-flags { display:flex; flex-direction:column; gap:6px; margin-bottom:14px; }
+  .vflag { font-size:10.5px; padding:6px 10px; border-radius:7px; background:var(--bg3); color:var(--text2); display:flex; gap:6px; align-items:center; }
+  .vcard-nums { display:grid; grid-template-columns:1fr 1fr; gap:8px; font-family:'IBM Plex Mono',monospace; }
+  .vnum { background:var(--bg3); border-radius:8px; padding:8px 10px; }
+  .vnum-lbl { font-size:9px; color:var(--text3); margin-bottom:3px; }
+  .vnum-val { font-size:13px; font-weight:700; }
+
+  .legend-comp { display:flex; gap:16px; font-size:11px; font-family:'IBM Plex Mono',monospace; color:var(--text2); margin-bottom:10px;}
+  .legend-comp span { display:flex; align-items:center; gap:6px; }
+  .dot { width:9px; height:9px; border-radius:3px; display:inline-block; }
+  .dot.kt { background:var(--kt); }
+  .dot.ssg { background:var(--ssg); }
+  .dot.sk { background:var(--sk); }
+
+  .chart-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; }
+  @media(max-width:1100px){ .chart-grid{grid-template-columns:1fr;} }
+  .chart-card-title { font-size:12.5px; font-weight:700; margin-bottom:2px; }
+  .chart-card-sub { font-size:10px; color:var(--text3); margin-bottom:10px; font-family:'IBM Plex Mono',monospace; }
+
+  .rule-table { width:100%; border-collapse:collapse; }
+  .rule-table th { text-align:left; padding:9px 12px; font-size:10px; font-weight:600; color:var(--text3); text-transform:uppercase; letter-spacing:.06em; border-bottom:1px solid var(--border2); background:var(--bg3); font-family:'IBM Plex Mono',monospace; }
+  .rule-table td { padding:10px 12px; font-size:12px; border-bottom:1px solid var(--border); color:var(--text1); vertical-align:top; }
+  .rule-table tr:last-child td { border-bottom:none; }
+  .alias-chip { display:inline-block; font-size:10px; font-family:'IBM Plex Mono',monospace; background:var(--bg3); border:1px solid var(--border2); color:var(--text2); padding:2px 7px; border-radius:5px; margin:2px 3px 2px 0; }
+  .compare-chip { font-size:10.5px; font-weight:700; padding:3px 9px; border-radius:6px; }
+  .compare-chip.kt { background:var(--blue-bg); color:var(--kt); }
+  .compare-chip.ssg { background:var(--red-bg); color:var(--ssg); }
+
+  .insight-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:12px; margin-top:6px; }
+  @media(max-width:1100px){ .insight-grid{grid-template-columns:1fr;} }
+  .insight { padding:14px 16px; border-radius:10px; border-left:4px solid; }
+  .insight.bad  { background:linear-gradient(135deg,rgba(214,58,82,0.08),rgba(214,58,82,0.04));  border-color:var(--red); }
+  .insight.warn { background:linear-gradient(135deg,rgba(201,122,16,0.08),rgba(201,122,16,0.04)); border-color:var(--amber); }
+  .insight.info { background:linear-gradient(135deg,rgba(37,99,235,0.08),rgba(37,99,235,0.04)); border-color:var(--blue); }
+  .insight-title { font-size:12px; font-weight:700; margin-bottom:8px; }
+  .insight.bad .insight-title { color:#C42E45; }
+  .insight.warn .insight-title { color:var(--amber); }
+  .insight.info .insight-title { color:var(--blue); }
+  .insight-body { font-size:11.5px; color:var(--text2); line-height:1.75; }
+  .insight-body li { margin-bottom:4px; list-style:none; }
+  .insight-body li::before { content:'› '; color:var(--text3); font-weight:700; }
+
+  .footer { text-align:center; font-size:10px; color:var(--text3); font-family:'IBM Plex Mono',monospace; margin-top:40px; padding-top:20px; border-top:1px solid var(--border2); }
+
+  @media(max-width:900px){
+    .side-nav{width:100%;height:auto;position:relative;flex-direction:row;overflow-x:auto;padding:6px;}
+    .side-nav .sn-brand,.side-nav .sn-group{display:none;}
+    .side-nav a{flex-direction:column;font-size:9px;gap:3px;padding:8px 10px;border-left:none;border-bottom:3px solid transparent;white-space:nowrap;}
+    .side-nav a.active{border-left:none;border-bottom-color:#4d8fff;}
+    .main-wrap{margin-left:0;}
+    .chart-grid{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+<body>
+<div id="pwGateOverlay" style="position:fixed;inset:0;z-index:99999;background:#1E2840;display:flex;align-items:center;justify-content:center;font-family:'Noto Sans KR',sans-serif;">
+  <div style="background:#F8F9FC;border-radius:16px;padding:36px 32px;width:320px;box-shadow:0 12px 40px rgba(0,0,0,0.3);text-align:center;">
+    <div style="font-size:28px;margin-bottom:8px;">🔒</div>
+    <div style="font-size:15px;font-weight:700;color:#1E2840;margin-bottom:4px;">가전팀 전용 페이지</div>
+    <div style="font-size:11px;color:#8A97B0;margin-bottom:18px;">팀 비밀번호를 입력해주세요</div>
+    <input type="password" id="pwGateInput" placeholder="비밀번호" style="width:100%;padding:10px 12px;border:1px solid rgba(99,120,160,0.3);border-radius:8px;font-size:13px;margin-bottom:10px;box-sizing:border-box;outline:none;" autocomplete="off">
+    <button onclick="pwGateCheck()" style="width:100%;padding:10px;background:#2563EB;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;">입장</button>
+    <div id="pwGateError" style="font-size:11px;color:#D63A52;margin-top:10px;display:none;">비밀번호가 올바르지 않습니다</div>
+  </div>
+</div>
+<script>
+(function(){
+  var PW_HASH = "ed268775853e8ce7516aca7017150b900240141f2e6d7273d8ea84dc6a7c2fdb";
+  var SESSION_KEY = "appliance_team_auth_2026";
+  function sha256(str){
+    return crypto.subtle.digest('SHA-256', new TextEncoder().encode(str)).then(function(buf){
+      return Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
+    });
+  }
+  function unlock(){
+    document.getElementById('pwGateOverlay').style.display = 'none';
+    document.documentElement.style.overflow = '';
+  }
+  if (sessionStorage.getItem(SESSION_KEY) === 'ok') { unlock(); }
+  else { document.documentElement.style.overflow = 'hidden'; }
+  window.pwGateCheck = function(){
+    var val = document.getElementById('pwGateInput').value;
+    sha256(val).then(function(hash){
+      if (hash === PW_HASH) { sessionStorage.setItem(SESSION_KEY, 'ok'); unlock(); }
+      else { document.getElementById('pwGateError').style.display = 'block'; document.getElementById('pwGateInput').value=''; }
+    });
+  };
+  document.addEventListener('DOMContentLoaded', function(){
+    var input = document.getElementById('pwGateInput');
+    if (input) { input.addEventListener('keydown', function(e){ if(e.key==='Enter') pwGateCheck(); }); input.focus(); }
+  });
+})();
+</script>
+<nav class="side-nav">
+  <div class="sn-brand">가전팀 대시보드<small>SK스토아 · 2026</small></div>
+  <div class="sn-group">실적 현황</div>
+  <a href="appliance-dashboard-77ac0c66.html">📊 개요</a>
+  <a href="appliance-monthly-77ac0c66.html">📅 월별 실적</a>
+  <a href="appliance-ranking-77ac0c66.html">🏆 상품 랭킹</a>
+  <a href="appliance-md-77ac0c66.html">👤 MD 실적</a>
+  <div class="sn-group">상세 도구</div>
+  <a href="appliance-newproduct-77ac0c66.html">🆕 신상품·재촬영</a>
+  <a href="appliance-search-77ac0c66.html">🔍 상품 검색</a>
+  <a href="appliance-heatmap-77ac0c66.html">🗺️ 편성 운영맵</a>
+  <a href="appliance-competitor-77ac0c66.html">⚔️ 경쟁사 모니터링</a>
+  <a href="appliance-corevendor-77ac0c66.html" class="active">🛡️ 핵심 협력사</a>
+</nav>
+
+<div class="main-wrap">
+  <div class="header">
+    <div>
+      <h1>핵심 협력사 모니터링</h1>
+      <div class="sub" id="periodTag">벤더별 자사 편성 vs 지정 경쟁사 편성 비교 · 가중분 기준</div>
+    </div>
+    <div class="header-right">
+      <span class="tag warn">벤더마다 비교 경쟁사가 다름 (매칭 규칙 표 참고)</span>
+      <span class="tag" id="updTag">-</span>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">벤더별 침투율 현황 (최신월 기준)</div>
+    <div class="vendor-grid" id="vendorGrid"></div>
+    <div class="note">※ 침투율 = 경쟁사 가중분 ÷ 자사 가중분 × 100. 100% 이상이면 경쟁사가 해당 벤더 편성에서 저희를 역전했다는 의미입니다.</div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">벤더별 월간 추이 — 자사 vs 지정 경쟁사</div>
+    <div class="legend-comp"><span><span class="dot sk"></span>SK스토아(자사)</span><span><span class="dot kt"></span>KT알파</span><span><span class="dot ssg"></span>SSG</span></div>
+    <div class="chart-grid" id="chartGrid"></div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">벤더 매칭 규칙</div>
+    <div class="card">
+      <table class="rule-table">
+        <thead><tr><th>표시명</th><th>검색 별칭(Alias)</th><th>비교 경쟁사</th></tr></thead>
+        <tbody id="ruleBody"></tbody>
+      </table>
+      <div class="note" id="ruleNote">※ 브랜드/정제상품명/상품명 3개 컬럼 OR 검색 방식. 새 별칭이 발견되면 data/corevendor-data.json의 aliases 배열에 추가하면 됩니다 (HTML 수정 불필요).</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">이번 주 인사이트 (수기 작성 영역)</div>
+    <div class="insight-grid" id="insightGrid"></div>
+  </div>
+
+  <div class="footer">SK스토아 가전팀 내부용 · appliance-corevendor-77ac0c66.html · data/corevendor-data.json</div>
+</div>
+
+<script>
+const riskMeta = {
+  high:{badge:'위험', cls:'risk-high', pen:'high', badgeCls:'high', insightCls:'bad', icon:'🔴'},
+  mid:{badge:'주의', cls:'risk-mid', pen:'mid', badgeCls:'mid', insightCls:'warn', icon:'🟡'},
+  low:{badge:'관찰', cls:'risk-low', pen:'low', badgeCls:'low', insightCls:'info', icon:'🟠'}
+};
+
+fetch('data/corevendor-data.json?v=' + Date.now())
+  .then(r => r.json())
+  .then(data => {
+    document.getElementById('updTag').textContent = '업데이트: ' + data.meta.updated;
+    document.getElementById('periodTag').textContent = data.meta.note + ' · ' + data.meta.period;
+    document.getElementById('ruleNote').textContent = '※ ' + data.meta.matchRule + ' 새 별칭이 발견되면 data/corevendor-data.json의 aliases 배열에 추가하면 됩니다 (HTML 수정 불필요).';
+
+    const vendorGrid = document.getElementById('vendorGrid');
+    const chartGrid = document.getElementById('chartGrid');
+    const ruleBody = document.getElementById('ruleBody');
+    const insightGrid = document.getElementById('insightGrid');
+
+    data.vendors.forEach(v => {
+      const rm = riskMeta[v.risk];
+      const lastSelf = v.self[v.self.length-1];
+      const lastComp = v.comp[v.comp.length-1];
+
+      // KPI 카드
+      const vc = document.createElement('div');
+      vc.className = 'vcard ' + rm.cls;
+      vc.innerHTML = `
+        <div class="vcard-top">
+          <div>
+            <div class="vcard-name">${v.name}</div>
+            <div class="vcard-target">${v.subLabel} · vs ${v.compareTarget}</div>
+          </div>
+          <span class="badge ${rm.badgeCls}">${rm.badge}</span>
+        </div>
+        <div class="vcard-metric">
+          <span class="vcard-pen ${rm.pen}">${v.penetration}%</span>
+          <span style="font-size:11px;color:var(--text3);">침투율</span>
+        </div>
+        <div class="vcard-trend">${v.trendLabel}</div>
+        <div class="vcard-flags">${v.flags.map(f => `<div class="vflag">${f}</div>`).join('')}</div>
+        <div class="vcard-nums">
+          <div class="vnum"><div class="vnum-lbl">자사 (최신월)</div><div class="vnum-val">${lastSelf.toLocaleString()}분</div></div>
+          <div class="vnum"><div class="vnum-lbl">${v.compareTarget} (최신월)</div><div class="vnum-val">${lastComp.toLocaleString()}분</div></div>
+        </div>`;
+      vendorGrid.appendChild(vc);
+
+      // 차트 카드
+      const cc = document.createElement('div');
+      cc.className = 'card';
+      const canvasId = 'chart_' + v.id;
+      cc.innerHTML = `<div class="chart-card-title">${v.name} <span style="color:var(--text3);font-weight:400;">(${v.subLabel})</span></div>
+        <div class="chart-card-sub">vs ${v.compareTarget}</div>
+        <canvas id="${canvasId}"></canvas>`;
+      chartGrid.appendChild(cc);
+
+      // 매칭 규칙 행
+      const tr = document.createElement('tr');
+      const compClass = v.compareTarget === 'SSG' ? 'ssg' : 'kt';
+      tr.innerHTML = `<td><b>${v.name}</b><div style="font-size:10px;color:var(--text3);margin-top:2px;">${v.subLabel}</div></td>
+        <td>${v.aliases.map(a => `<span class="alias-chip">${a}</span>`).join('')}</td>
+        <td><span class="compare-chip ${compClass}">${v.compareTarget}</span></td>`;
+      ruleBody.appendChild(tr);
+
+      // 인사이트
+      const ic = document.createElement('div');
+      ic.className = 'insight ' + rm.insightCls;
+      ic.innerHTML = `<div class="insight-title">${rm.icon} ${v.name} — ${v.trendLabel}</div>
+        <ul class="insight-body">${v.flags.map(f => `<li>${f}</li>`).join('')}</ul>`;
+      insightGrid.appendChild(ic);
+
+      // 차트 렌더
+      const ctx = document.getElementById(canvasId).getContext('2d');
+      const compColor = v.compareTarget === 'SSG' ? '#D63A52' : '#2563EB';
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: v.monthLabels,
+          datasets: [
+            { label: '자사', data: v.self, backgroundColor: '#0E9E6A', borderRadius: 4, maxBarThickness: 22 },
+            { label: v.compareTarget, data: v.comp, backgroundColor: compColor, borderRadius: 4, maxBarThickness: 22 }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { grid: { display: false }, ticks: { font: { family: 'IBM Plex Mono', size: 10 } } },
+            y: { grid: { color: 'rgba(99,120,160,0.12)' }, ticks: { font: { family: 'IBM Plex Mono', size: 10 } } }
+          }
+        }
+      });
+    });
+  })
+  .catch(err => {
+    document.getElementById('vendorGrid').innerHTML = '<div class="card">데이터 로드 실패: ' + err + '</div>';
+  });
+</script>
+</body>
+</html>
