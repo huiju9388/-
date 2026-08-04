@@ -43,8 +43,8 @@ CATLABEL = {'ko': '주방가전 · 주방용품', 'ma': '주방용품 · 주방�
 # 판매 브랜드 히트락) 별칭 목록으로 관리한다. 새 별칭이 발견되면 aliases 리스트에 한 줄만 추가할 것.
 # compareTarget은 벤더별로 실제 경쟁 중인 채널이 다르므로 개별 지정 (마이하우스/코지마=KT알파, 히트락=SSG).
 VENDOR_DEFS = [
-    {"id": "myhouse", "name": "마이하우스", "subLabel": "마이어·라포레·안방 등 9개 서브브랜드",
-     "aliases": ["마이어", "라포레", "파베르", "안방", "델리원", "프리파라", "렌지프로", "부가티", "모나쿡"],
+    {"id": "myhouse", "name": "마이하우스", "subLabel": "마이어·라포레·안방·AM 등 10개 서브브랜드",
+     "aliases": ["마이어", "라포레", "파베르", "안방", "델리원", "프리파라", "렌지프로", "부가티", "모나쿡", "AM"],
      "compareTarget": "KT알파"},
     {"id": "kojima", "name": "코지마", "subLabel": "안마의자·목어깨마사지기·문체어 등",
      "aliases": ["코지마"], "compareTarget": "KT알파"},
@@ -325,8 +325,8 @@ def build_corevendor(team_all, cols, kt_raw, ssg_raw, today):
     벤더명↔판매 브랜드명 불일치 케이스(예: 에코센스=히트락)를 놓치지 않도록
     브랜드/정제상품명/상품명 3개 컬럼에서 alias를 OR 검색한다."""
     def contains_any(series, aliases):
-        pat = '|'.join(re.escape(a) for a in aliases)
-        return series.astype(str).str.contains(pat, na=False)
+        pat = '|'.join(r'(?<![A-Za-z0-9가-힣])' + re.escape(a) + r'(?![A-Za-z0-9가-힣])' for a in aliases)
+        return series.astype(str).str.contains(pat, na=False, regex=True)
 
     def self_monthly(aliases):
         mask = contains_any(team_all[cols['BRAND']], aliases)
