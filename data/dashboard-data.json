@@ -318,45 +318,45 @@
   "8": {
    "label": "8월",
    "total": {
-    "weight": "788분",
-    "sales": "9.9억",
-    "perMin": "126.1만",
-    "revenue": "3.8억",
-    "margin": "3.2억",
-    "perMargin": "40.7만"
+    "weight": "2,388분",
+    "sales": "30.2억",
+    "perMin": "126.3만",
+    "revenue": "11.3억",
+    "margin": "9.7억",
+    "perMargin": "40.4만"
    },
    "cats": [
     {
      "name": "🏠 생활가전",
-     "weight": "301분",
-     "sales": "3.5억",
-     "perMin": "115.4만",
-     "margin": "1.3억",
-     "perMargin": "42.9만"
+     "weight": "870분",
+     "sales": "9.2억",
+     "perMin": "105.6만",
+     "margin": "3.5억",
+     "perMargin": "39.7만"
     },
     {
      "name": "🍳 주방가전",
-     "weight": "78분",
-     "sales": "1.2억",
-     "perMin": "154.7만",
-     "margin": "0.3억",
-     "perMargin": "41.1만"
+     "weight": "121분",
+     "sales": "2.1억",
+     "perMin": "177.3만",
+     "margin": "0.5억",
+     "perMargin": "40.6만"
     },
     {
      "name": "🍳 주방용품",
-     "weight": "410분",
-     "sales": "5.3억",
-     "perMin": "128.5만",
-     "margin": "1.6억",
-     "perMargin": "39.0만"
+     "weight": "1,383분",
+     "sales": "18.6억",
+     "perMin": "134.7만",
+     "margin": "5.7억",
+     "perMargin": "41.0만"
     },
     {
      "name": "📦 대형가전",
-     "weight": "0분",
-     "sales": "0.0억",
-     "perMin": "0.0만",
+     "weight": "14분",
+     "sales": "0.2억",
+     "perMin": "152.1만",
      "margin": "0.0억",
-     "perMargin": "0.0만"
+     "perMargin": "27.4만"
     }
    ]
   }
@@ -367,13 +367,13 @@
    "color": "#4d8fff",
    "cat": "주방가전 · 주방용품",
    "total": {
-    "cnt": 269,
-    "weight": "14,836분",
-    "sales": "196.3억",
-    "perMin": "132.3만",
-    "margin": "64.51억",
-    "perMargin": "43.5만",
-    "revenue": "74.3억"
+    "cnt": 281,
+    "weight": "15,423분",
+    "sales": "204.3억",
+    "perMin": "132.4만",
+    "margin": "66.95억",
+    "perMargin": "43.4만",
+    "revenue": "77.2억"
    },
    "monthly": {
     "sales": [
@@ -398,17 +398,17 @@
    "cats": [
     {
      "name": "🍳 주방용품",
-     "sales": "105.38억",
-     "perMin": "132.2만",
-     "margin": "34.21억",
-     "pct": "54%"
+     "sales": "113.40억",
+     "perMin": "132.5만",
+     "margin": "36.65억",
+     "pct": "56%"
     },
     {
      "name": "🍳 주방가전",
      "sales": "90.88억",
      "perMin": "132.4만",
      "margin": "30.30억",
-     "pct": "46%"
+     "pct": "44%"
     }
    ],
    "top5": [
@@ -419,28 +419,28 @@
      "marginRate": "28.9%"
     },
     {
+     "name": "[라포레]밥용기세트",
+     "sales": "15.70억",
+     "perMin": "140.9만",
+     "marginRate": "31.5%"
+    },
+    {
      "name": "[라포레]플레이팅팬",
-     "sales": "14.64억",
-     "perMin": "129.6만",
-     "marginRate": "29.7%"
+     "sales": "15.46억",
+     "perMin": "129.7만",
+     "marginRate": "29.9%"
     },
     {
      "name": "[칼만]저압스텐냄비",
-     "sales": "14.32억",
-     "perMin": "144.5만",
-     "marginRate": "31.4%"
-    },
-    {
-     "name": "[라포레]밥용기세트",
-     "sales": "13.98억",
-     "perMin": "141.0만",
-     "marginRate": "31.6%"
+     "sales": "15.41억",
+     "perMin": "145.2만",
+     "marginRate": "31.1%"
     },
     {
      "name": "[델리원]밀폐실리콘백",
-     "sales": "12.51억",
-     "perMin": "142.6만",
-     "marginRate": "30.7%"
+     "sales": "13.42억",
+     "perMin": "143.8만",
+     "marginRate": "30.4%"
     }
    ]
   },
@@ -449,13 +449,13 @@
    "color": "#ff4d6a",
    "cat": "주방용품 · 주방가전",
    "total": {
-    "cnt": 179,
-    "weight": "7,581분",
-    "sales": "128.4억",
-    "perMin": "169.4만",
-    "margin": "34.37억",
-    "perMargin": "45.3만",
-    "revenue": "41.7억"
+    "cnt": 186,
+    "weight": "7,967분",
+    "sales": "133.7억",
+    "perMin": "167.9만",
+    "margin": "36.01억",
+    "perMargin": "45.2만",
+    "revenue": "43.6억"
    },
    "monthly": {
     "sales": [
@@ -480,25 +480,25 @@
    "cats": [
     {
      "name": "🍳 주방용품",
-     "sales": "82.25억",
-     "perMin": "167.2만",
-     "margin": "22.72억",
-     "pct": "64%"
+     "sales": "87.60억",
+     "perMin": "165.1만",
+     "margin": "24.36억",
+     "pct": "65%"
     },
     {
      "name": "🍳 주방가전",
      "sales": "46.14억",
      "perMin": "173.3만",
      "margin": "11.65억",
-     "pct": "36%"
+     "pct": "35%"
     }
    ],
    "top5": [
     {
      "name": "[히트락]밀폐용기",
-     "sales": "63.76억",
-     "perMin": "159.3만",
-     "marginRate": "28.5%"
+     "sales": "69.10억",
+     "perMin": "157.4만",
+     "marginRate": "28.7%"
     },
     {
      "name": "[휴롬]프라임착즙기",
@@ -531,13 +531,13 @@
    "color": "#22c87a",
    "cat": "생활가전",
    "total": {
-    "cnt": 180,
-    "weight": "10,898분",
-    "sales": "146.2억",
-    "perMin": "134.2만",
-    "margin": "47.89억",
-    "perMargin": "43.9만",
-    "revenue": "56.8억"
+    "cnt": 184,
+    "weight": "11,205분",
+    "sales": "149.7억",
+    "perMin": "133.6만",
+    "margin": "49.05억",
+    "perMargin": "43.8만",
+    "revenue": "58.2억"
    },
    "monthly": {
     "sales": [
@@ -562,13 +562,19 @@
    "cats": [
     {
      "name": "🏠 생활가전",
-     "sales": "146.22억",
-     "perMin": "134.2만",
-     "margin": "47.89억",
+     "sales": "149.69억",
+     "perMin": "133.6만",
+     "margin": "49.05억",
      "pct": "100%"
     }
    ],
    "top5": [
+    {
+     "name": "[코지마]데코르안마의자",
+     "sales": "26.85억",
+     "perMin": "152.1만",
+     "marginRate": "29.3%"
+    },
     {
      "name": "[코지마]안마의자",
      "sales": "26.05억",
@@ -576,15 +582,9 @@
      "marginRate": "26.8%"
     },
     {
-     "name": "[코지마]데코르안마의자",
-     "sales": "25.86억",
-     "perMin": "156.6만",
-     "marginRate": "28.6%"
-    },
-    {
      "name": "[코지마]복부마사지기",
-     "sales": "17.33억",
-     "perMin": "128.3만",
+     "sales": "17.41억",
+     "perMin": "128.9만",
      "marginRate": "36.0%"
     },
     {
@@ -606,13 +606,13 @@
    "color": "#f5a623",
    "cat": "생활가전",
    "total": {
-    "cnt": 127,
-    "weight": "7,588분",
-    "sales": "92.2억",
-    "perMin": "121.5만",
-    "margin": "31.35억",
-    "perMargin": "41.3만",
-    "revenue": "36.1억"
+    "cnt": 132,
+    "weight": "7,850분",
+    "sales": "94.4억",
+    "perMin": "120.3만",
+    "margin": "32.36억",
+    "perMargin": "41.2만",
+    "revenue": "37.2억"
    },
    "monthly": {
     "sales": [
@@ -637,9 +637,9 @@
    "cats": [
     {
      "name": "🏠 생활가전",
-     "sales": "91.49억",
-     "perMin": "121.5만",
-     "margin": "31.12억",
+     "sales": "93.74억",
+     "perMin": "120.3만",
+     "margin": "32.13억",
      "pct": "99%"
     },
     {
@@ -658,16 +658,16 @@
      "marginRate": "31.0%"
     },
     {
+     "name": "[스타일리스]휴대용선풍기",
+     "sales": "12.64억",
+     "perMin": "117.0만",
+     "marginRate": "35.4%"
+    },
+    {
      "name": "[한경희]무선폴딩팬",
      "sales": "11.86억",
      "perMin": "114.6만",
      "marginRate": "33.5%"
-    },
-    {
-     "name": "[스타일리스]휴대용선풍기",
-     "sales": "11.49억",
-     "perMin": "120.7만",
-     "marginRate": "34.6%"
     },
     {
      "name": "[AGK]무선서큘레이터",
@@ -688,13 +688,13 @@
    "color": "#9b7fff",
    "cat": "대형가전",
    "total": {
-    "cnt": 83,
-    "weight": "2,019분",
-    "sales": "56.8억",
-    "perMin": "281.4만",
-    "margin": "8.06억",
-    "perMargin": "39.9만",
-    "revenue": "12.0억"
+    "cnt": 84,
+    "weight": "2,033분",
+    "sales": "57.0억",
+    "perMin": "280.5만",
+    "margin": "8.10억",
+    "perMargin": "39.8만",
+    "revenue": "12.1억"
    },
    "monthly": {
     "sales": [
@@ -719,9 +719,9 @@
    "cats": [
     {
      "name": "📦 대형가전",
-     "sales": "56.81억",
-     "perMin": "281.4만",
-     "margin": "8.06억",
+     "sales": "57.03억",
+     "perMin": "280.5만",
+     "margin": "8.10억",
      "pct": "100%"
     }
    ],
@@ -800,7 +800,7 @@
    {
     "month": "7",
     "total_s": 34.56,
-    "shin_s": 19.41,
+    "shin_s": 19.42,
     "shin_pct": 56.2
    }
   ],
@@ -988,27 +988,27 @@
  },
  "shinSummary": {
   "shin": {
-   "cnt": 39,
-   "w": 2011.65,
-   "s": 24.02,
-   "ma": 7.97,
-   "perMin": 119.4,
-   "perMar": 39.6
+   "cnt": 41,
+   "w": 2097.15,
+   "s": 25.44,
+   "ma": 8.27,
+   "perMin": 121.3,
+   "perMar": 39.4
   },
   "redo": {
-   "cnt": 89,
-   "w": 5103.49,
-   "s": 78.07,
-   "ma": 21.68,
-   "perMin": 153.0,
-   "perMar": 42.5
+   "cnt": 92,
+   "w": 5253.94,
+   "s": 80.03,
+   "ma": 22.14,
+   "perMin": 152.3,
+   "perMar": 42.1
   },
   "existing": {
-   "cnt": 761,
-   "w": 37762.24,
-   "s": 542.72,
-   "ma": 165.17,
-   "perMin": 143.7,
+   "cnt": 786,
+   "w": 39125.97,
+   "s": 559.57,
+   "ma": 170.85,
+   "perMin": 143.0,
    "perMar": 43.7
   }
  },
@@ -1120,7 +1120,8 @@
    "7월1주차",
    "7월2주차",
    "7월3주차",
-   "7월4주차"
+   "7월4주차",
+   "8월1주차"
   ],
   "byWeek": {
    "12월5주차": {
@@ -2391,6 +2392,47 @@
       "margin": 0.108,
       "perMin": 831.6,
       "perMargin": 37.6
+     }
+    }
+   },
+   "8월1주차": {
+    "label": "8월1주차",
+    "dateRange": "08.03~08.09",
+    "total": {
+     "weight": 1599.7,
+     "sales": 20.23,
+     "margin": 6.451,
+     "perMin": 126.5,
+     "perMargin": 40.3
+    },
+    "cats": {
+     "생활가전": {
+      "weight": 569.3,
+      "sales": 5.719,
+      "margin": 2.164,
+      "perMin": 100.5,
+      "perMargin": 38.0
+     },
+     "주방가전": {
+      "weight": 42.8,
+      "sales": 0.934,
+      "margin": 0.17,
+      "perMin": 218.6,
+      "perMargin": 39.7
+     },
+     "주방용품": {
+      "weight": 973.4,
+      "sales": 13.36,
+      "margin": 4.079,
+      "perMin": 137.2,
+      "perMargin": 41.9
+     },
+     "대형가전": {
+      "weight": 14.2,
+      "sales": 0.217,
+      "margin": 0.039,
+      "perMin": 152.1,
+      "perMargin": 27.4
      }
     }
    }
