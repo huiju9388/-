@@ -371,12 +371,13 @@
       <button onclick="showMD('kim')"   id="mdtab-kim"   class="tab-btn">김응도</button>
       <button onclick="showMD('lim')"   id="mdtab-lim"   class="tab-btn">임동진</button>
       <button onclick="showMD('baek')"  id="mdtab-baek"  class="tab-btn">백혜정</button>
+      <button onclick="showMD('jang')"  id="mdtab-jang"  class="tab-btn">장환희</button>
     </div>
 
     <!-- 전체 비교 뷰 -->
     <div id="mdview-all">
       <!-- 요약 카드 -->
-            <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:16px;">
+            <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin-bottom:16px;">
         <div class="kpi-card" style="border-color:rgba(77,143,255,0.3);">
           <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
             <div class="kpi-name" style="color:#4d8fff;margin-bottom:0;">권오석</div>
@@ -457,6 +458,25 @@
             <span class="need-val" style="color:#0E9E6A;">8.10억 · 39.8만/분</span>
           </div>
         </div>
+        <div class="kpi-card" style="border-color:rgba(0,194,168,0.3);">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+            <div class="kpi-name" style="color:#00C2A8;margin-bottom:0;">장환희</div>
+            <span style="font-size:9px;font-family:'IBM Plex Mono',monospace;padding:2px 7px;border-radius:3px;background:rgba(0,194,168,0.1);color:#00C2A8;">7월 합류 · 신규</span>
+          </div>
+          <div style="font-size:22px;font-weight:700;color:#1E2840;letter-spacing:-1px;">1.7억</div>
+          <div style="font-size:11px;color:#8A97B0;margin:4px 0 10px;">3건 · 105분</div>
+          <div class="need-row">
+            <span class="need-label">분당취급고</span>
+            <span class="need-val" style="color:#00C2A8;">163.1만 </span>
+          </div>
+          <div class="need-row" style="margin-top:6px;">
+            <span class="need-label">한계이익</span>
+            <span class="need-val" style="color:#0E9E6A;">0.43억 · 41.2만/분</span>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:-8px;margin-bottom:16px;padding:10px 14px;background:rgba(0,194,168,0.06);border:1px dashed rgba(0,194,168,0.3);border-radius:8px;font-size:11px;color:#4A5568;line-height:1.6;">
+        📋 <b style="color:#00C2A8;">장환희</b> — 2026년 7월 1일자 가전팀 신규 투입. 7월 [도깨비]헤리티지핸드블렌더(신상품) 런칭 실적 포함. 8월 운영 체계 개편으로 전 카테고리 운영 예정.
       </div>
 
       <!-- 월별 추이 차트 -->
@@ -469,6 +489,7 @@
             <span><span class="legend-dot" style="background:#22c87a"></span>김응도</span>
             <span><span class="legend-dot" style="background:#f5a623"></span>임동진</span>
             <span><span class="legend-dot" style="background:#9b7fff"></span>백혜정</span>
+            <span><span class="legend-dot" style="background:#00C2A8"></span>장환희</span>
           </div>
         </div>
         <div style="position:relative;height:200px;">
@@ -504,7 +525,12 @@
           <div class="cat-bars"><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:43%;background:#C97A10;"><span class="cat-bar-label" style="color:#fff;">120.3만원/분 </span></div></div></div></div>
           <div class="cat-diff" style="color:#C97A10;">생활가전</div>
         </div>
-        <div style="font-size:10px;color:#8A97B0;margin-top:8px;font-family:'IBM Plex Mono',monospace;">※ 백혜정 분당 1위는 대형가전 카테고리 특성(고단가)에 기인</div>
+        <div class="cat-row">
+          <div class="cat-name" style="width:50px;">장환희</div>
+          <div class="cat-bars"><div class="cat-bar-wrap"><div class="cat-bar-track"><div class="cat-bar-fill" style="width:58%;background:#00C2A8;"><span class="cat-bar-label" style="color:#fff;">163.1만원/분 </span></div></div></div></div>
+          <div class="cat-diff" style="color:#00C2A8;">주방가전(신규)</div>
+        </div>
+        <div style="font-size:10px;color:#8A97B0;margin-top:8px;font-family:'IBM Plex Mono',monospace;">※ 백혜정 분당 1위는 대형가전 카테고리 특성(고단가)에 기인 · 장환희는 7월 합류로 표본(3건) 적어 참고치</div>
       </div>
 
       <!-- 참고: 퇴사/이동 인원 -->
@@ -544,7 +570,7 @@
       document.getElementById('mdview-detail').style.display = 'block';
 
       const d = mdData[key];
-      const months = ['1월','2월','3월','4월','5월','6월'];
+      const months = ['1월','2월','3월','4월','5월','6월','7월'];
 
       let catsHtml = d.cats.map(c => `
         <tr>
@@ -617,13 +643,14 @@
     new Chart(mdCtx, {
       type: 'line',
       data: {
-        labels: ['1월','2월','3월','4월','5월','6월'],
+        labels: ['1월','2월','3월','4월','5월','6월','7월'],
         datasets: [
-          { label:'권오석', data:[45.2,32.5,14.3,9.6,26.8,20.8], borderColor:'#4d8fff', backgroundColor:'rgba(77,143,255,0.05)', tension:0.4, pointRadius:4, pointBackgroundColor:'#4d8fff' },
-          { label:'마영호', data:[22.8,14.5,15.3,17.7,23.7,9.4], borderColor:'#ff4d6a', backgroundColor:'rgba(255,77,106,0.05)', tension:0.4, pointRadius:4, pointBackgroundColor:'#ff4d6a' },
-          { label:'김응도', data:[16.9,25.1,26.5,19.4,19.4,18.1], borderColor:'#22c87a', backgroundColor:'rgba(34,200,122,0.05)', tension:0.4, pointRadius:4, pointBackgroundColor:'#22c87a' },
-          { label:'임동진', data:[7.8,1.6,4.0,15.5,23.9,17.2], borderColor:'#f5a623', backgroundColor:'rgba(245,166,35,0.05)', tension:0.4, pointRadius:4, pointBackgroundColor:'#f5a623' },
-          { label:'백혜정', data:[4.0,9.3,6.0,2.4,3.7,2.4], borderColor:'#9b7fff', backgroundColor:'rgba(155,127,255,0.05)', tension:0.4, pointRadius:4, pointBackgroundColor:'#9b7fff' }
+          { label:'권오석', data:[45.2,32.5,14.3,9.6,26.8,28.0,34.6], borderColor:'#4d8fff', backgroundColor:'rgba(77,143,255,0.05)', tension:0.4, pointRadius:4, pointBackgroundColor:'#4d8fff' },
+          { label:'마영호', data:[22.8,14.5,15.3,17.7,23.7,15.6,17.5], borderColor:'#ff4d6a', backgroundColor:'rgba(255,77,106,0.05)', tension:0.4, pointRadius:4, pointBackgroundColor:'#ff4d6a' },
+          { label:'김응도', data:[16.9,25.1,26.5,19.4,19.4,23.8,13.0], borderColor:'#22c87a', backgroundColor:'rgba(34,200,122,0.05)', tension:0.4, pointRadius:4, pointBackgroundColor:'#22c87a' },
+          { label:'임동진', data:[7.8,1.6,4.0,15.5,23.9,23.0,14.8], borderColor:'#f5a623', backgroundColor:'rgba(245,166,35,0.05)', tension:0.4, pointRadius:4, pointBackgroundColor:'#f5a623' },
+          { label:'백혜정', data:[4.0,9.3,6.0,2.4,3.7,12.9,18.6], borderColor:'#9b7fff', backgroundColor:'rgba(155,127,255,0.05)', tension:0.4, pointRadius:4, pointBackgroundColor:'#9b7fff' },
+          { label:'장환희', data:[0.0,0.0,0.0,0.0,0.0,0.0,0.8], borderColor:'#00C2A8', backgroundColor:'rgba(0,194,168,0.05)', tension:0.4, pointRadius:4, pointBackgroundColor:'#00C2A8' }
         ]
       },
       options: {
@@ -655,7 +682,7 @@ fetch('data/dashboard-data.json').then(r=>r.json()).then(d=>{ mdData = d.mdData;
 </script>
 <script>
 function renderConcentration(){
-    const order = ['ko','ma','kim','lim','baek'];
+    const order = ['ko','ma','kim','lim','baek','jang'];
     if(!mdData || !Object.keys(mdData).length){ return; }
     const html = order.map(key=>{
       const d = mdData[key];
