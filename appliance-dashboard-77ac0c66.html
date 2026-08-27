@@ -368,6 +368,167 @@
     <div id="kpi-card-margin" class="kpi-card green"></div>
   </div>
 </div>
+<!-- 협력사 편성 집중도 -->
+<div class="section">
+  <div class="section-title">협력사 편성 집중도 — 1~8월(~8/23) 누적 · 가중분 기준</div>
+  <div id="vc-summary" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;"></div>
+  <div style="display:grid;grid-template-columns:1.35fr 1fr;gap:14px;">
+    <div class="chart-wrap">
+      <div class="chart-header">
+        <span class="chart-title-text">협력사별 편성 점유 TOP 10</span>
+        <div class="legend"><span><span class="legend-dot" style="background:#6D3FC8"></span>편성 비중</span><span><span class="legend-dot" style="background:#8A97B0"></span>취급고 비중</span></div>
+      </div>
+      <div id="vc-bars"></div>
+    </div>
+    <div class="chart-wrap">
+      <div class="chart-header">
+        <span class="chart-title-text">월별 상위 3사 편성 집중도</span>
+        <div class="legend"><span id="vc-trend-legend">마이하우스·코지마·히트락</span></div>
+      </div>
+      <div style="position:relative;height:170px;">
+        <canvas id="vcTrendChart" role="img" aria-label="월별 상위 3사 편성 집중도 추이"></canvas>
+      </div>
+      <div id="vc-trend-note" style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:10px;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 신상품 운영 3회 이상 비중 -->
+<div class="section">
+  <div class="section-title">신상품 운영 3회 이상 비중(정착률) — 1~8월(~8/23) 런칭 기준</div>
+  <div style="display:grid;grid-template-columns:1fr 1.6fr;gap:14px;">
+    <div class="chart-wrap" id="ss-gauge"></div>
+    <div class="chart-wrap">
+      <div class="chart-header"><span class="chart-title-text">런칭 월별 · 카테고리별 정착 현황</span></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div>
+          <div style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-bottom:8px;">런칭 월별 코호트</div>
+          <div id="ss-cohort"></div>
+        </div>
+        <div>
+          <div style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-bottom:8px;">카테고리별</div>
+          <div id="ss-cat"></div>
+          <div style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin:14px 0 8px;">방송 횟수 분포</div>
+          <div id="ss-buckets"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  fetch('data/dashboard-data.json', {cache:'no-store'}).then(function(r){return r.json();}).then(function(d){
+    // ================= 협력사 편성 집중도 =================
+    var vc = d.vendorConcentration;
+    if (vc) {
+      function riskOf(p){ return p>=60 ? ['#C42E45','var(--red-bg)','고집중'] : (p>=45 ? ['#A8620A','var(--amber-bg)','주의'] : ['#0A8558','var(--green-bg)','분산']); }
+      var r3 = riskOf(vc.top3);
+      var hhiTxt = vc.hhi>=2500 ? '고집중' : (vc.hhi>=1500 ? '중집중' : '분산형');
+      var cards = [
+        {lbl:'TOP 3 편성 비중', val:vc.top3.toFixed(1)+'%', sub:vc.top3Names.join(' · '), color:r3[0], bg:r3[1], badge:r3[2]},
+        {lbl:'TOP 5 편성 비중', val:vc.top5.toFixed(1)+'%', sub:'TOP 10 누적 '+vc.top10.toFixed(1)+'%', color:'#4A5568', bg:'var(--bg3)', badge:''},
+        {lbl:'운영 협력사 수', val:vc.totalVendors+'사', sub:'총 편성 '+vc.totalW.toLocaleString()+'분', color:'#2563EB', bg:'var(--blue-bg)', badge:''},
+        {lbl:'HHI 집중도 지수', val:vc.hhi.toLocaleString(), sub:hhiTxt+' (1,500 미만=분산)', color:'#6D3FC8', bg:'var(--purple-bg)', badge:''}
+      ];
+      document.getElementById('vc-summary').innerHTML = cards.map(function(c){
+        return '<div class="card-base" style="padding:14px 16px;">'+
+          '<div style="font-size:10px;color:var(--text3);font-family:\'IBM Plex Mono\',monospace;margin-bottom:8px;">'+c.lbl+'</div>'+
+          '<div style="display:flex;align-items:baseline;gap:8px;">'+
+            '<div style="font-size:24px;font-weight:700;letter-spacing:-1px;color:'+c.color+';font-family:\'IBM Plex Mono\',monospace;">'+c.val+'</div>'+
+            (c.badge ? '<span style="font-size:9px;font-weight:700;padding:2px 8px;border-radius:20px;background:'+c.bg+';color:'+c.color+';">'+c.badge+'</span>' : '')+
+          '</div>'+
+          '<div style="font-size:10px;color:var(--text3);margin-top:6px;font-family:\'IBM Plex Mono\',monospace;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+c.sub+'</div>'+
+        '</div>';
+      }).join('');
+
+      var maxSh = vc.top[0].wsh;
+      document.getElementById('vc-bars').innerHTML = vc.top.map(function(v,i){
+        var w1 = Math.max(v.wsh/maxSh*100, 3), w2 = Math.max(v.ssh/maxSh*100, 3);
+        var core = i<3;
+        return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:9px;">'+
+          '<div style="width:20px;font-size:10px;color:var(--text3);font-family:\'IBM Plex Mono\',monospace;text-align:right;">'+(i+1)+'</div>'+
+          '<div style="width:96px;font-size:11px;font-weight:'+(core?'700':'500')+';color:'+(core?'#6D3FC8':'var(--text2)')+';white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+v.name+'</div>'+
+          '<div style="flex:1;display:flex;flex-direction:column;gap:3px;">'+
+            '<div class="bar-track" style="height:14px;"><div class="bar-fill" style="width:'+w1+'%;background:linear-gradient(90deg,#6D3FC8,#9B7FFF);"><span class="bar-txt" style="font-size:9px;">'+v.wsh.toFixed(1)+'%</span></div></div>'+
+            '<div class="bar-track" style="height:9px;"><div class="bar-fill" style="width:'+w2+'%;background:rgba(138,151,176,0.55);"></div></div>'+
+          '</div>'+
+          '<div style="width:132px;text-align:right;font-size:10px;color:var(--text3);font-family:\'IBM Plex Mono\',monospace;">'+v.w.toLocaleString()+'분 · '+v.s.toFixed(1)+'억<br><span style="color:var(--text2);">분당 '+v.perMin.toFixed(1)+'만 · '+v.cnt+'회</span></div>'+
+        '</div>';
+      }).join('');
+
+      document.getElementById('vc-trend-legend').textContent = vc.top3Names.join(' · ');
+      var tl = vc.trend.map(function(t){return t.month;});
+      var tv = vc.trend.map(function(t){return t.pct;});
+      var last = vc.trend[vc.trend.length-1], first = vc.trend[0];
+      document.getElementById('vc-trend-note').innerHTML =
+        last.month+' '+last.pct.toFixed(1)+'% · 운영 협력사 '+last.vcnt+'사 (1월 '+first.pct.toFixed(1)+'% · '+first.vcnt+'사) → '+
+        '<span style="color:'+(last.pct>=first.pct?'#C42E45':'#0A8558')+';font-weight:600;">'+(last.pct-first.pct>=0?'+':'')+(last.pct-first.pct).toFixed(1)+'%p</span>';
+      var ctxV = document.getElementById('vcTrendChart');
+      if (ctxV && window.Chart) {
+        new Chart(ctxV, {
+          type:'line',
+          data:{labels:tl, datasets:[{data:tv, borderColor:'#6D3FC8', backgroundColor:'rgba(109,63,200,0.10)',
+            borderWidth:2, tension:0.3, fill:true, pointRadius:3, pointBackgroundColor:'#6D3FC8'}]},
+          options:{responsive:true, maintainAspectRatio:false,
+            plugins:{legend:{display:false}, tooltip:{callbacks:{label:function(c){return '상위 3사 '+c.parsed.y+'%';}}}},
+            scales:{ y:{ beginAtZero:false, suggestedMin:20, suggestedMax:80,
+                         ticks:{color:'#8A97B0', font:{size:10}, callback:function(v){return v+'%';}},
+                         grid:{color:'rgba(99,120,160,0.12)'} },
+                     x:{ ticks:{color:'#8A97B0', font:{size:10}}, grid:{display:false} } }}
+        });
+      }
+    }
+
+    // ================= 신상품 3회 이상 비중 =================
+    var ss = d.shinSettle;
+    if (ss) {
+      var okQ3 = ss.pct >= ss.targetQ3, okYr = ss.pct >= ss.targetYear;
+      var gc = okYr ? '#0A8558' : (okQ3 ? '#A8620A' : '#C42E45');
+      var deg = Math.min(ss.pct,100) * 3.6;
+      document.getElementById('ss-gauge').innerHTML =
+        '<div style="text-align:center;">'+
+        '<div style="font-size:10px;color:var(--text3);font-family:\'IBM Plex Mono\',monospace;margin-bottom:14px;">3회 이상 방송 신상품 비중</div>'+
+        '<div style="width:150px;height:150px;margin:0 auto;border-radius:50%;background:conic-gradient('+gc+' 0deg '+deg+'deg, var(--bg3) '+deg+'deg 360deg);display:flex;align-items:center;justify-content:center;">'+
+          '<div style="width:112px;height:112px;border-radius:50%;background:var(--bg2);display:flex;flex-direction:column;align-items:center;justify-content:center;">'+
+            '<div style="font-size:27px;font-weight:700;letter-spacing:-1px;color:'+gc+';font-family:\'IBM Plex Mono\',monospace;">'+ss.pct.toFixed(1)+'%</div>'+
+            '<div style="font-size:10px;color:var(--text3);font-family:\'IBM Plex Mono\',monospace;">'+ss.ge3+' / '+ss.total+'개</div>'+
+          '</div>'+
+        '</div>'+
+        '<div style="display:flex;gap:8px;justify-content:center;margin-top:16px;">'+
+          '<span style="font-size:10px;font-family:\'IBM Plex Mono\',monospace;padding:4px 10px;border-radius:20px;background:'+(okQ3?'var(--green-bg)':'var(--red-bg)')+';color:'+(okQ3?'#0A8558':'#C42E45')+';font-weight:600;">Q3 목표 '+ss.targetQ3+'% '+(okQ3?'달성':'미달')+'</span>'+
+          '<span style="font-size:10px;font-family:\'IBM Plex Mono\',monospace;padding:4px 10px;border-radius:20px;background:'+(okYr?'var(--green-bg)':'var(--amber-bg)')+';color:'+(okYr?'#0A8558':'#A8620A')+';font-weight:600;">연말 '+ss.targetYear+'% '+(okYr?'달성':'미달')+'</span>'+
+        '</div>'+
+        '<div style="border-top:1px solid var(--border);margin-top:16px;padding-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">'+
+          '<div><div style="font-size:9px;color:var(--text3);font-family:\'IBM Plex Mono\',monospace;">런칭 수 / 연간목표</div><div style="font-size:15px;font-weight:700;font-family:\'IBM Plex Mono\',monospace;color:var(--text1);">'+ss.total+' / '+ss.yearGoal+'개</div></div>'+
+          '<div><div style="font-size:9px;color:var(--text3);font-family:\'IBM Plex Mono\',monospace;">평균 방송 횟수</div><div style="font-size:15px;font-weight:700;font-family:\'IBM Plex Mono\',monospace;color:var(--text1);">'+ss.avgCnt.toFixed(1)+'회</div></div>'+
+        '</div>'+
+        '</div>';
+
+      function rowBar(label, pct, sub, color){
+        return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;">'+
+          '<div style="width:46px;font-size:10px;color:var(--text2);font-family:\'IBM Plex Mono\',monospace;text-align:right;">'+label+'</div>'+
+          '<div class="bar-track" style="height:15px;"><div class="bar-fill" style="width:'+Math.max(pct,3)+'%;background:'+color+';"><span class="bar-txt" style="font-size:9px;">'+pct.toFixed(0)+'%</span></div></div>'+
+          '<div style="width:52px;font-size:9px;color:var(--text3);font-family:\'IBM Plex Mono\',monospace;">'+sub+'</div>'+
+        '</div>';
+      }
+      document.getElementById('ss-cohort').innerHTML = ss.cohort.filter(function(c){return c.n>0;}).map(function(c){
+        var col = c.pct>=ss.targetYear ? 'linear-gradient(90deg,#0E9E6A,#2DC88A)' : (c.pct>=ss.targetQ3 ? 'linear-gradient(90deg,#C97A10,#F0A030)' : 'linear-gradient(90deg,#D63A52,#F06880)');
+        return rowBar(c.month, c.pct, c.ge3+'/'+c.n+'개', col);
+      }).join('');
+      document.getElementById('ss-cat').innerHTML = ss.byCat.map(function(c){
+        var col = c.pct>=ss.targetYear ? 'linear-gradient(90deg,#0E9E6A,#2DC88A)' : (c.pct>=ss.targetQ3 ? 'linear-gradient(90deg,#C97A10,#F0A030)' : 'linear-gradient(90deg,#D63A52,#F06880)');
+        return rowBar(c.cat, c.pct, c.ge3+'/'+c.n+'개', col);
+      }).join('');
+      var maxB = Math.max.apply(null, ss.buckets.map(function(b){return b.pct;}));
+      document.getElementById('ss-buckets').innerHTML = ss.buckets.map(function(b,i){
+        var col = i<2 ? 'rgba(214,58,82,0.55)' : 'rgba(109,63,200,0.65)';
+        return rowBar(b.label, b.pct, b.n+'개', col);
+      }).join('');
+    }
+  }).catch(function(e){ console.error('vc/ss render error', e); });
+})();
+</script>
 <!-- 월별 차트 -->
 <div class="section">
   <div class="section-title">월별 취급고 · 한계이익 추이</div>
