@@ -382,13 +382,17 @@
     </div>
     <div class="chart-wrap">
       <div class="chart-header">
-        <span class="chart-title-text">월별 상위 3사 편성 집중도</span>
-        <div class="legend"><span id="vc-trend-legend">마이하우스·코지마·히트락</span></div>
+        <span class="chart-title-text">월별 상위 3사 · 5사 편성 집중도</span>
+        <div class="legend">
+          <span><span class="legend-dot" style="background:#6D3FC8"></span>TOP 3</span>
+          <span><span class="legend-dot" style="background:#2563EB"></span>TOP 5</span>
+        </div>
       </div>
       <div style="position:relative;height:170px;">
         <canvas id="vcTrendChart" role="img" aria-label="월별 상위 3사 편성 집중도 추이"></canvas>
       </div>
-      <div id="vc-trend-note" style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:10px;"></div>
+      <div id="vc-trend-names" style="font-size:9px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:10px;"></div>
+      <div id="vc-trend-note" style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:5px;"></div>
     </div>
   </div>
 </div>
@@ -458,22 +462,32 @@
         '</div>';
       }).join('');
 
-      document.getElementById('vc-trend-legend').textContent = vc.top3Names.join(' · ');
+      document.getElementById('vc-trend-names').innerHTML =
+        '<span style="color:#6D3FC8;font-weight:600;">TOP3</span> '+vc.top3Names.join('·')+
+        '  <span style="color:#2563EB;font-weight:600;margin-left:8px;">+4~5위</span> '+vc.top5Names.slice(3).join('·');
       var tl = vc.trend.map(function(t){return t.month;});
       var tv = vc.trend.map(function(t){return t.pct;});
+      var tv5 = vc.trend.map(function(t){return t.pct5;});
       var last = vc.trend[vc.trend.length-1], first = vc.trend[0];
+      function dp(a,b){ var v=a-b; return '<span style="color:'+(v>=0?'#C42E45':'#0A8558')+';font-weight:600;">'+(v>=0?'+':'')+v.toFixed(1)+'%p</span>'; }
       document.getElementById('vc-trend-note').innerHTML =
-        last.month+' '+last.pct.toFixed(1)+'% · 운영 협력사 '+last.vcnt+'사 (1월 '+first.pct.toFixed(1)+'% · '+first.vcnt+'사) → '+
-        '<span style="color:'+(last.pct>=first.pct?'#C42E45':'#0A8558')+';font-weight:600;">'+(last.pct-first.pct>=0?'+':'')+(last.pct-first.pct).toFixed(1)+'%p</span>';
+        last.month+' TOP3 '+last.pct.toFixed(1)+'% '+dp(last.pct,first.pct)+
+        ' · TOP5 '+last.pct5.toFixed(1)+'% '+dp(last.pct5,first.pct5)+
+        ' · 운영 협력사 '+last.vcnt+'사 (1월 '+first.vcnt+'사)';
       var ctxV = document.getElementById('vcTrendChart');
       if (ctxV && window.Chart) {
         new Chart(ctxV, {
           type:'line',
-          data:{labels:tl, datasets:[{data:tv, borderColor:'#6D3FC8', backgroundColor:'rgba(109,63,200,0.10)',
-            borderWidth:2, tension:0.3, fill:true, pointRadius:3, pointBackgroundColor:'#6D3FC8'}]},
+          data:{labels:tl, datasets:[
+            {label:'TOP 5', data:tv5, borderColor:'#2563EB', backgroundColor:'rgba(37,99,235,0.09)',
+             borderWidth:2, tension:0.3, fill:true, pointRadius:3, pointBackgroundColor:'#2563EB'},
+            {label:'TOP 3', data:tv, borderColor:'#6D3FC8', backgroundColor:'rgba(109,63,200,0.12)',
+             borderWidth:2, tension:0.3, fill:true, pointRadius:3, pointBackgroundColor:'#6D3FC8'}
+          ]},
           options:{responsive:true, maintainAspectRatio:false,
-            plugins:{legend:{display:false}, tooltip:{callbacks:{label:function(c){return '상위 3사 '+c.parsed.y+'%';}}}},
-            scales:{ y:{ beginAtZero:false, suggestedMin:20, suggestedMax:80,
+            plugins:{legend:{display:false}, tooltip:{mode:'index', intersect:false,
+              callbacks:{label:function(c){return c.dataset.label+' '+c.parsed.y+'%';}}}},
+            scales:{ y:{ beginAtZero:false, suggestedMin:20, suggestedMax:85,
                          ticks:{color:'#8A97B0', font:{size:10}, callback:function(v){return v+'%';}},
                          grid:{color:'rgba(99,120,160,0.12)'} },
                      x:{ ticks:{color:'#8A97B0', font:{size:10}}, grid:{display:false} } }}
