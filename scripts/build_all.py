@@ -210,18 +210,22 @@ def build_vendor_concentration(f, cols):
                     "s": round(r.s / 1e8, 1), "ssh": round(r.s / tot_s * 100, 1),
                     "cnt": int(r.cnt), "perMin": pm(r.s, r.w), "perMar": pm(r.mg, r.w)})
     top3names = list(agg.index[:3])
+    top5names = list(agg.index[:5])
     trend = []
     for m in sorted(g['MONI'].unique()):
         sub = g[g['MONI'] == m]
         mw = sub[cols['WMIN']].sum()
         t3 = sub[sub['vendor'].isin(top3names)][cols['WMIN']].sum()
-        trend.append({"month": f"{int(m)}월", "pct": round(t3 / mw * 100, 1) if mw else 0.0,
+        t5 = sub[sub['vendor'].isin(top5names)][cols['WMIN']].sum()
+        trend.append({"month": f"{int(m)}월",
+                      "pct": round(t3 / mw * 100, 1) if mw else 0.0,
+                      "pct5": round(t5 / mw * 100, 1) if mw else 0.0,
                       "vcnt": int(sub['vendor'].nunique())})
     return {"totalVendors": int(agg.shape[0]), "totalW": int(round(tot_w)),
             "top3": cr(3), "top5": cr(5), "top10": cr(10),
             "top3Sales": round(float(agg['s'].head(3).sum() / tot_s * 100), 1),
             "hhi": int(round(float((sh ** 2).sum() * 10000))),
-            "top3Names": top3names, "top": top, "trend": trend}
+            "top3Names": top3names, "top5Names": top5names, "top": top, "trend": trend}
 
 
 def build_shin_settle(f, cols, target_q3=55, target_year=60, year_goal=70, min_w=5.0, mature_months=2):
