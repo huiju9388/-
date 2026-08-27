@@ -396,6 +396,7 @@
 <!-- 신상품 운영 3회 이상 비중 -->
 <div class="section">
   <div class="section-title">신상품 운영 3회 이상 비중(정착률) — 1~8월(~8/23) 런칭 기준</div>
+  <div id="ss-rule" style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin:-6px 0 12px;"></div>
   <div style="display:grid;grid-template-columns:1fr 1.6fr;gap:14px;">
     <div class="chart-wrap" id="ss-gauge"></div>
     <div class="chart-wrap">
@@ -483,12 +484,14 @@
     // ================= 신상품 3회 이상 비중 =================
     var ss = d.shinSettle;
     if (ss) {
+      document.getElementById('ss-rule').textContent = '측정 규칙 · ' + ss.rule;
       var okQ3 = ss.pct >= ss.targetQ3, okYr = ss.pct >= ss.targetYear;
       var gc = okYr ? '#0A8558' : (okQ3 ? '#A8620A' : '#C42E45');
       var deg = Math.min(ss.pct,100) * 3.6;
       document.getElementById('ss-gauge').innerHTML =
         '<div style="text-align:center;">'+
-        '<div style="font-size:10px;color:var(--text3);font-family:\'IBM Plex Mono\',monospace;margin-bottom:14px;">3회 이상 방송 신상품 비중</div>'+
+        '<div style="font-size:10px;color:var(--text3);font-family:\'IBM Plex Mono\',monospace;margin-bottom:4px;">3회 이상 유효방송 신상품 비중</div>'+
+        '<div style="font-size:9px;color:var(--text3);font-family:\'IBM Plex Mono\',monospace;margin-bottom:12px;">관찰기간 '+ss.matureMonths+'개월 경과 '+ss.total+'개 기준 (최근 런칭 '+ss.pending+'개 관찰중)</div>'+
         '<div style="width:150px;height:150px;margin:0 auto;border-radius:50%;background:conic-gradient('+gc+' 0deg '+deg+'deg, var(--bg3) '+deg+'deg 360deg);display:flex;align-items:center;justify-content:center;">'+
           '<div style="width:112px;height:112px;border-radius:50%;background:var(--bg2);display:flex;flex-direction:column;align-items:center;justify-content:center;">'+
             '<div style="font-size:27px;font-weight:700;letter-spacing:-1px;color:'+gc+';font-family:\'IBM Plex Mono\',monospace;">'+ss.pct.toFixed(1)+'%</div>'+
@@ -499,9 +502,10 @@
           '<span style="font-size:10px;font-family:\'IBM Plex Mono\',monospace;padding:4px 10px;border-radius:20px;background:'+(okQ3?'var(--green-bg)':'var(--red-bg)')+';color:'+(okQ3?'#0A8558':'#C42E45')+';font-weight:600;">Q3 목표 '+ss.targetQ3+'% '+(okQ3?'달성':'미달')+'</span>'+
           '<span style="font-size:10px;font-family:\'IBM Plex Mono\',monospace;padding:4px 10px;border-radius:20px;background:'+(okYr?'var(--green-bg)':'var(--amber-bg)')+';color:'+(okYr?'#0A8558':'#A8620A')+';font-weight:600;">연말 '+ss.targetYear+'% '+(okYr?'달성':'미달')+'</span>'+
         '</div>'+
-        '<div style="border-top:1px solid var(--border);margin-top:16px;padding-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">'+
-          '<div><div style="font-size:9px;color:var(--text3);font-family:\'IBM Plex Mono\',monospace;">런칭 수 / 연간목표</div><div style="font-size:15px;font-weight:700;font-family:\'IBM Plex Mono\',monospace;color:var(--text1);">'+ss.total+' / '+ss.yearGoal+'개</div></div>'+
-          '<div><div style="font-size:9px;color:var(--text3);font-family:\'IBM Plex Mono\',monospace;">평균 방송 횟수</div><div style="font-size:15px;font-weight:700;font-family:\'IBM Plex Mono\',monospace;color:var(--text1);">'+ss.avgCnt.toFixed(1)+'회</div></div>'+
+        '<div style="border-top:1px solid var(--border);margin-top:16px;padding-top:14px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">'+
+          '<div><div style="font-size:9px;color:var(--text3);font-family:\'IBM Plex Mono\',monospace;">런칭 / 연간목표</div><div style="font-size:15px;font-weight:700;font-family:\'IBM Plex Mono\',monospace;color:var(--text1);">'+ss.allTotal+' / '+ss.yearGoal+'개</div></div>'+
+          '<div><div style="font-size:9px;color:var(--text3);font-family:\'IBM Plex Mono\',monospace;">평균 유효방송</div><div style="font-size:15px;font-weight:700;font-family:\'IBM Plex Mono\',monospace;color:var(--text1);">'+ss.avgCnt.toFixed(1)+'회</div></div>'+
+          '<div><div style="font-size:9px;color:var(--text3);font-family:\'IBM Plex Mono\',monospace;">전체 '+ss.allTotal+'개 기준</div><div style="font-size:15px;font-weight:700;font-family:\'IBM Plex Mono\',monospace;color:var(--text2);">'+ss.allPct.toFixed(1)+'%</div></div>'+
         '</div>'+
         '</div>';
 
@@ -512,9 +516,16 @@
           '<div style="width:52px;font-size:9px;color:var(--text3);font-family:\'IBM Plex Mono\',monospace;">'+sub+'</div>'+
         '</div>';
       }
-      document.getElementById('ss-cohort').innerHTML = ss.cohort.filter(function(c){return c.n>0;}).map(function(c){
+      document.getElementById('ss-cohort').innerHTML = ss.cohort.map(function(c){
+        if (c.n===0) {
+          return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;opacity:.55;">'+
+            '<div style="width:46px;font-size:10px;color:var(--text3);font-family:\'IBM Plex Mono\',monospace;text-align:right;">'+c.month+'</div>'+
+            '<div class="bar-track" style="height:15px;background:repeating-linear-gradient(45deg,var(--bg3),var(--bg3) 4px,rgba(138,151,176,0.18) 4px,rgba(138,151,176,0.18) 8px);"></div>'+
+            '<div style="width:52px;font-size:9px;color:var(--text3);font-family:\'IBM Plex Mono\',monospace;">관찰중 '+c.pending+'</div>'+
+          '</div>';
+        }
         var col = c.pct>=ss.targetYear ? 'linear-gradient(90deg,#0E9E6A,#2DC88A)' : (c.pct>=ss.targetQ3 ? 'linear-gradient(90deg,#C97A10,#F0A030)' : 'linear-gradient(90deg,#D63A52,#F06880)');
-        return rowBar(c.month, c.pct, c.ge3+'/'+c.n+'개', col);
+        return rowBar(c.month, c.pct, c.ge3+'/'+c.n+'개'+(c.pending?' +'+c.pending:''), col);
       }).join('');
       document.getElementById('ss-cat').innerHTML = ss.byCat.map(function(c){
         var col = c.pct>=ss.targetYear ? 'linear-gradient(90deg,#0E9E6A,#2DC88A)' : (c.pct>=ss.targetQ3 ? 'linear-gradient(90deg,#C97A10,#F0A030)' : 'linear-gradient(90deg,#D63A52,#F06880)');
