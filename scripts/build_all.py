@@ -184,6 +184,84 @@ def build_shin(f, cols):
     return shinSummary, shinMonthly, shinTrendData, shin_products
 
 
+def build_vendor_concentration(f, cols):
+    """협력사 편성 집중도. 편성코드명 대괄호 브랜드를 협력사 단위로 통합(VENDOR_DEFS aliases 사용).
+    가중분 기준 점유율 / 누적 집중도(CR3·CR5·CR10) / HHI / 월별 상위 3사 집중도 추이."""
+    vmap = {}
+    for v in VENDOR_DEFS:
+        for a in v['aliases']:
+            vmap[a] = v['name']
+    g = f.copy()
+    g['vendor'] = g['brand'].map(lambda b: vmap.get(b, b))
+    tot_w = g[cols['WMIN']].sum()
+    tot_s = g[cols['SALES']].sum()
+    agg = g.groupby('vendor').agg(w=(cols['WMIN'], 'sum'), s=(cols['SALES'], 'sum'),
+                                  mg=(cols['MARGIN'], 'sum'), cnt=(cols['WMIN'], 'size')
+                                  ).sort_values('w', ascending=False)
+    sh = (agg['w'] / tot_w).values
+    cum = (sh.cumsum() * 100)
+
+    def cr(k):
+        return round(float(cum[k - 1]), 1) if len(cum) >= k else 100.0
+
+    top = []
+    for name, r in agg.head(10).iterrows():
+        top.append({"name": name, "w": int(round(r.w)), "wsh": round(r.w / tot_w * 100, 1),
+                    "s": round(r.s / 1e8, 1), "ssh": round(r.s / tot_s * 100, 1),
+                    "cnt": int(r.cnt), "perMin": pm(r.s, r.w), "perMar": pm(r.mg, r.w)})
+    top3names = list(agg.index[:3])
+    trend = []
+    for m in sorted(g['MONI'].unique()):
+        sub = g[g['MONI'] == m]
+        mw = sub[cols['WMIN']].sum()
+        t3 = sub[sub['vendor'].isin(top3names)][cols['WMIN']].sum()
+        trend.append({"month": f"{int(m)}월", "pct": round(t3 / mw * 100, 1) if mw else 0.0,
+                      "vcnt": int(sub['vendor'].nunique())})
+    return {"totalVendors": int(agg.shape[0]), "totalW": int(round(tot_w)),
+            "top3": cr(3), "top5": cr(5), "top10": cr(10),
+            "top3Sales": round(float(agg['s'].head(3).sum() / tot_s * 100), 1),
+            "hhi": int(round(float((sh ** 2).sum() * 10000))),
+            "top3Names": top3names, "top": top, "trend": trend}
+
+
+def build_shin_settle(f, cols, target_q3=55, target_year=60, year_goal=70):
+    """신상품 정착률 = 신상품 태그로 런칭한 상품 중 생애 방송 3회 이상 비중.
+    상품 식별은 build_shin과 동일하게 편성코드명(cols['BRAND']) 기준."""
+    shin_rows = f[f[cols['SHIN']] == '신상품']
+    lifecnt = f.groupby(cols['BRAND']).size()
+    sp = shin_rows[[cols['BRAND'], 'MONI', cols['CAT']]].copy()
+    sp.columns = ['name', 'lm', 'cat']
+    sp['cnt'] = sp['name'].map(lifecnt).fillna(0).astype(int)
+    n = int(len(sp))
+    if n == 0:
+        return {"total": 0, "ge3": 0, "pct": 0.0, "targetQ3": target_q3, "targetYear": target_year,
+                "yearGoal": year_goal, "avgCnt": 0.0, "buckets": [], "cohort": [], "byCat": []}
+    ge3 = int((sp['cnt'] >= 3).sum())
+    buckets = [{"label": "1회", "n": int((sp['cnt'] == 1).sum())},
+               {"label": "2회", "n": int((sp['cnt'] == 2).sum())},
+               {"label": "3~4회", "n": int(((sp['cnt'] >= 3) & (sp['cnt'] <= 4)).sum())},
+               {"label": "5회 이상", "n": int((sp['cnt'] >= 5).sum())}]
+    for b in buckets:
+        b['pct'] = round(b['n'] / n * 100, 1)
+    cohort = []
+    for m in sorted(f['MONI'].unique()):
+        s = sp[sp['lm'] == m]
+        cohort.append({"month": f"{int(m)}월", "n": int(len(s)),
+                       "ge3": int((s['cnt'] >= 3).sum()) if len(s) else 0,
+                       "pct": round(float((s['cnt'] >= 3).mean() * 100), 1) if len(s) else 0.0})
+    byCat = []
+    for c in CATS:
+        s = sp[sp['cat'] == c]
+        if len(s) == 0:
+            continue
+        byCat.append({"cat": c, "n": int(len(s)), "ge3": int((s['cnt'] >= 3).sum()),
+                      "pct": round(float((s['cnt'] >= 3).mean() * 100), 1)})
+    return {"total": n, "ge3": ge3, "pct": round(ge3 / n * 100, 1),
+            "targetQ3": target_q3, "targetYear": target_year, "yearGoal": year_goal,
+            "avgCnt": round(float(sp['cnt'].mean()), 1),
+            "buckets": buckets, "cohort": cohort, "byCat": byCat}
+
+
 def build_newproduct(f, cols, shin_products):
     MD_DATA = []
     for key, name in MDMAP.items():
@@ -431,6 +509,8 @@ def main():
     shinSummary, shinMonthly, shinTrendData, shin_products = build_shin(f, cols)
     MD_DATA, SHIN_DATA = build_newproduct(f, cols, shin_products)
     search_data = build_search(f, cols)
+    vendorConcentration = build_vendor_concentration(f, cols)
+    shinSettle = build_shin_settle(f, cols)
 
     cur = json.load(open('current_dashboard-data.json')) if __import__('os').path.exists('current_dashboard-data.json') else {}
     dashboard_data = {
@@ -439,6 +519,8 @@ def main():
         "shinSummary": shinSummary, "shinMonthly": shinMonthly,
         "weightTargets": cur.get('weightTargets', {}),  # weight_targets.csv 갱신 시 별도 반영 필요
         "weeklyData": weeklyData,
+        "vendorConcentration": vendorConcentration,
+        "shinSettle": shinSettle,
     }
     json.dump(dashboard_data, open(f'{args.outdir}/dashboard-data.json','w'), ensure_ascii=False, indent=1)
     json.dump({"MD_DATA": MD_DATA, "SHIN_DATA": SHIN_DATA}, open(f'{args.outdir}/newproduct-data.json','w'), ensure_ascii=False, indent=1)
