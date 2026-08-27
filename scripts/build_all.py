@@ -224,42 +224,74 @@ def build_vendor_concentration(f, cols):
             "top3Names": top3names, "top": top, "trend": trend}
 
 
-def build_shin_settle(f, cols, target_q3=55, target_year=60, year_goal=70):
-    """신상품 정착률 = 신상품 태그로 런칭한 상품 중 생애 방송 3회 이상 비중.
-    상품 식별은 build_shin과 동일하게 편성코드명(cols['BRAND']) 기준."""
+def build_shin_settle(f, cols, target_q3=55, target_year=60, year_goal=70, min_w=5.0, mature_months=2):
+    """신상품 정착률 = 런칭 후 '유효방송' 3회 이상 비중.
+
+    측정 규칙 (2026-08-27 확정):
+      1) 상품 식별 = 편성코드명(cols['BRAND']), build_shin과 동일
+      2) 런칭일   = 해당 상품의 첫 '신상품' 태그 편성일. 태그 이전 편성은 카운트하지 않는다.
+      3) 유효방송 = 가중분 >= min_w(5분). 가중분 0~0.6분짜리 등록성 행과 협력사 케어용
+         저가중분 새벽 편성이 '방송 1회'로 잡혀 정착률이 부풀려지는 것을 막는다.
+         (새벽대라도 가중분 5분 이상 실방송은 재편성이 일어난 것이므로 카운트한다)
+      4) 관찰기간 = 런칭 후 mature_months(2개월) 경과 상품만 본지표에 집계.
+         최근 런칭은 3회를 채울 시간이 없었을 뿐이므로 'pending'으로 분리한다.
+    """
+    valid = f[f[cols['WMIN']] >= min_w]
     shin_rows = f[f[cols['SHIN']] == '신상품']
-    lifecnt = f.groupby(cols['BRAND']).size()
-    sp = shin_rows[[cols['BRAND'], 'MONI', cols['CAT']]].copy()
-    sp.columns = ['name', 'lm', 'cat']
+    launch = shin_rows.groupby(cols['BRAND'])['dt'].min()
+    maxdt = f['dt'].max()
+    cutoff = maxdt - pd.DateOffset(months=mature_months)
+
+    v = valid[valid[cols['BRAND']].isin(launch.index)].copy()
+    v['_ld'] = v[cols['BRAND']].map(launch)
+    lifecnt = v[v['dt'] >= v['_ld']].groupby(cols['BRAND']).size()
+
+    sp = shin_rows.drop_duplicates(subset=[cols['BRAND']])[[cols['BRAND'], cols['CAT']]].copy()
+    sp.columns = ['name', 'cat']
+    sp['ld'] = sp['name'].map(launch)
+    sp['lm'] = sp['ld'].dt.month
     sp['cnt'] = sp['name'].map(lifecnt).fillna(0).astype(int)
-    n = int(len(sp))
+    sp['mature'] = sp['ld'] <= cutoff
+
+    allT = int(len(sp))
+    mt = sp[sp['mature']]
+    n = int(len(mt))
+    base = {"targetQ3": target_q3, "targetYear": target_year, "yearGoal": year_goal,
+            "minW": min_w, "matureMonths": mature_months,
+            "rule": f"유효방송 = 가중분 {min_w:.0f}분 이상 · 신상품 태그일 이후 · 런칭 {mature_months}개월 경과 상품만 집계",
+            "allTotal": allT, "pending": allT - n}
     if n == 0:
-        return {"total": 0, "ge3": 0, "pct": 0.0, "targetQ3": target_q3, "targetYear": target_year,
-                "yearGoal": year_goal, "avgCnt": 0.0, "buckets": [], "cohort": [], "byCat": []}
-    ge3 = int((sp['cnt'] >= 3).sum())
-    buckets = [{"label": "1회", "n": int((sp['cnt'] == 1).sum())},
-               {"label": "2회", "n": int((sp['cnt'] == 2).sum())},
-               {"label": "3~4회", "n": int(((sp['cnt'] >= 3) & (sp['cnt'] <= 4)).sum())},
-               {"label": "5회 이상", "n": int((sp['cnt'] >= 5).sum())}]
+        base.update({"total": 0, "ge3": 0, "pct": 0.0, "allGe3": 0, "allPct": 0.0,
+                     "avgCnt": 0.0, "buckets": [], "cohort": [], "byCat": []})
+        return base
+    ge3 = int((mt['cnt'] >= 3).sum())
+    allGe3 = int((sp['cnt'] >= 3).sum())
+    buckets = [{"label": "1회", "n": int((mt['cnt'] <= 1).sum())},
+               {"label": "2회", "n": int((mt['cnt'] == 2).sum())},
+               {"label": "3~4회", "n": int(((mt['cnt'] >= 3) & (mt['cnt'] <= 4)).sum())},
+               {"label": "5회 이상", "n": int((mt['cnt'] >= 5).sum())}]
     for b in buckets:
         b['pct'] = round(b['n'] / n * 100, 1)
     cohort = []
-    for m in sorted(f['MONI'].unique()):
-        s = sp[sp['lm'] == m]
-        cohort.append({"month": f"{int(m)}월", "n": int(len(s)),
-                       "ge3": int((s['cnt'] >= 3).sum()) if len(s) else 0,
-                       "pct": round(float((s['cnt'] >= 3).mean() * 100), 1) if len(s) else 0.0})
+    for m in sorted(sp['lm'].dropna().unique()):
+        sub = sp[sp['lm'] == m]
+        sm = sub[sub['mature']]
+        cohort.append({"month": f"{int(m)}월", "n": int(len(sm)),
+                       "ge3": int((sm['cnt'] >= 3).sum()) if len(sm) else 0,
+                       "pct": round(float((sm['cnt'] >= 3).mean() * 100), 1) if len(sm) else 0.0,
+                       "pending": int(len(sub) - len(sm))})
     byCat = []
     for c in CATS:
-        s = sp[sp['cat'] == c]
-        if len(s) == 0:
+        sub = mt[mt['cat'] == c]
+        if len(sub) == 0:
             continue
-        byCat.append({"cat": c, "n": int(len(s)), "ge3": int((s['cnt'] >= 3).sum()),
-                      "pct": round(float((s['cnt'] >= 3).mean() * 100), 1)})
-    return {"total": n, "ge3": ge3, "pct": round(ge3 / n * 100, 1),
-            "targetQ3": target_q3, "targetYear": target_year, "yearGoal": year_goal,
-            "avgCnt": round(float(sp['cnt'].mean()), 1),
-            "buckets": buckets, "cohort": cohort, "byCat": byCat}
+        byCat.append({"cat": c, "n": int(len(sub)), "ge3": int((sub['cnt'] >= 3).sum()),
+                      "pct": round(float((sub['cnt'] >= 3).mean() * 100), 1)})
+    base.update({"total": n, "ge3": ge3, "pct": round(ge3 / n * 100, 1),
+                 "allGe3": allGe3, "allPct": round(allGe3 / allT * 100, 1),
+                 "avgCnt": round(float(mt['cnt'].mean()), 1),
+                 "buckets": buckets, "cohort": cohort, "byCat": byCat})
+    return base
 
 
 def build_newproduct(f, cols, shin_products):
