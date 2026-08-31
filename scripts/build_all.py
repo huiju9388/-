@@ -83,6 +83,56 @@ def load_pgm(path='pgm.csv'):
     return df, cols
 
 
+def build_weight_targets(path='weight_targets.csv', fallback=None):
+    """가중분 목표 시트(weight_targets.csv)에서 weightTargets를 직접 생성.
+
+    이전에는 이전 배포본(current_dashboard-data.json)에서 이월했는데, 그 파일이
+    작업폴더에 없으면 조용히 {}로 덮여 월별 실적 페이지의 편성비중/팀목표비중
+    컬럼이 전부 '-'로 표시되는 사고가 있었다. 시트에서 직접 만들고,
+    실패 시에만 fallback(이전 배포본)을 쓴다.
+    """
+    import csv as _csv, os as _os
+    if not _os.path.exists(path):
+        print(f"⚠ {path} 없음 — weightTargets는 이전 배포본에서 이월")
+        return fallback or {}
+    rows = list(_csv.reader(open(path, encoding='utf-8-sig')))
+    def num(x):
+        try:
+            return int(str(x).replace(',', '').strip())
+        except Exception:
+            return None
+    table = {}
+    for r in rows:
+        if not r or not r[0].strip():
+            continue
+        table[r[0].strip()] = [num(c) for c in r[1:14]]
+    if '전사합계' not in table or '가전팀' not in table:
+        print("⚠ weight_targets.csv에 '전사합계'/'가전팀' 행이 없음 — 이월 사용")
+        return fallback or {}
+    comp, team = table['전사합계'], table['가전팀']
+    monthly = {}
+    for i in range(12):
+        if comp[i] is None or team[i] is None:
+            continue
+        monthly[str(i + 1)] = {"company": comp[i], "team": team[i]}
+    out = {"monthly": monthly, "annual": {"company": comp[12], "team": team[12]}}
+    cats = {}
+    for c in CATS:
+        if c in table and table[c][12] is not None:
+            cats[c] = {"monthly": {str(i + 1): table[c][i] for i in range(12) if table[c][i] is not None},
+                       "annual": table[c][12]}
+    if cats:
+        out["categories"] = cats
+    # sanity check: 월 합계 = 연 계
+    for key, arr in (("company", comp), ("team", team)):
+        ssum = sum(x for x in arr[:12] if x is not None)
+        if arr[12] is not None and ssum != arr[12]:
+            print(f"⚠ weightTargets {key}: 월합 {ssum:,} ≠ 연계 {arr[12]:,}")
+    print(f"[weightTargets] 시트 생성 완료 — 전사 연 {comp[12]:,}분 / 가전팀 연 {team[12]:,}분 / {len(monthly)}개월"
+          + (f" / 카테고리 {len(cats)}개" if cats else ""))
+    return out
+
+
 def month_range(f):
     """데이터에 존재하는 1월~최종월 범위. 하드코딩된 range(1,8) 대체."""
     return range(1, int(f['MONI'].max()) + 1)
@@ -567,7 +617,7 @@ def main():
         "monthData": monthData, "mdData": mdData, "shinTrendData": shinTrendData,
         "kpiTarget": cur.get('kpiTarget', {"sales": 1235, "revenue": 403, "margin": 323}),
         "shinSummary": shinSummary, "shinMonthly": shinMonthly,
-        "weightTargets": cur.get('weightTargets', {}),  # weight_targets.csv 갱신 시 별도 반영 필요
+        "weightTargets": build_weight_targets(fallback=cur.get('weightTargets')),
         "weeklyData": weeklyData,
         "vendorConcentration": vendorConcentration,
         "shinSettle": shinSettle,
