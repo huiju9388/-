@@ -83,6 +83,11 @@ def load_pgm(path='pgm.csv'):
     return df, cols
 
 
+def month_range(f):
+    """데이터에 존재하는 1월~최종월 범위. 하드코딩된 range(1,8) 대체."""
+    return range(1, int(f['MONI'].max()) + 1)
+
+
 def build_monthData(f, cols):
     monthData = {}
     for m in sorted(f['MONI'].unique()):
@@ -131,7 +136,7 @@ def build_mdData(f, cols):
                  "perMin": f"{pm(s,w):.1f}만", "margin": f"{mg/1e8:.2f}억", "perMargin": f"{pm(mg,w):.1f}만",
                  "revenue": f"{r/1e8:.1f}억"}
         monthly_sales, monthly_margin = [], []
-        for m in range(1, 8):
+        for m in month_range(f):
             msub = sub[sub['MONI'] == m]
             monthly_sales.append(round(msub[cols['SALES']].sum()/1e8, 1))
             monthly_margin.append(round(msub[cols['MARGIN']].sum()/1e8, 1))
@@ -166,7 +171,7 @@ def build_shin(f, cols):
     existing_rows = f[f[cols['SHIN']] == '기존']
     shinSummary = {"shin": grp_metrics(shin_rows), "redo": grp_metrics(redo_rows), "existing": grp_metrics(existing_rows)}
     shinMonthly = {"shin": [], "redo": []}
-    for m in range(1, 8):
+    for m in month_range(f):
         shinMonthly["shin"].append(round(shin_rows[shin_rows['MONI']==m][cols['SALES']].sum()/1e8, 2))
         shinMonthly["redo"].append(round(redo_rows[redo_rows['MONI']==m][cols['SALES']].sum()/1e8, 2))
     shin_products = set(shin_rows[cols['BRAND']].dropna().unique())
@@ -174,7 +179,7 @@ def build_shin(f, cols):
     for key, name in MDMAP.items():
         sub = f[f[cols['MD']] == name]
         rows = []
-        for m in range(1, 8):
+        for m in month_range(f):
             msub = sub[sub['MONI'] == m]
             total_s = msub[cols['SALES']].sum()
             shin_s = msub[msub[cols['BRAND']].isin(shin_products)][cols['SALES']].sum()
@@ -366,7 +371,7 @@ def build_competitor(f_all3, cols, kt, ssg):
         tot_w = {ct: round(float(dfc[dfc[catcol]==ct][wcol].sum()),2) for ct in CATS3}
         tot = round(sum(tot_w.values()),2)
         out = {"0": {"total": tot, "w": tot_w, "pct": pct_of(tot_w, tot)}}
-        for m in range(1, 8):
+        for m in range(1, int(dfc[monthcol].max()) + 1):
             msub = dfc[dfc[monthcol]==m]
             mw = {ct: round(float(msub[msub[catcol]==ct][wcol].sum()),2) for ct in CATS3}
             mt = round(sum(mw.values()),2)
@@ -534,6 +539,15 @@ def main():
     team_all['DOW'] = team_all['dt'].dt.dayofweek
     team_all['HOUR'] = pd.to_numeric(team_all[cols['TIME']].astype(str).str.slice(0,2), errors='coerce').fillna(0).astype(int)
     team_all['brand'] = team_all[cols['BRAND']].apply(brand_of)
+
+    # --today 이후 행은 확정 실적이 아니므로 제외.
+    # PGM CSV는 차주 편성 예정분을 '주차 시작일'로 일괄 기재해 내려오므로
+    # (일자-요일 불일치로 식별 가능) 반드시 잘라내야 실적이 부풀려지지 않는다.
+    _before = len(team_all)
+    team_all = team_all[team_all['dt'] <= today].copy()
+    _cut = _before - len(team_all)
+    if _cut:
+        print(f"[cutoff] {args.today} 초과 {_cut}행 제외 (편성 예정분)")
 
     f = team_all[team_all[cols['YEAR']] == '2026'].copy()
     f['MONI'] = f['MONI'].astype(int)
