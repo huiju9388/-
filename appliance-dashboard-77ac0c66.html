@@ -59,7 +59,8 @@
   }
 
   /* KPI 카드 */
-  .kpi-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+  .kpi-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+  @media(max-width:900px){ .kpi-grid { grid-template-columns:repeat(2,1fr); } }
   .kpi-card {
     background: var(--bg2);
     border: 1px solid var(--border);
@@ -361,10 +362,12 @@
 </div>
 <!-- KPI 섹션 -->
 <div class="section">
-  <div class="section-title">2026 KPI 진척도 — 1~9월(~9/13) 누적 / 잔여 6개월</div>
+  <div class="section-title">2026 KPI 진척도 — 26년 경영계획 대비 실현실적</div>
+  <div style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin:-6px 0 12px;">배송완료 기준 확정 실적 · 최신 반영월: <span id="kpi-realized-month">-</span> (이하 월별 차트·상세 지표는 PGM 예상실적 기준입니다)</div>
   <div class="kpi-grid">
     <div id="kpi-card-sales" class="kpi-card red"></div>
     <div id="kpi-card-revenue" class="kpi-card amber"></div>
+    <div id="kpi-card-grossprofit" class="kpi-card amber"></div>
     <div id="kpi-card-margin" class="kpi-card green"></div>
   </div>
 </div>
@@ -556,7 +559,7 @@
 </script>
 <!-- 월별 차트 -->
 <div class="section">
-  <div class="section-title">월별 취급고 · 한계이익 추이</div>
+  <div class="section-title">월별 취급고 · 한계이익 추이 (PGM 예상실적 기준)</div>
   <div class="chart-wrap">
     <div class="chart-header">
       <span class="chart-title-text" id="monthly-chart-title">월별 실적 (VAT포함)</span>
@@ -637,8 +640,8 @@
       var months = Object.keys(monthData).map(Number).sort(function(a,b){return a-b;});
       var labels = months.map(function(m){ return monthData[m].label + (m===months[months.length-1] ? ' (~진행중)' : ''); });
 
-      // ---- KPI 카드 (취급고/매출/한계이익) ----
-      var target = d.kpiTarget || {sales:1235, revenue:403, margin:323};
+      // ---- 목표(26년 경영계획) ----
+      var target = d.kpiTarget || {sales:1235, revenue:403, margin:323, grossProfit:403};
       var lastM = months[months.length-1];
       var completed = months.filter(function(m){ return m !== lastM; });
       if (completed.length === 0) completed = months; // 데이터가 1개월뿐일 때 대비
@@ -646,23 +649,35 @@
       function sumField(field, monthList){
         return monthList.reduce(function(acc,m){ return acc + parseFloat(monthData[m].total[field]); }, 0);
       }
-      function fullYtd(field){ return sumField(field, months); }
+      // 아래 월별 차트(PGM 예상실적) 색상 판정용 페이스 — 기존 로직 그대로 유지
+      var pgmSumCompleted = sumField('sales', completed);
+      var pgmNeedMonthly = (target.sales - pgmSumCompleted) / (12 - completed.length);
 
-      function buildKpi(field, label, target, cls){
-        var actual = fullYtd(field);
-        var sumCompleted = sumField(field, completed);
-        var avgMonthly = sumCompleted / completed.length;
-        var remainMonths = 12 - completed.length;
+      // ---- KPI 진척도 카드 (26년 경영계획 대비 실현실적 · 배송완료 확정 기준) ----
+      var realized = d.realizedMonthData || {};
+      var rMonths = Object.keys(realized).map(Number).sort(function(a,b){return a-b;});
+      var rCompleted = rMonths; // 실현실적은 반영된 달은 모두 확정치이므로 전부 완료월로 취급
+
+      function rSumField(field, monthList){
+        return monthList.reduce(function(acc,m){ return acc + parseFloat(realized[m].total[field]); }, 0);
+      }
+      function rFullYtd(field){ return rSumField(field, rMonths); }
+
+      function buildKpi(field, label, targetVal, cls){
+        var actual = rMonths.length ? rFullYtd(field) : 0;
+        var sumCompleted = rCompleted.length ? rSumField(field, rCompleted) : 0;
+        var avgMonthly = rCompleted.length ? sumCompleted / rCompleted.length : 0;
+        var remainMonths = Math.max(12 - rCompleted.length, 1);
         var yearEnd = avgMonthly * 12;
-        var needMonthly = (target - sumCompleted) / remainMonths;
-        var pct = actual / target * 100;
-        var diff = target - yearEnd;
+        var needMonthly = (targetVal - sumCompleted) / remainMonths;
+        var pct = targetVal ? actual / targetVal * 100 : 0;
+        var diff = targetVal - yearEnd;
         var diffLabel = diff >= 0 ? ('부족 ' + diff.toFixed(0) + '억') : ('초과 ' + Math.abs(diff).toFixed(0) + '억');
         return {
           html: '<div class="kpi-name">' + label + '</div>' +
             '<div class="kpi-row"><div class="kpi-actual">' + actual.toFixed(1) + '억</div><div class="kpi-pct">' + pct.toFixed(1) + '%</div></div>' +
             '<div class="prog-track"><div class="prog-fill" style="width:' + Math.min(pct,100).toFixed(1) + '%"></div></div>' +
-            '<div class="kpi-target" style="margin-bottom:10px;">목표 ' + target.toLocaleString() + '억 · 연말 추정 ' + yearEnd.toFixed(0) + '억 · ' + diffLabel + '</div>' +
+            '<div class="kpi-target" style="margin-bottom:10px;">계획 ' + targetVal.toLocaleString() + '억 · 연말 추정 ' + yearEnd.toFixed(0) + '억 · ' + diffLabel + '</div>' +
             '<div class="need-row"><span class="need-label">월 필요 ' + label.replace(' (VAT포함)','').replace(' (V-)','') + '</span>' +
             '<span class="need-val">' + needMonthly.toFixed(1) + '억 <span style="color:#8A97B0;font-size:10px;">/ 현재 월평균 ' + avgMonthly.toFixed(1) + '억</span></span></div>',
           needMonthly: needMonthly
@@ -670,20 +685,24 @@
       }
 
       var salesKpi = buildKpi('sales', '취급고 (VAT포함)', target.sales, 'red');
-      var revKpi   = buildKpi('revenue', '매출 (V-)', target.revenue, 'amber');
+      var revKpi   = buildKpi('revenue', '매출', target.revenue, 'amber');
+      var gpKpi    = buildKpi('grossProfit', '매출총이익', target.grossProfit || target.revenue, 'amber');
       var marKpi   = buildKpi('margin', '한계이익', target.margin, 'green');
       document.getElementById('kpi-card-sales').innerHTML = salesKpi.html;
       document.getElementById('kpi-card-revenue').innerHTML = revKpi.html;
+      document.getElementById('kpi-card-grossprofit').innerHTML = gpKpi.html;
       document.getElementById('kpi-card-margin').innerHTML = marKpi.html;
-      document.getElementById('legend-need-avg').textContent = '필요 월평균 ' + salesKpi.needMonthly.toFixed(1) + '억';
+      var kpiNoteEl = document.getElementById('kpi-realized-month');
+      if (kpiNoteEl) kpiNoteEl.textContent = rMonths.length ? realized[rMonths[rMonths.length-1]].label : '데이터 없음';
+      document.getElementById('legend-need-avg').textContent = '필요 월평균 ' + pgmNeedMonthly.toFixed(1) + '억';
       document.getElementById('monthly-chart-title').textContent = months[0] + '~' + lastM + '월 월별 실적 (VAT포함' + (months.length>completed.length ? ', ' + monthData[lastM].label + '은 진행중' : '') + ')';
 
-      // ---- 월별 취급고/한계이익 차트 ----
+      // ---- 월별 취급고/한계이익 차트 (PGM 예상실적 기준 — 기존 로직 유지) ----
       var salesArr = months.map(function(m){ return parseFloat(monthData[m].total.sales); });
       var marginArr = months.map(function(m){ return parseFloat(monthData[m].total.margin); });
       var barColors = salesArr.map(function(v,i){
         if (i === salesArr.length-1) return '#f5a623'; // 진행중 월
-        return v < salesKpi.needMonthly ? '#ff4d6a' : '#4d8fff'; // 필요 월평균 미달 시 빨강
+        return v < pgmNeedMonthly ? '#ff4d6a' : '#4d8fff'; // 필요 월평균 미달 시 빨강
       });
       var ctx = document.getElementById('monthlyChart').getContext('2d');
       new Chart(ctx, {
