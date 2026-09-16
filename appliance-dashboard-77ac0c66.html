@@ -363,7 +363,7 @@
 <!-- KPI 섹션 -->
 <div class="section">
   <div class="section-title">2026 KPI 진척도 — 26년 경영계획 대비 실현실적</div>
-  <div style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin:-6px 0 12px;">배송완료 기준 확정 실적 · 최신 반영월: <span id="kpi-realized-month">-</span> (이하 월별 차트·상세 지표는 PGM 예상실적 기준입니다)</div>
+  <div style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin:-6px 0 12px;">배송완료 기준 확정 실적 · 최신 반영월: <span id="kpi-realized-month">-</span> · 진행률(%)은 <b>동기간 경영계획 누적</b> 대비 기준 (연간 목표는 카드 하단에 별도 표기) — 이하 월별 차트·상세 지표는 PGM 예상실적 기준입니다</div>
   <div class="kpi-grid">
     <div id="kpi-card-sales" class="kpi-card red"></div>
     <div id="kpi-card-revenue" class="kpi-card amber"></div>
@@ -655,13 +655,20 @@
 
       // ---- KPI 진척도 카드 (26년 경영계획 대비 실현실적 · 배송완료 확정 기준) ----
       var realized = d.realizedMonthData || {};
+      var planMonth = d.planMonthData || {};
       var rMonths = Object.keys(realized).map(Number).sort(function(a,b){return a-b;});
       var rCompleted = rMonths; // 실현실적은 반영된 달은 모두 확정치이므로 전부 완료월로 취급
+      var periodLabel = rMonths.length ? (rMonths[0] + '~' + rMonths[rMonths.length-1] + '월') : '-';
 
       function rSumField(field, monthList){
         return monthList.reduce(function(acc,m){ return acc + parseFloat(realized[m].total[field]); }, 0);
       }
       function rFullYtd(field){ return rSumField(field, rMonths); }
+      function planSumField(field, monthList){
+        return monthList.reduce(function(acc,m){
+          return acc + (planMonth[m] ? parseFloat(planMonth[m].total[field]) : 0);
+        }, 0);
+      }
 
       function buildKpi(field, label, targetVal, cls){
         var actual = rMonths.length ? rFullYtd(field) : 0;
@@ -670,14 +677,16 @@
         var remainMonths = Math.max(12 - rCompleted.length, 1);
         var yearEnd = avgMonthly * 12;
         var needMonthly = (targetVal - sumCompleted) / remainMonths;
-        var pct = targetVal ? actual / targetVal * 100 : 0;
+        // 동기간(실현실적이 반영된 달까지) 경영계획 누적 — 페이스 비교용
+        var periodTarget = rMonths.length ? planSumField(field, rMonths) : targetVal;
+        var pct = periodTarget ? actual / periodTarget * 100 : 0;
         var diff = targetVal - yearEnd;
         var diffLabel = diff >= 0 ? ('부족 ' + diff.toFixed(0) + '억') : ('초과 ' + Math.abs(diff).toFixed(0) + '억');
         return {
           html: '<div class="kpi-name">' + label + '</div>' +
             '<div class="kpi-row"><div class="kpi-actual">' + actual.toFixed(1) + '억</div><div class="kpi-pct">' + pct.toFixed(1) + '%</div></div>' +
             '<div class="prog-track"><div class="prog-fill" style="width:' + Math.min(pct,100).toFixed(1) + '%"></div></div>' +
-            '<div class="kpi-target" style="margin-bottom:10px;">계획 ' + targetVal.toLocaleString() + '억 · 연말 추정 ' + yearEnd.toFixed(0) + '억 · ' + diffLabel + '</div>' +
+            '<div class="kpi-target" style="margin-bottom:10px;">' + periodLabel + ' 계획 ' + periodTarget.toFixed(1) + '억 · 연간계획 ' + targetVal.toLocaleString() + '억 · 연말 추정 ' + yearEnd.toFixed(0) + '억 · ' + diffLabel + '</div>' +
             '<div class="need-row"><span class="need-label">월 필요 ' + label.replace(' (VAT포함)','').replace(' (V-)','') + '</span>' +
             '<span class="need-val">' + needMonthly.toFixed(1) + '억 <span style="color:#8A97B0;font-size:10px;">/ 현재 월평균 ' + avgMonthly.toFixed(1) + '억</span></span></div>',
           needMonthly: needMonthly
