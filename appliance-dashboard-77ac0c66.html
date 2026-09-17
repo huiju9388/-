@@ -670,13 +670,44 @@
         }, 0);
       }
 
+      // ---- 연말 추정용: 목표 편성비중(가중분) 반영 ----
+      var weightTargetsMonthly = (d.weightTargets && d.weightTargets.monthly) || {};
+      var curProg = d.currentMonthProgress || null; // {month, daysElapsed, daysInMonth}
+      function parseWeight(v){ return parseFloat(String(v == null ? '' : v).replace(/,/g,'')) || 0; }
+
       function buildKpi(field, label, targetVal, cls){
         var actual = rMonths.length ? rFullYtd(field) : 0;
         var sumCompleted = rCompleted.length ? rSumField(field, rCompleted) : 0;
         var avgMonthly = rCompleted.length ? sumCompleted / rCompleted.length : 0;
         var remainMonths = Math.max(12 - rCompleted.length, 1);
-        var yearEnd = avgMonthly * 12;
         var needMonthly = (targetVal - sumCompleted) / remainMonths;
+
+        // ① 진행중월(예: 9월) — 현재까지 페이스를 해당월 전체 일수로 단순 연장
+        var curM = (curProg && monthData[curProg.month]) ? curProg.month : null;
+        var curMonthEst = 0;
+        if (curM){
+          // monthData(PGM 예상실적)에는 grossProfit 필드가 없어 revenue로 대체(해당 데이터셋에서 두 값이 동일)
+          var partial = parseFloat(monthData[curM].total[field] || monthData[curM].total.revenue) || 0;
+          var dayRatio = curProg.daysInMonth / curProg.daysElapsed;
+          curMonthEst = partial * dayRatio;
+        }
+        // ② 최근 실적 분당 효율(최근 확정 2개월, field/실제가중분) — 진행중월의 과편성 페이스를 잔여월에 끌고가지 않기 위함
+        var recentM = rMonths.slice(-2);
+        var effs = recentM.map(function(m){
+          var w = monthData[m] ? parseWeight(monthData[m].total.weight) : 0;
+          var v = parseFloat(realized[m].total[field]);
+          return w > 0 ? v / w : null;
+        }).filter(function(x){ return x !== null; });
+        var recentEff = effs.length ? effs.reduce(function(a,b){return a+b;},0) / effs.length : 0;
+        // ③ 잔여 계획월(진행중월 다음 달 ~ 12월) — 목표 가중분 x 최근 효율
+        var futureSum = 0;
+        var futureStart = (curM ? curM : lastM) + 1;
+        for (var mm = futureStart; mm <= 12; mm++){
+          var tw = weightTargetsMonthly[mm] ? weightTargetsMonthly[mm].team : 0;
+          futureSum += tw * recentEff;
+        }
+        var yearEnd = sumCompleted + curMonthEst + futureSum;
+
         // 동기간(실현실적이 반영된 달까지) 경영계획 누적 — 페이스 비교용
         var periodTarget = rMonths.length ? planSumField(field, rMonths) : targetVal;
         var pct = periodTarget ? actual / periodTarget * 100 : 0;
@@ -686,7 +717,7 @@
           html: '<div class="kpi-name">' + label + '</div>' +
             '<div class="kpi-row"><div class="kpi-actual">' + actual.toFixed(1) + '억</div><div class="kpi-pct">' + pct.toFixed(1) + '%</div></div>' +
             '<div class="prog-track"><div class="prog-fill" style="width:' + Math.min(pct,100).toFixed(1) + '%"></div></div>' +
-            '<div class="kpi-target" style="margin-bottom:10px;">' + periodLabel + ' 계획 ' + periodTarget.toFixed(1) + '억 · 연간계획 ' + targetVal.toLocaleString() + '억 · 연말 추정 ' + yearEnd.toFixed(0) + '억 · ' + diffLabel + '</div>' +
+            '<div class="kpi-target" style="margin-bottom:10px;">' + periodLabel + ' 계획 ' + periodTarget.toFixed(1) + '억 · 연간계획 ' + targetVal.toLocaleString() + '억 · 연말 추정 ' + yearEnd.toFixed(0) + '억(목표 편성비중 반영) · ' + diffLabel + '</div>' +
             '<div class="need-row"><span class="need-label">월 필요 ' + label.replace(' (VAT포함)','').replace(' (V-)','') + '</span>' +
             '<span class="need-val">' + needMonthly.toFixed(1) + '억 <span style="color:#8A97B0;font-size:10px;">/ 현재 월평균 ' + avgMonthly.toFixed(1) + '억</span></span></div>',
           needMonthly: needMonthly
