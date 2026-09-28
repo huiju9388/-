@@ -1,7 +1,7 @@
 """
 가전팀 대시보드 데이터 생성 스크립트 (전체)
 =================================================
-매주 월요일 실행. Google Drive에서 받은 pgm.csv / competitor.xlsx / weight_targets.csv를
+매주 월요일 실행. Google Drive에서 받은 pgm.csv / competitor.xlsx / plan.csv(26년 경영계획)를
 같은 폴더에 두고 실행하면 data/ 5개 JSON을 전부 재생성한다.
 
 입력 파일 (스크립트와 같은 폴더에 위치):
@@ -9,7 +9,8 @@
   - competitor.xlsx       : 경쟁사 편성 (fileId 1qMHEjeHpFbhxDrdQqmBirOEKI9l8S0EJUUe4Rz_lZJ8,
                              exportMimeType application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,
                              시트: KT알파 / SSG)
-  - weight_targets.csv    : 가중분 목표 (fileId 1dTDL0L-ZilM7mBYq8QZ85iyE3gvtBygrsEByLs8dVOU, exportMimeType text/csv)
+  - plan.csv              : 26년 경영계획 (fileId 1R5IssmGlKpcH9KeUmpoYEcYf4qlcnZ1o60WykwQTnuY, exportMimeType text/csv)
+                             '● 가중분 전체 합계' 섹션에서 weightTargets 생성 (전사 분수는 달력 기준 자동 계산)
   - current_dashboard-data.json : 현재 배포된 dashboard-data.json (kpiTarget 등 고정값 유지용, GitHub Contents API로 미리 받아둘 것)
 
 출력: ./output/ 아래에 6개 JSON 생성
@@ -83,15 +84,14 @@ def load_pgm(path='pgm.csv'):
     return df, cols
 
 
-def build_weight_targets(path='weight_targets.csv', fallback=None):
-    """가중분 목표 시트(weight_targets.csv)에서 weightTargets를 직접 생성.
+def build_weight_targets(path='plan.csv', fallback=None, year=2026):
+    """26년 경영계획 시트(plan.csv)의 '● 가중분 전체 합계' 섹션에서 weightTargets를 생성.
 
-    이전에는 이전 배포본(current_dashboard-data.json)에서 이월했는데, 그 파일이
-    작업폴더에 없으면 조용히 {}로 덮여 월별 실적 페이지의 편성비중/팀목표비중
-    컬럼이 전부 '-'로 표시되는 사고가 있었다. 시트에서 직접 만들고,
-    실패 시에만 fallback(이전 배포본)을 쓴다.
+    - 가전팀/카테고리별 월별·연간 가중분은 시트 값을 그대로 사용.
+    - 전사(company) 가용 분수는 시트에 없으므로 달력 기준(해당 월 일수 x 1,440분)으로 계산.
+    - 파일이 없거나 섹션/행을 못 찾으면 fallback(이전 배포본 weightTargets)을 사용.
     """
-    import csv as _csv, os as _os
+    import csv as _csv, os as _os, calendar as _cal
     if not _os.path.exists(path):
         print(f"⚠ {path} 없음 — weightTargets는 이전 배포본에서 이월")
         return fallback or {}
@@ -101,18 +101,28 @@ def build_weight_targets(path='weight_targets.csv', fallback=None):
             return int(str(x).replace(',', '').strip())
         except Exception:
             return None
+    start = next((i for i, r in enumerate(rows) if r and '가중분 전체 합계' in r[0]), None)
+    if start is None:
+        print("⚠ plan.csv에 '가중분 전체 합계' 섹션이 없음 — 이월 사용")
+        return fallback or {}
     table = {}
-    for r in rows:
+    for r in rows[start + 1:]:
         if not r or not r[0].strip():
             continue
+        if r[0].strip().startswith('●'):   # 다음 섹션 시작
+            break
+        if r[0].strip() == '가중분':        # 헤더 행
+            continue
         table[r[0].strip()] = [num(c) for c in r[1:14]]
-    if '전사합계' not in table or '가전팀' not in table:
-        print("⚠ weight_targets.csv에 '전사합계'/'가전팀' 행이 없음 — 이월 사용")
+    if '가전팀' not in table:
+        print("⚠ plan.csv 가중분 섹션에 '가전팀' 행이 없음 — 이월 사용")
         return fallback or {}
-    comp, team = table['전사합계'], table['가전팀']
+    team = table['가전팀']
+    comp = [_cal.monthrange(year, m)[1] * 1440 for m in range(1, 13)]
+    comp.append(sum(comp))
     monthly = {}
     for i in range(12):
-        if comp[i] is None or team[i] is None:
+        if team[i] is None:
             continue
         monthly[str(i + 1)] = {"company": comp[i], "team": team[i]}
     out = {"monthly": monthly, "annual": {"company": comp[12], "team": team[12]}}
@@ -124,11 +134,10 @@ def build_weight_targets(path='weight_targets.csv', fallback=None):
     if cats:
         out["categories"] = cats
     # sanity check: 월 합계 = 연 계
-    for key, arr in (("company", comp), ("team", team)):
-        ssum = sum(x for x in arr[:12] if x is not None)
-        if arr[12] is not None and ssum != arr[12]:
-            print(f"⚠ weightTargets {key}: 월합 {ssum:,} ≠ 연계 {arr[12]:,}")
-    print(f"[weightTargets] 시트 생성 완료 — 전사 연 {comp[12]:,}분 / 가전팀 연 {team[12]:,}분 / {len(monthly)}개월"
+    ssum = sum(x for x in team[:12] if x is not None)
+    if team[12] is not None and ssum != team[12]:
+        print(f"⚠ weightTargets team: 월합 {ssum:,} ≠ 연계 {team[12]:,}")
+    print(f"[weightTargets] 26년 경영계획 시트 기반 생성 완료 — 전사 연 {comp[12]:,}분(달력) / 가전팀 연 {team[12]:,}분 / {len(monthly)}개월"
           + (f" / 카테고리 {len(cats)}개" if cats else ""))
     return out
 
