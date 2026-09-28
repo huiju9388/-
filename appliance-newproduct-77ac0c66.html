@@ -192,13 +192,13 @@
     <div class="summary-grid" style="grid-template-columns:repeat(2,1fr);">
       <div class="summary-card sc-purple">
         <div class="sc-label">신상품 (라이프타임 누적 · 신상품→재촬영→기존 전환분 포함)</div>
-        <div class="sc-val" style="color:#6D3FC8;">112.99억</div>
-        <div class="sc-sub">158건 방송 · 35개 품목 · 분당 129.2만</div>
+        <div class="sc-val" id="sumShinVal" style="color:#6D3FC8;">244.77억</div>
+        <div class="sc-sub" id="sumShinSub">345건 방송 · 49개 품목 · 분당 124.7만</div>
       </div>
       <div class="summary-card sc-gray">
         <div class="sc-label">기존 상품 (신상품 이력 없는 상품)</div>
-        <div class="sc-val" style="color:#8A97B0;">387.14억</div>
-        <div class="sc-sub">556건 · 분당 142.3만</div>
+        <div class="sc-val" id="sumGyVal" style="color:#8A97B0;">582.56억</div>
+        <div class="sc-sub" id="sumGySub">824건 · 분당 146.0만</div>
       </div>
     </div>
     <div style="font-size:10px;color:#8A97B0;margin-top:-14px;margin-bottom:4px;">※ 신상품 비중 산정 기준: 동일 상품명(편성코드명)으로 한 번이라도 "신상품" 태그가 붙은 상품은, 이후 재촬영·기존으로 태그가 바뀌어도 해당 상품의 전체 누적 방송을 신상품 출신으로 합산</div>
@@ -260,7 +260,7 @@
       </div>
       <div style="font-size:11px;color:#6B7280;line-height:1.7;margin-top:10px;">
         1~3월 운영 · 49건 · 1,893분 · 한계이익 8.36억<br>
-        주력 상품 [AGK]멀티압력솥 21회 16.97억 → 4월 11일부터 <b style="color:#2563EB;">권오석</b> 인수인계 (이후 실적은 권오석 집계에 포함됨, [AGK]멀티압력솥은 신상품 태그 없어 위 9.4%엔 미포함)
+        주력 상품 [AGK]멀티압력솥 21회 16.97억 → 4월 11일부터 <b style="color:#2563EB;">권오석</b> 인수인계 (이후 실적은 권오석 집계에 포함됨, [AGK]멀티압력솥은 신상품 태그 없어 위 9.6%엔 미포함)
       </div>
     </div>
   </div>
@@ -269,7 +269,7 @@
   <div class="section">
     <div class="section-title">상품별 실적</div>
     <div class="tab-row">
-      <button id="tab-shin" class="tab-btn active-tab" style="cursor:default;">🆕 신상품 라이프타임 (<span id="filterCount">35개 품목 · 158건</span>)</button>
+      <button id="tab-shin" class="tab-btn active-tab" style="cursor:default;">🆕 신상품 라이프타임 (<span id="filterCount">49개 품목 · 345건</span>)</button>
     </div>
     <div class="sort-row" style="flex-wrap:wrap;">
       <span class="sort-label">편성월</span>
@@ -295,18 +295,28 @@ let MD_DATA = [];
 let SHIN_DATA = [];
 fetch('data/newproduct-data.json').then(r => r.json()).then(d => {
   MD_DATA = d.MD_DATA; SHIN_DATA = d.SHIN_DATA;
+  if (d.SUMMARY) renderSummary(d.SUMMARY);
   renderMdRatio(); renderFilters(); render();
 }).catch(e => console.error(e));
 
+function renderSummary(sm){
+  const set = (id, txt) => { const e = document.getElementById(id); if (e) e.textContent = txt; };
+  set('sumShinVal', sm.shin.s.toFixed(2) + '억');
+  set('sumShinSub', `${sm.shin.cnt}건 방송 · ${sm.shin.prod_cnt}개 품목 · 분당 ${sm.shin.pm.toFixed(1)}만`);
+  set('sumGyVal', sm.gy.s.toFixed(2) + '억');
+  set('sumGySub', `${sm.gy.cnt}건 · 분당 ${sm.gy.pm.toFixed(1)}만`);
+}
+
 const CAT_COLORS = {'생활가전':'#2563EB','주방가전':'#0E9E6A','주방용품':'#6D3FC8','대형가전':'#C97A10'};
-const MD_COLORS  = {'권오석':'#2563EB','마영호':'#D63A52','김응도':'#0E9E6A','임동진':'#C97A10','백혜정':'#6D3FC8','정수란':'#9CA3AF'};
+const MD_COLORS  = {'권오석':'#2563EB','마영호':'#D63A52','김응도':'#0E9E6A','임동진':'#C97A10','백혜정':'#6D3FC8','장환희':'#00C2A8','정수란':'#9CA3AF'};
 
 let currentSort = 's';
 let currentMonth = 'all';
 let currentMD = 'all';
 
 function renderFilters(){
-  const months = ['1','2','3','4','5','6'];
+  const lastMonth = Math.max(1, ...SHIN_DATA.flatMap(p => p.months.map(Number)));
+  const months = Array.from({length: lastMonth}, (_, i) => String(i + 1));
   const mdList = [...new Set(SHIN_DATA.map(p=>p.md))];
   // MD_DATA 순서를 우선 따르고, 거기 없는 MD는 뒤에 추가
   const orderedMD = [...MD_DATA.map(d=>d.md), ...mdList.filter(m=>!MD_DATA.some(d=>d.md===m))];
