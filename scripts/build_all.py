@@ -36,9 +36,11 @@ CATS3 = ['생활가전', '주방가전', '주방용품']  # 대형가전 제외 
 CAT_EMOJI = {'생활가전': '🏠 생활가전', '주방가전': '🍳 주방가전', '주방용품': '🍳 주방용품', '대형가전': '📦 대형가전'}
 DOW_LABELS = ['월', '화', '수', '목', '금', '토', '일']
 MDMAP = {'ko': '권오석', 'ma': '마영호', 'kim': '김응도', 'lim': '임동진', 'baek': '백혜정'}
-COLORS = {'ko': '#4d8fff', 'ma': '#ff4d6a', 'kim': '#22c87a', 'lim': '#f5a623', 'baek': '#9b7fff'}
+COLORS = {'ko': '#4d8fff', 'ma': '#ff4d6a', 'kim': '#22c87a', 'lim': '#f5a623', 'baek': '#9b7fff', 'jang': '#00C2A8'}
+# MD 실적 페이지(mdData) 전용: 2026-07 신규 투입된 장환희 포함. 신상품/신상품 추이 등 다른 집계는 기존 MDMAP(5인) 유지.
+MDMAP_DETAIL = dict(MDMAP, jang='장환희')
 # 8월 개편 이후 이 라벨은 더 이상 고정 담당 의미가 없을 수 있음 — 매번 형님께 최신 담당 확인 후 갱신할 것
-CATLABEL = {'ko': '주방가전 · 주방용품', 'ma': '주방용품 · 주방가전', 'kim': '생활가전', 'lim': '생활가전', 'baek': '대형가전'}
+CATLABEL = {'ko': '주방가전 · 주방용품', 'ma': '주방용품 · 주방가전', 'kim': '생활가전', 'lim': '생활가전', 'baek': '대형가전', 'jang': '전카테고리'}
 
 # 핵심 협력사 트래커 (2026-07-28 신설). 벤더명↔판매 브랜드명이 다른 경우가 있으니(예: 벤더 에코센스 =
 # 판매 브랜드 히트락) 별칭 목록으로 관리한다. 새 별칭이 발견되면 aliases 리스트에 한 줄만 추가할 것.
@@ -188,7 +190,7 @@ def build_weeklyData(f_all_team, cols):
 
 def build_mdData(f, cols):
     mdData = {}
-    for key, name in MDMAP.items():
+    for key, name in MDMAP_DETAIL.items():
         sub = f[f[cols['MD']] == name]
         w, s, mg, r = sub[cols['WMIN']].sum(), sub[cols['SALES']].sum(), sub[cols['MARGIN']].sum(), sub[cols['REV']].sum()
         total = {"cnt": int(len(sub)), "weight": f"{w:,.0f}분", "sales": f"{s/1e8:.1f}억",
