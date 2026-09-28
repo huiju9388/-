@@ -366,7 +366,7 @@ def build_shin_settle(f, cols, target_q3=55, target_year=60, year_goal=70, min_w
 
 def build_newproduct(f, cols, shin_products):
     MD_DATA = []
-    for key, name in MDMAP.items():
+    for key, name in MDMAP_DETAIL.items():
         sub = f[f[cols['MD']] == name]
         total_s, total_cnt = sub[cols['SALES']].sum(), len(sub)
         shin_sub = sub[sub[cols['BRAND']].isin(shin_products)]
@@ -391,7 +391,14 @@ def build_newproduct(f, cols, shin_products):
                           "s": round(s/1e8,3), "pm": pm(s,w), "m": round(mg/1e8,3), "pmm": pm(mg,w),
                           "mr": mr, "months": [str(x) for x in months]})
     SHIN_DATA.sort(key=lambda x: (-x['s'], x['name']))
-    return MD_DATA, SHIN_DATA
+    # 상단 요약 카드용: 신상품(라이프타임) vs 기존 — MD 구분 없이 가전팀 전체 기준(정수란 등 이동 인원 포함)
+    sh = f[f[cols['BRAND']].isin(shin_products)]
+    gy = f[~f[cols['BRAND']].isin(shin_products)]
+    SUMMARY = {"shin": {"s": round(sh[cols['SALES']].sum()/1e8, 2), "cnt": int(len(sh)),
+                        "prod_cnt": int(sh[cols['BRAND']].nunique()), "pm": pm(sh[cols['SALES']].sum(), sh[cols['WMIN']].sum())},
+               "gy": {"s": round(gy[cols['SALES']].sum()/1e8, 2), "cnt": int(len(gy)),
+                      "pm": pm(gy[cols['SALES']].sum(), gy[cols['WMIN']].sum())}}
+    return MD_DATA, SHIN_DATA, SUMMARY
 
 
 def build_search(f, cols):
@@ -618,7 +625,7 @@ def main():
     weeklyData = build_weeklyData(team_all, cols)
     mdData = build_mdData(f, cols)
     shinSummary, shinMonthly, shinTrendData, shin_products = build_shin(f, cols)
-    MD_DATA, SHIN_DATA = build_newproduct(f, cols, shin_products)
+    MD_DATA, SHIN_DATA, NP_SUMMARY = build_newproduct(f, cols, shin_products)
     search_data = build_search(f, cols)
     vendorConcentration = build_vendor_concentration(f, cols)
     shinSettle = build_shin_settle(f, cols)
@@ -634,7 +641,7 @@ def main():
         "shinSettle": shinSettle,
     }
     json.dump(dashboard_data, open(f'{args.outdir}/dashboard-data.json','w'), ensure_ascii=False, indent=1)
-    json.dump({"MD_DATA": MD_DATA, "SHIN_DATA": SHIN_DATA}, open(f'{args.outdir}/newproduct-data.json','w'), ensure_ascii=False, indent=1)
+    json.dump({"MD_DATA": MD_DATA, "SHIN_DATA": SHIN_DATA, "SUMMARY": NP_SUMMARY}, open(f'{args.outdir}/newproduct-data.json','w'), ensure_ascii=False, indent=1)
     json.dump(search_data, open(f'{args.outdir}/search-data.json','w'), ensure_ascii=False, indent=1)
 
     # ---- 경쟁사 (Excel 필요) ----
