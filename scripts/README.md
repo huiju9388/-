@@ -51,8 +51,12 @@
      "(N월N주차)" 라벨도 매주 최신 주차로 갱신.
    - 오버뷰 페이지 `#weeklyCompareInsights` — 주간 비교 인사이트 텍스트는 항상 지미가 데이터 보고
      수동 작성 (사용자 명시적 선호, 규칙기반 자동생성 금지)
-   - `weightTargets`는 연초 1회 세팅 이후 보통 안 바뀜. 바뀌면 weight_targets.csv 다시 받아서
-     `current_dashboard-data.json`의 `weightTargets` 자리 대신 새 값 반영
+   - `weightTargets`는 26년 경영계획 시트(fileId 1R5IssmGlKpcH9KeUmpoYEcYf4qlcnZ1o60WykwQTnuY, text/csv)를
+     `plan.csv`로 받아 스크립트 폴더에 두면 build_all.py가 '● 가중분 전체 합계' 섹션에서 직접 생성
+     (전사 분수는 달력 기준 일수x1,440분으로 자동 계산). plan.csv가 없으면 이전 배포본 값을 이월.
+     (예전 별도 '가중분 목표 시트'는 삭제되어 더 이상 사용 안 함)
+   - **`realizedMonthData`/`planMonthData`/`currentMonthProgress`는 build_all.py가 생성하지 않는 수동 필드.**
+     배포 전 baseline(`current_dashboard-data.json`)에서 복사해 병합하지 않으면 KPI 진척도 카드가 깨짐.
    - **매주 업데이트 후 다른 페이지에도 하드코딩된 부분이 남아있는지 한 번씩 훑어볼 것.** 지금까지
      오버뷰(인사이트 텍스트는 원래 의도된 수동 영역), 상품랭킹(TOP10), MD실적(요약카드) 세 군데에서
      하드코딩을 발견했다 — 다른 페이지에도 비슷한 게 더 있을 수 있으니 `grep -n "억\|만"` 정도로
