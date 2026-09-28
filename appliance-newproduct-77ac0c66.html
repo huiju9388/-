@@ -189,24 +189,29 @@
   <!-- 전체 요약 -->
   <div class="section">
     <div class="section-title">전체 실적 구성</div>
-    <div class="summary-grid" style="grid-template-columns:repeat(2,1fr);">
+    <div class="summary-grid" style="grid-template-columns:repeat(3,1fr);">
       <div class="summary-card sc-purple">
-        <div class="sc-label">신상품 (라이프타임 누적 · 신상품→재촬영→기존 전환분 포함)</div>
-        <div class="sc-val" id="sumShinVal" style="color:#6D3FC8;">244.77억</div>
-        <div class="sc-sub" id="sumShinSub">345건 방송 · 49개 품목 · 분당 124.7만</div>
+        <div class="sc-label">신상품 (라이프타임 · 첫 신상품 태그일 이후 누적)</div>
+        <div class="sc-val" id="sumShinVal" style="color:#6D3FC8;">244.62억</div>
+        <div class="sc-sub" id="sumShinSub">323건 방송 · 49개 품목 · 분당 124.7만</div>
+      </div>
+      <div class="summary-card sc-gray" style="border-color:rgba(77,143,255,0.35);">
+        <div class="sc-label">재촬영 (재녹화·재편집 태그 방송 · 신상품 라이프타임분 제외)</div>
+        <div class="sc-val" id="sumRedoVal" style="color:#2563EB;">87.02억</div>
+        <div class="sc-sub" id="sumRedoSub">101건 방송 · 57개 품목 · 분당 154.6만</div>
       </div>
       <div class="summary-card sc-gray">
-        <div class="sc-label">기존 상품 (신상품 이력 없는 상품)</div>
-        <div class="sc-val" id="sumGyVal" style="color:#8A97B0;">582.56억</div>
-        <div class="sc-sub" id="sumGySub">824건 · 분당 146.0만</div>
+        <div class="sc-label">기존 상품 (신상품·재촬영 외 방송)</div>
+        <div class="sc-val" id="sumGyVal" style="color:#8A97B0;">495.70억</div>
+        <div class="sc-sub" id="sumGySub">745건 · 분당 144.6만</div>
       </div>
     </div>
-    <div style="font-size:10px;color:#8A97B0;margin-top:-14px;margin-bottom:4px;">※ 신상품 비중 산정 기준: 동일 상품명(편성코드명)으로 한 번이라도 "신상품" 태그가 붙은 상품은, 이후 재촬영·기존으로 태그가 바뀌어도 해당 상품의 전체 누적 방송을 신상품 출신으로 합산</div>
+    <div style="font-size:10px;color:#8A97B0;margin-top:-14px;margin-bottom:4px;">※ 신상품 비중 산정 기준: 동일 상품명(편성코드명)으로 "신상품" 태그가 처음 붙은 날 이후의 방송은 재촬영·기존으로 태그가 바뀌어도 신상품 출신으로 합산 (태그일 이전 방송은 기존으로 분류). 재촬영은 그 외 방송 중 재녹화·재편집 태그 방송. 세 구분의 합 = 가전팀 전체 취급고</div>
   </div>
 
   <!-- MD별 신상품 비중 -->
   <div class="section">
-    <div class="section-title">MD별 신상품 비중 (전체 취급고 대비 · 라이프타임 기준)</div>
+    <div class="section-title">MD별 신상품·재촬영 비중 (전체 취급고 대비 · 라이프타임 기준)</div>
 
     <!-- 적정 기준치 가이드 -->
     <div style="margin-bottom:16px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px 18px;box-shadow:0 2px 8px rgba(30,40,64,0.06);">
@@ -247,20 +252,20 @@
         </div>
         <div style="background:#fff;border-radius:7px;padding:9px 11px;border:1px solid rgba(138,151,176,0.18);text-align:center;">
           <div style="font-size:9px;color:#8A97B0;font-family:'IBM Plex Mono',monospace;margin-bottom:4px;">신상품 비중(라이프타임)</div>
-          <div style="font-size:15px;font-weight:700;color:#6D3FC8;">9.6%</div>
+          <div style="font-size:15px;font-weight:700;color:#6D3FC8;">9.3%</div>
         </div>
         <div style="background:#fff;border-radius:7px;padding:9px 11px;border:1px solid rgba(138,151,176,0.18);text-align:center;">
           <div style="font-size:9px;color:#8A97B0;font-family:'IBM Plex Mono',monospace;margin-bottom:4px;">신상품 출신 취급고</div>
-          <div style="font-size:15px;font-weight:700;color:#6D3FC8;">2.31억</div>
+          <div style="font-size:15px;font-weight:700;color:#6D3FC8;">2.25억</div>
         </div>
         <div style="background:#fff;border-radius:7px;padding:9px 11px;border:1px solid rgba(138,151,176,0.18);text-align:center;">
           <div style="font-size:9px;color:#8A97B0;font-family:'IBM Plex Mono',monospace;margin-bottom:4px;">분당취급고(신상품)</div>
-          <div style="font-size:15px;font-weight:700;color:#6B7280;">124.9만</div>
+          <div style="font-size:15px;font-weight:700;color:#6B7280;">122.3만</div>
         </div>
       </div>
       <div style="font-size:11px;color:#6B7280;line-height:1.7;margin-top:10px;">
         1~3월 운영 · 49건 · 1,893분 · 한계이익 8.36억<br>
-        주력 상품 [AGK]멀티압력솥 21회 16.97억 → 4월 11일부터 <b style="color:#2563EB;">권오석</b> 인수인계 (이후 실적은 권오석 집계에 포함됨, [AGK]멀티압력솥은 신상품 태그 없어 위 9.6%엔 미포함)
+        주력 상품 [AGK]멀티압력솥 21회 16.97억 → 4월 11일부터 <b style="color:#2563EB;">권오석</b> 인수인계 (이후 실적은 권오석 집계에 포함됨, [AGK]멀티압력솥은 신상품 태그 없어 위 9.3%엔 미포함)
       </div>
     </div>
   </div>
@@ -269,7 +274,8 @@
   <div class="section">
     <div class="section-title">상품별 실적</div>
     <div class="tab-row">
-      <button id="tab-shin" class="tab-btn active-tab" style="cursor:default;">🆕 신상품 라이프타임 (<span id="filterCount">49개 품목 · 345건</span>)</button>
+      <button id="tab-shin" class="tab-btn active-tab" onclick="setTab('shin')">🆕 신상품 라이프타임 (<span id="cnt-shin">49개 품목 · 323건</span>)</button>
+      <button id="tab-redo" class="tab-btn" onclick="setTab('redo')">🎬 재촬영 (<span id="cnt-redo">68개 품목 · 114건</span>)</button>
     </div>
     <div class="sort-row" style="flex-wrap:wrap;">
       <span class="sort-label">편성월</span>
@@ -284,7 +290,7 @@
       <button onclick="setSort('mr')"  id="sort-mr"  class="sort-btn">이익률 ↓</button>
       <button onclick="setSort('cnt')" id="sort-cnt" class="sort-btn">방송횟수 ↓</button>
     </div>
-    <div class="note" style="font-size:10.5px;color:var(--text3);margin-bottom:10px;">※ 표시되는 취급고·분당취급고·이익률은 품목의 전체 라이프타임 누적 실적입니다. 편성월 필터는 "해당 월에 1회 이상 편성된 품목"을 추려서 보여줍니다 (월별로 실적이 쪼개지는 것은 아닙니다).</div>
+    <div class="note" id="tabNote" style="font-size:10.5px;color:var(--text3);margin-bottom:10px;"></div>
     <div id="tableArea"></div>
   </div>
 
@@ -293,8 +299,10 @@
 <script>
 let MD_DATA = [];
 let SHIN_DATA = [];
+let REDO_DATA = [];
+let currentTab = 'shin';
 fetch('data/newproduct-data.json').then(r => r.json()).then(d => {
-  MD_DATA = d.MD_DATA; SHIN_DATA = d.SHIN_DATA;
+  MD_DATA = d.MD_DATA; SHIN_DATA = d.SHIN_DATA; REDO_DATA = d.REDO_DATA || [];
   if (d.SUMMARY) renderSummary(d.SUMMARY);
   renderMdRatio(); renderFilters(); render();
 }).catch(e => console.error(e));
@@ -303,6 +311,10 @@ function renderSummary(sm){
   const set = (id, txt) => { const e = document.getElementById(id); if (e) e.textContent = txt; };
   set('sumShinVal', sm.shin.s.toFixed(2) + '억');
   set('sumShinSub', `${sm.shin.cnt}건 방송 · ${sm.shin.prod_cnt}개 품목 · 분당 ${sm.shin.pm.toFixed(1)}만`);
+  if (sm.redo) {
+    set('sumRedoVal', sm.redo.s.toFixed(2) + '억');
+    set('sumRedoSub', `${sm.redo.cnt}건 방송 · ${sm.redo.prod_cnt}개 품목 · 분당 ${sm.redo.pm.toFixed(1)}만`);
+  }
   set('sumGyVal', sm.gy.s.toFixed(2) + '억');
   set('sumGySub', `${sm.gy.cnt}건 · 분당 ${sm.gy.pm.toFixed(1)}만`);
 }
@@ -315,9 +327,10 @@ let currentMonth = 'all';
 let currentMD = 'all';
 
 function renderFilters(){
-  const lastMonth = Math.max(1, ...SHIN_DATA.flatMap(p => p.months.map(Number)));
+  const ALL = SHIN_DATA.concat(REDO_DATA);
+  const lastMonth = Math.max(1, ...ALL.flatMap(p => p.months.map(Number)));
   const months = Array.from({length: lastMonth}, (_, i) => String(i + 1));
-  const mdList = [...new Set(SHIN_DATA.map(p=>p.md))];
+  const mdList = [...new Set(ALL.map(p=>p.md))];
   // MD_DATA 순서를 우선 따르고, 거기 없는 MD는 뒤에 추가
   const orderedMD = [...MD_DATA.map(d=>d.md), ...mdList.filter(m=>!MD_DATA.some(d=>d.md===m))];
 
@@ -339,7 +352,7 @@ window.__setMonth = function(v){ currentMonth = v; renderFilters(); render(); };
 window.__setMD = function(v){ currentMD = v; renderFilters(); render(); };
 
 
-// ===== MD별 비중 카드 렌더링 (신상품 라이프타임 / 기존 2분할) =====
+// ===== MD별 비중 카드 렌더링 (신상품 라이프타임 / 재촬영 / 기존 3분할) =====
 function statusBadge(pct){
   if (pct < 10) return '<span class="md-rank-badge" style="background:rgba(214,58,82,0.12);color:#C42E45;">⚠️ 위험(고갈)</span>';
   if (pct < 15) return '<span class="md-rank-badge" style="background:rgba(138,151,176,0.15);color:#6B7280;">낮은 편</span>';
@@ -358,12 +371,17 @@ function renderMdRatio(){
       </div>
       <div class="md-stack-bar">
         <div class="md-stack-seg" style="width:${d.shin_pct}%;background:#6D3FC8;" title="신상품(라이프타임) ${d.shin_pct}%">${d.shin_pct>=5?d.shin_pct+'%':''}</div>
+        <div class="md-stack-seg" style="width:${d.redo_pct||0}%;background:#4d8fff;" title="재촬영 ${d.redo_pct||0}%">${(d.redo_pct||0)>=8?d.redo_pct+'%':''}</div>
         <div class="md-stack-seg" style="width:${d.gy_pct}%;background:#C8D3E4;color:#6B7280;" title="기존 ${d.gy_pct}%">${d.gy_pct>=15?d.gy_pct+'%':''}</div>
       </div>
       <div class="md-legend">
         <div class="md-legend-row">
           <span class="md-legend-label"><span class="md-legend-dot" style="background:#6D3FC8;"></span>신상품(라이프타임)</span>
           <span class="md-legend-val" style="color:#6D3FC8;">${d.shin_pct}% (${d.shin_s}억)</span>
+        </div>
+        <div class="md-legend-row">
+          <span class="md-legend-label"><span class="md-legend-dot" style="background:#4d8fff;"></span>재촬영</span>
+          <span class="md-legend-val" style="color:#2563EB;">${d.redo_pct||0}% (${d.redo_s||0}억 · ${d.redo_cnt||0}건)</span>
         </div>
         <div class="md-legend-row">
           <span class="md-legend-label"><span class="md-legend-dot" style="background:#C8D3E4;"></span>기존 상품</span>
@@ -384,18 +402,31 @@ function renderMdRatio(){
 
 function setSort(key){
   currentSort = key;
-  document.querySelectorAll('.sort-btn').forEach(b=>b.classList.remove('sort-active'));
+  ['s','pm','mr','cnt'].forEach(k=>document.getElementById('sort-'+k).classList.remove('sort-active'));
   document.getElementById('sort-'+key).classList.add('sort-active');
   render();
 }
-
-function render(){
-  let data = SHIN_DATA;
+function setTab(t){
+  currentTab = t;
+  ['shin','redo'].forEach(k=>document.getElementById('tab-'+k).classList.toggle('active-tab', k===t));
+  render();
+}
+function filtered(src){
+  let data = src;
   if(currentMonth !== 'all') data = data.filter(p => p.months.includes(currentMonth));
   if(currentMD !== 'all') data = data.filter(p => p.md === currentMD);
+  return data;
+}
 
-  const totalCnt = data.reduce((a,p)=>a+p.cnt,0);
-  document.getElementById('filterCount').textContent = `${data.length}개 품목 · ${totalCnt}건`;
+function render(){
+  const cntTxt = arr => `${arr.length}개 품목 · ${arr.reduce((a,p)=>a+p.cnt,0)}건`;
+  document.getElementById('cnt-shin').textContent = cntTxt(filtered(SHIN_DATA));
+  document.getElementById('cnt-redo').textContent = cntTxt(filtered(REDO_DATA));
+  document.getElementById('tabNote').innerHTML = currentTab==='shin'
+    ? '※ 취급고·분당취급고·이익률은 첫 신상품 태그일 이후의 라이프타임 누적 실적입니다. 편성월 필터는 "해당 월에 1회 이상 편성된 품목"을 추려서 보여줍니다 (월별로 실적이 쪼개지는 것은 아닙니다).'
+    : '※ 재녹화·재편집 태그가 붙은 방송만 집계한 실적입니다(2026년, 신상품 출신 포함). "재촬영 전→후 분당"은 첫 재촬영 방송일 기준 이전/이후 전체 방송의 분당취급고이며, 2026년 내 이전 방송이 없으면 — 로 표시합니다.';
+  if(currentTab==='redo') return renderRedo();
+  const data = filtered(SHIN_DATA);
 
   const sorted = [...data].sort((a,b)=>b[currentSort]-a[currentSort]);
 
@@ -414,7 +445,7 @@ function render(){
     return `<tr>
       <td class="mono" style="color:var(--text3);">${i+1}</td>
       <td><span class="pcat-badge" style="background:${catColor}18;color:${catColor};">${p.cat}</span></td>
-      <td class="pname">${p.name}</td>
+      <td class="pname">${p.name}${p.launch?`<div style="font-size:9.5px;color:var(--text3);font-family:'IBM Plex Mono',monospace;">런칭 ${p.launch.slice(5).replace('-','/')}</div>`:''}</td>
       <td><span class="pmd-badge" style="color:${mdColor};font-weight:600;">${mdLabel}</span></td>
       <td class="mono">${p.cnt}회</td>
       <td class="mono" style="color:var(--text3);">${monthsStr}</td>
@@ -431,6 +462,51 @@ function render(){
         <tr>
           <th>#</th><th>카테고리</th><th>상품명</th><th>MD</th><th>방송(라이프타임)</th><th>편성월</th>
           <th>취급고(라이프타임)</th><th>분당취급고</th><th>한계이익</th><th>이익률</th>
+        </tr>
+      </thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+}
+
+function renderRedo(){
+  const data = filtered(REDO_DATA);
+  const sorted = [...data].sort((a,b)=>b[currentSort]-a[currentSort]);
+  if(sorted.length === 0){
+    document.getElementById('tableArea').innerHTML = `<div style="text-align:center;padding:40px;color:var(--text3);font-family:'IBM Plex Mono',monospace;font-size:12px;">선택한 조건에 해당하는 재촬영 상품이 없습니다.</div>`;
+    return;
+  }
+  const rows = sorted.map((p,i) => {
+    const catColor = CAT_COLORS[p.cat] || '#8A97B0';
+    const mdColor  = MD_COLORS[p.md] || '#8A97B0';
+    const mdLabel  = p.md==='정수란' ? '정수란 (前)' : p.md;
+    const tagStr = Object.entries(p.tags||{}).map(([k,v])=>`${k} ${v}`).join(' · ');
+    const pmCls = p.pm >= 150 ? 'good' : p.pm < 100 ? 'bad' : '';
+    const mrCls = p.mr >= 30 ? 'good' : p.mr < 20 ? 'bad' : '';
+    let ba = '—';
+    if(p.before_pm != null && p.after_pm != null){
+      const dlt = p.before_pm ? (p.after_pm/p.before_pm-1)*100 : 0;
+      const col = dlt >= 0 ? '#0A8558' : '#C42E45';
+      ba = `${p.before_pm.toFixed(1)} → ${p.after_pm.toFixed(1)}만 <span style="color:${col};font-weight:700;">(${dlt>=0?'+':''}${dlt.toFixed(1)}%)</span>`;
+    }
+    return `<tr>
+      <td class="mono" style="color:var(--text3);">${i+1}</td>
+      <td><span class="pcat-badge" style="background:${catColor}18;color:${catColor};">${p.cat}</span></td>
+      <td class="pname">${p.name}${p.shin?' <span style="font-size:9px;color:#6D3FC8;font-weight:700;">신상품출신</span>':''}<div style="font-size:9.5px;color:var(--text3);font-family:'IBM Plex Mono',monospace;">첫 재촬영 ${p.first.slice(5).replace('-','/')} · ${tagStr}</div></td>
+      <td><span class="pmd-badge" style="color:${mdColor};font-weight:600;">${mdLabel}</span></td>
+      <td class="mono">${p.cnt}회</td>
+      <td class="mono" style="color:var(--text3);">${p.months.map(m=>m+'월').join(',')}</td>
+      <td class="mono" style="font-weight:700;">${p.s.toFixed(3)}억</td>
+      <td class="mono ${pmCls}">${p.pm.toFixed(1)}만</td>
+      <td class="mono">${p.mr.toFixed(1)}%</td>
+      <td class="mono" style="font-size:11px;">${ba}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('tableArea').innerHTML = `
+    <table class="prod-table">
+      <thead>
+        <tr>
+          <th>#</th><th>카테고리</th><th>상품명</th><th>MD</th><th>재촬영 방송</th><th>편성월</th>
+          <th>취급고(재촬영분)</th><th>분당취급고</th><th>이익률</th><th>재촬영 전→후 분당</th>
         </tr>
       </thead>
       <tbody>${rows}</tbody>

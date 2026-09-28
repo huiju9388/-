@@ -365,40 +365,89 @@ def build_shin_settle(f, cols, target_q3=55, target_year=60, year_goal=70, min_w
 
 
 def build_newproduct(f, cols, shin_products):
+    """신상품·재촬영 페이지(newproduct-data.json).
+
+    분류(행 단위, 서로 겹치지 않음 → 합계 = 가전팀 전체):
+      - 신상품(라이프타임): 해당 상품의 첫 '신상품' 태그 편성일 '이후'의 모든 방송
+        (이후 재녹화·재편집·기존으로 태그가 바뀌어도 포함, 태그일 이전 방송은 제외)
+      - 재촬영: 위에 해당하지 않는 방송 중 '재녹화'/'재편집' 태그 방송
+      - 기존: 나머지
+    """
+    REDO_TAGS = ['재녹화', '재편집']
+    f = f.copy()
+    launch = f[f[cols['SHIN']] == '신상품'].groupby(cols['BRAND'])['dt'].min()
+    f['_launch'] = f[cols['BRAND']].map(launch)
+    f['_shin'] = f['_launch'].notna() & (f['dt'] >= f['_launch'])
+    f['_redo'] = (~f['_shin']) & f[cols['SHIN']].isin(REDO_TAGS)
+
+    def agg(sub):
+        s, w = sub[cols['SALES']].sum(), sub[cols['WMIN']].sum()
+        return s, w, len(sub)
+
     MD_DATA = []
     for key, name in MDMAP_DETAIL.items():
         sub = f[f[cols['MD']] == name]
-        total_s, total_cnt = sub[cols['SALES']].sum(), len(sub)
-        shin_sub = sub[sub[cols['BRAND']].isin(shin_products)]
-        shin_s, shin_cnt, shin_w = shin_sub[cols['SALES']].sum(), len(shin_sub), shin_sub[cols['WMIN']].sum()
-        shin_prod_cnt = shin_sub[cols['BRAND']].nunique()
-        shin_pct = round(shin_s/total_s*100, 1) if total_s else 0.0
-        gy_s, gy_cnt = total_s - shin_s, total_cnt - shin_cnt
+        total_s, _, total_cnt = agg(sub)
+        shin_sub = sub[sub['_shin']]
+        shin_s, shin_w, shin_cnt = agg(shin_sub)
+        redo_s, redo_w, redo_cnt = agg(sub[sub['_redo']])
+        gy_s, gy_cnt = total_s - shin_s - redo_s, total_cnt - shin_cnt - redo_cnt
+        pct = lambda x: round(x/total_s*100, 1) if total_s else 0.0
+        shin_pct, redo_pct = pct(shin_s), pct(redo_s)
         MD_DATA.append({"md": name, "total_s": round(total_s/1e8,2), "total_cnt": int(total_cnt),
-                        "shin_s": round(shin_s/1e8,2), "shin_cnt": int(shin_cnt), "shin_prod_cnt": int(shin_prod_cnt),
+                        "shin_s": round(shin_s/1e8,2), "shin_cnt": int(shin_cnt),
+                        "shin_prod_cnt": int(shin_sub[cols['BRAND']].nunique()),
                         "shin_pct": shin_pct, "shin_pm": pm(shin_s, shin_w),
-                        "gy_s": round(gy_s/1e8,2), "gy_cnt": int(gy_cnt), "gy_pct": round(100-shin_pct,1)})
+                        "redo_s": round(redo_s/1e8,2), "redo_cnt": int(redo_cnt), "redo_pct": redo_pct,
+                        "redo_pm": pm(redo_s, redo_w),
+                        "gy_s": round(gy_s/1e8,2), "gy_cnt": int(gy_cnt),
+                        "gy_pct": round(100-shin_pct-redo_pct,1)})
+
     SHIN_DATA = []
-    for prod in shin_products:
-        psub = f[f[cols['BRAND']] == prod]
+    for prod in launch.index:
+        psub = f[(f[cols['BRAND']] == prod) & f['_shin']]
         w, s, mg = psub[cols['WMIN']].sum(), psub[cols['SALES']].sum(), psub[cols['MARGIN']].sum()
         cat = psub[cols['CAT']].mode().iloc[0] if not psub[cols['CAT']].mode().empty else ''
         tagged = psub[psub[cols['SHIN']] == '신상품']
         md = tagged[cols['MD']].iloc[0] if len(tagged) else psub[cols['MD']].mode().iloc[0]
         months = sorted(psub['MONI'].unique().tolist())
         mr = round(mg/s*100, 1) if s else 0.0
-        SHIN_DATA.append({"name": prod, "cat": cat, "md": md, "cnt": int(len(psub)), "w": round(w,1),
+        SHIN_DATA.append({"name": prod, "cat": cat, "md": md, "launch": str(launch[prod].date()),
+                          "cnt": int(len(psub)), "w": round(w,1),
                           "s": round(s/1e8,3), "pm": pm(s,w), "m": round(mg/1e8,3), "pmm": pm(mg,w),
                           "mr": mr, "months": [str(x) for x in months]})
     SHIN_DATA.sort(key=lambda x: (-x['s'], x['name']))
-    # 상단 요약 카드용: 신상품(라이프타임) vs 기존 — MD 구분 없이 가전팀 전체 기준(정수란 등 이동 인원 포함)
-    sh = f[f[cols['BRAND']].isin(shin_products)]
-    gy = f[~f[cols['BRAND']].isin(shin_products)]
-    SUMMARY = {"shin": {"s": round(sh[cols['SALES']].sum()/1e8, 2), "cnt": int(len(sh)),
-                        "prod_cnt": int(sh[cols['BRAND']].nunique()), "pm": pm(sh[cols['SALES']].sum(), sh[cols['WMIN']].sum())},
-               "gy": {"s": round(gy[cols['SALES']].sum()/1e8, 2), "cnt": int(len(gy)),
-                      "pm": pm(gy[cols['SALES']].sum(), gy[cols['WMIN']].sum())}}
-    return MD_DATA, SHIN_DATA, SUMMARY
+
+    # 재촬영 상품별: 재녹화/재편집 태그 방송 실적 + 첫 재촬영일 전/후 분당취급고 비교
+    REDO_DATA = []
+    rtag = f[f[cols['SHIN']].isin(REDO_TAGS)]
+    for prod, rsub in rtag.groupby(cols['BRAND']):
+        allp = f[f[cols['BRAND']] == prod]
+        first = rsub['dt'].min()
+        w, s, mg = rsub[cols['WMIN']].sum(), rsub[cols['SALES']].sum(), rsub[cols['MARGIN']].sum()
+        bf, af = allp[allp['dt'] < first], allp[allp['dt'] >= first]
+        bs, bw, bc = agg(bf); as_, aw, ac = agg(af)
+        cat = rsub[cols['CAT']].mode().iloc[0] if not rsub[cols['CAT']].mode().empty else ''
+        md = rsub[cols['MD']].mode().iloc[0] if not rsub[cols['MD']].mode().empty else ''
+        REDO_DATA.append({"name": prod, "cat": cat, "md": md, "first": str(first.date()),
+                          "shin": bool(prod in launch.index),
+                          "tags": {t: int((rsub[cols['SHIN']] == t).sum()) for t in REDO_TAGS if (rsub[cols['SHIN']] == t).any()},
+                          "cnt": int(len(rsub)), "w": round(w,1), "s": round(s/1e8,3), "pm": pm(s,w),
+                          "m": round(mg/1e8,3), "mr": round(mg/s*100,1) if s else 0.0,
+                          "months": [str(x) for x in sorted(rsub['MONI'].unique().tolist())],
+                          "before_cnt": int(bc), "before_pm": pm(bs, bw) if bw >= 5 else None,
+                          "after_cnt": int(ac), "after_pm": pm(as_, aw) if aw >= 5 else None})
+    REDO_DATA.sort(key=lambda x: (-x['s'], x['name']))
+
+    # 상단 요약 카드: MD 구분 없이 가전팀 전체 기준(정수란 등 이동 인원 포함)
+    def card(sub, with_prod=True):
+        s, w, n = agg(sub)
+        d = {"s": round(s/1e8, 2), "cnt": int(n), "pm": pm(s, w)}
+        if with_prod: d["prod_cnt"] = int(sub[cols['BRAND']].nunique())
+        return d
+    SUMMARY = {"shin": card(f[f['_shin']]), "redo": card(f[f['_redo']]),
+               "gy": card(f[~f['_shin'] & ~f['_redo']], with_prod=False)}
+    return MD_DATA, SHIN_DATA, REDO_DATA, SUMMARY
 
 
 def build_search(f, cols):
@@ -625,7 +674,7 @@ def main():
     weeklyData = build_weeklyData(team_all, cols)
     mdData = build_mdData(f, cols)
     shinSummary, shinMonthly, shinTrendData, shin_products = build_shin(f, cols)
-    MD_DATA, SHIN_DATA, NP_SUMMARY = build_newproduct(f, cols, shin_products)
+    MD_DATA, SHIN_DATA, REDO_DATA, NP_SUMMARY = build_newproduct(f, cols, shin_products)
     search_data = build_search(f, cols)
     vendorConcentration = build_vendor_concentration(f, cols)
     shinSettle = build_shin_settle(f, cols)
@@ -641,7 +690,7 @@ def main():
         "shinSettle": shinSettle,
     }
     json.dump(dashboard_data, open(f'{args.outdir}/dashboard-data.json','w'), ensure_ascii=False, indent=1)
-    json.dump({"MD_DATA": MD_DATA, "SHIN_DATA": SHIN_DATA, "SUMMARY": NP_SUMMARY}, open(f'{args.outdir}/newproduct-data.json','w'), ensure_ascii=False, indent=1)
+    json.dump({"MD_DATA": MD_DATA, "SHIN_DATA": SHIN_DATA, "REDO_DATA": REDO_DATA, "SUMMARY": NP_SUMMARY}, open(f'{args.outdir}/newproduct-data.json','w'), ensure_ascii=False, indent=1)
     json.dump(search_data, open(f'{args.outdir}/search-data.json','w'), ensure_ascii=False, indent=1)
 
     # ---- 경쟁사 (Excel 필요) ----
