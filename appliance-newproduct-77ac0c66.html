@@ -48,7 +48,7 @@
   .sc-sub{font-size:11px;color:var(--text3);}
 
   /* MD별 비중 카드 */
-  .md-ratio-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;}
+  .md-ratio-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;}
   .md-card{background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:16px 18px;box-shadow:0 2px 8px rgba(30,40,64,0.06);}
   .md-card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
   .md-name{font-size:13px;font-weight:700;color:var(--text1);}
@@ -301,7 +301,7 @@ let MD_DATA = [];
 let SHIN_DATA = [];
 let REDO_DATA = [];
 let currentTab = 'shin';
-fetch('data/newproduct-data.json').then(r => r.json()).then(d => {
+fetch('data/newproduct-data.json?v=' + Date.now()).then(r => r.json()).then(d => {
   MD_DATA = d.MD_DATA; SHIN_DATA = d.SHIN_DATA; REDO_DATA = d.REDO_DATA || [];
   if (d.SUMMARY) renderSummary(d.SUMMARY);
   renderMdRatio(); renderFilters(); render();
@@ -360,6 +360,11 @@ function statusBadge(pct){
   if (pct <= 45) return '<span class="md-rank-badge" style="background:rgba(201,122,16,0.12);color:#A8620A;">▲ 주의</span>';
   return '<span class="md-rank-badge" style="background:rgba(214,58,82,0.12);color:#C42E45;">⚠️ 위험(과의존)</span>';
 }
+// MD별 참고 메모 (인사 변동 등 비중 해석에 필요한 맥락)
+const MD_NOTES = {
+  '장환희': '7/1 가전팀 신규 투입 · 7월 이후 실적만 반영',
+  '마영호': '8/14부터 육아휴직 · 이후 실적 정지'
+};
 function renderMdRatio(){
   const grid = document.getElementById('mdRatioGrid');
   grid.innerHTML = MD_DATA.map((d,i) => {
@@ -369,6 +374,7 @@ function renderMdRatio(){
         <span class="md-name">${d.md}</span>
         ${badge}
       </div>
+      ${MD_NOTES[d.md] ? `<div style="font-size:9.5px;color:#8A97B0;margin:-4px 0 8px;line-height:1.4;">ⓘ ${MD_NOTES[d.md]}</div>` : ''}
       <div class="md-stack-bar">
         <div class="md-stack-seg" style="width:${d.shin_pct}%;background:#6D3FC8;" title="신상품(라이프타임) ${d.shin_pct}%">${d.shin_pct>=5?d.shin_pct+'%':''}</div>
         <div class="md-stack-seg" style="width:${d.redo_pct||0}%;background:#4d8fff;" title="재촬영 ${d.redo_pct||0}%">${(d.redo_pct||0)>=8?d.redo_pct+'%':''}</div>
@@ -376,15 +382,15 @@ function renderMdRatio(){
       </div>
       <div class="md-legend">
         <div class="md-legend-row">
-          <span class="md-legend-label"><span class="md-legend-dot" style="background:#6D3FC8;"></span>신상품(라이프타임)</span>
+          <span class="md-legend-label"><span class="md-legend-dot" style="background:#6D3FC8;"></span>신상품</span>
           <span class="md-legend-val" style="color:#6D3FC8;">${d.shin_pct}% (${d.shin_s}억)</span>
         </div>
         <div class="md-legend-row">
           <span class="md-legend-label"><span class="md-legend-dot" style="background:#4d8fff;"></span>재촬영</span>
-          <span class="md-legend-val" style="color:#2563EB;">${d.redo_pct||0}% (${d.redo_s||0}억 · ${d.redo_cnt||0}건)</span>
+          <span class="md-legend-val" style="color:#2563EB;">${d.redo_pct||0}% (${d.redo_s||0}억)</span>
         </div>
         <div class="md-legend-row">
-          <span class="md-legend-label"><span class="md-legend-dot" style="background:#C8D3E4;"></span>기존 상품</span>
+          <span class="md-legend-label"><span class="md-legend-dot" style="background:#C8D3E4;"></span>기존</span>
           <span class="md-legend-val" style="color:#6B7280;">${d.gy_pct}% (${d.gy_s}억)</span>
         </div>
         <div class="md-legend-row" style="padding-top:4px;border-top:1px solid var(--border);margin-top:2px;">
