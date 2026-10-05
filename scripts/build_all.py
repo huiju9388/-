@@ -56,6 +56,15 @@ VENDOR_DEFS = [
 ]
 
 
+
+def _col(c, names, fallback):
+    """컬럼명 기준 탐색 (PGM 시트 컬럼 순서 변경 대응). 못 찾으면 기존 인덱스 사용."""
+    norm = {str(x).replace(' ','').replace('\n',''): x for x in c}
+    for n in names:
+        k = n.replace(' ','')
+        if k in norm: return norm[k]
+    return c[fallback]
+
 def num(s):
     return pd.to_numeric(s.astype(str).str.replace(',', '', regex=False), errors='coerce').fillna(0)
 
@@ -74,7 +83,7 @@ def load_pgm(path='pgm.csv'):
     c = df.columns.tolist()
     cols = dict(YEAR=c[0], MON=c[1], WK=c[2], DATE=c[3], TIME=c[5],
                 CAT=c[12], BRAND=c[11], WMIN=c[14], SALES=c[17], REV=c[21],
-                MARGIN=c[39], MD=c[70], SHIN=c[71], TEAM=c[72])
+                MARGIN=c[39], MD=_col(c,['MD'],70), SHIN=_col(c,['신상품구분'],71), TEAM=_col(c,['팀명'],72))
     df = df[(df[cols['TEAM']] == '가전팀') & (df[cols['YEAR']] == '2026')].copy()
     for col in [cols['WMIN'], cols['SALES'], cols['REV'], cols['MARGIN']]:
         df[col] = num(df[col])
@@ -647,7 +656,7 @@ def main():
     raw = pd.read_csv('pgm.csv', encoding='utf-8-sig', low_memory=False, dtype=str)
     c = raw.columns.tolist()
     cols = dict(YEAR=c[0], MON=c[1], WK=c[2], DATE=c[3], TIME=c[5], CAT=c[12], BRAND=c[11], WMIN=c[14],
-               SALES=c[17], REV=c[21], MARGIN=c[39], MD=c[70], SHIN=c[71], TEAM=c[72])
+               SALES=c[17], REV=c[21], MARGIN=c[39], MD=_col(c,['MD'],70), SHIN=_col(c,['신상품구분'],71), TEAM=_col(c,['팀명'],72))
     team_all = raw[raw[cols['TEAM']] == '가전팀'].copy()
     for col in [cols['WMIN'], cols['SALES'], cols['REV'], cols['MARGIN']]:
         team_all[col] = num(team_all[col])
