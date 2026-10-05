@@ -361,7 +361,7 @@
 </div>
 <!-- 월 누적 실적 -->
 <div class="section">
-  <div class="section-title">월별 누적 실적 상세 (VAT포함 · 9월은 9/13까지)</div>
+  <div class="section-title">월별 누적 실적 상세 (VAT포함 · 10월은 10/4까지 진행중)</div>
   <div style="display:flex;gap:6px;margin-bottom:14px;">
     <button onclick="showMonth('all')" id="tab-all" class="tab-btn active-tab">전체</button>
     <button onclick="showMonth('1')" id="tab-1" class="tab-btn">1월</button>
@@ -373,6 +373,7 @@
     <button onclick="showMonth('7')" id="tab-7" class="tab-btn">7월</button>
     <button onclick="showMonth('8')" id="tab-8" class="tab-btn">8월</button>
     <button onclick="showMonth('9')" id="tab-9" class="tab-btn">9월</button>
+    <button onclick="showMonth('10')" id="tab-10" class="tab-btn">10월</button>
   </div>
 
   <div id="wt-warn" style="display:none;margin-bottom:12px;padding:10px 14px;border-radius:8px;background:var(--red-bg);color:#C42E45;font-size:11px;font-weight:600;"></div>
@@ -389,7 +390,8 @@
 </div>
 <div class="divider"></div><div class="footer">SK스토아 가전팀 · 구글시트 PGM 실적 기준 · VAT포함 · 월 컬럼 기준 집계</div>
 </div><!-- /main-wrap --><script>
-var MONTH_CLOSED = true;  // 해당 월 마감 여부(월말 데이터 반영 시 true)
+var MONTH_CLOSED = false;  // 해당 월 마감 여부(월말 데이터 반영 시 true)
+var CUR_MONTH_DAYS = {elapsed:4, total:31}; // 진행중월 경과일수 — 편성비중·팀목표비중 목표분을 경과일 비례로 환산(MONTH_CLOSED=false일 때만)
 var monthData = {};
 var weightTargets = null;
 fetch('data/dashboard-data.json', {cache:'no-store'}).then(r=>r.json()).then(d=>{
@@ -407,7 +409,7 @@ function renderYtdTable(){
   var months = Object.keys(monthData).map(Number).sort(function(a,b){return a-b;});
   var lastM = months[months.length-1];
   var salesArr = months.map(function(m){ return parseFloat(monthData[m].total.sales); });
-  var minVal = Math.min.apply(null, salesArr);
+  var minVal = Math.min.apply(null, MONTH_CLOSED ? salesArr : salesArr.slice(0, -1)); // 진행중월은 최저월 판정 제외
   var cum = 0;
   var rows = '';
   var cumTeamTarget = 0;
@@ -424,9 +426,10 @@ function renderYtdTable(){
     var companyPctTd = '<td class="mono" style="color:#8A97B0;">-</td>';
     var teamPctTd = '<td class="mono" style="color:#8A97B0;">-</td>';
     if(wt){
-      var companyPct = usedW / wt.company * 100;
-      var teamPct = usedW / wt.team * 100;
-      cumTeamTarget += wt.team;
+      var ratio = (isCurrent && !MONTH_CLOSED) ? (CUR_MONTH_DAYS.elapsed / CUR_MONTH_DAYS.total) : 1;
+      var companyPct = usedW / (wt.company * ratio) * 100;
+      var teamPct = usedW / (wt.team * ratio) * 100;
+      cumTeamTarget += wt.team * ratio;
       companyPctList.push(companyPct);
       companyPctTd = '<td class="mono" style="color:#8A97B0;">' + companyPct.toFixed(1) + '%</td>';
       var teamColor = teamPct >= 100 ? '#0A8558' : '#4d8fff';
