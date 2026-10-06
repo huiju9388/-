@@ -233,8 +233,10 @@ fetch('data/corevendor-data.json?v=' + Date.now())
 
     data.vendors.forEach(v => {
       const rm = riskMeta[v.risk];
-      const lastSelf = v.self[v.self.length-1];
-      const lastComp = v.comp[v.comp.length-1];
+      const bi = (typeof v.basisIdx === 'number') ? v.basisIdx : v.self.length-1; // 침투율 기준월(진행중 월초면 직전 완결월)
+      const lastSelf = v.self[bi];
+      const lastComp = v.comp[bi];
+      const basisLbl = v.monthLabels[bi];
 
       // KPI 카드
       const vc = document.createElement('div');
@@ -249,13 +251,13 @@ fetch('data/corevendor-data.json?v=' + Date.now())
         </div>
         <div class="vcard-metric">
           <span class="vcard-pen ${rm.pen}">${v.penetration}%</span>
-          <span style="font-size:11px;color:var(--text3);">침투율</span>
+          <span style="font-size:11px;color:var(--text3);">침투율 (${basisLbl})</span>
         </div>
         <div class="vcard-trend">${v.trendLabel}</div>
         <div class="vcard-flags">${v.flags.map(f => `<div class="vflag">${f}</div>`).join('')}</div>
         <div class="vcard-nums">
-          <div class="vnum"><div class="vnum-lbl">자사 (최신월)</div><div class="vnum-val">${lastSelf.toLocaleString()}분</div></div>
-          <div class="vnum"><div class="vnum-lbl">${v.compareTarget} (최신월)</div><div class="vnum-val">${lastComp.toLocaleString()}분</div></div>
+          <div class="vnum"><div class="vnum-lbl">자사 (${basisLbl})</div><div class="vnum-val">${lastSelf.toLocaleString()}분</div></div>
+          <div class="vnum"><div class="vnum-lbl">${v.compareTarget} (${basisLbl})</div><div class="vnum-val">${lastComp.toLocaleString()}분</div></div>
         </div>`;
       vendorGrid.appendChild(vc);
 

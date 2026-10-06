@@ -602,14 +602,19 @@ def build_corevendor(team_all, cols, kt_raw, ssg_raw, today):
         months = sorted(set(self_m) | set(comp_m), key=lambda x: int(x))
         self_series = [self_m.get(m, {"weight": 0.0})['weight'] for m in months]
         comp_series = [comp_m.get(m, {"weight": 0.0})['weight'] for m in months]
-        last_self = self_series[-1] if self_series else 0.0
-        last_comp = comp_series[-1] if comp_series else 0.0
+        # 진행중월이 월초(15일 미만)면 표본이 너무 작아 침투율이 왜곡되므로 직전 완결월을 기준월로 사용
+        basis_idx = len(months) - 1
+        if len(months) >= 2 and int(months[-1]) == today.month and today.day < 15:
+            basis_idx = len(months) - 2
+        last_self = self_series[basis_idx] if self_series else 0.0
+        last_comp = comp_series[basis_idx] if comp_series else 0.0
         penetration = round(last_comp / last_self * 100, 1) if last_self else (0.0 if not last_comp else None)
         vendors_out.append({
             "id": vd['id'], "name": vd['name'], "subLabel": vd['subLabel'],
             "aliases": vd['aliases'], "compareTarget": vd['compareTarget'],
             "months": [f"2026-{int(m):02d}" for m in months],
-            "monthLabels": [f"{int(m)}월" for m in months],
+            "monthLabels": [f"{int(m)}월" + (f"(~{today.month}/{today.day})" if (int(m) == today.month and i == len(months) - 1 and today.day < 28) else "") for i, m in enumerate(months)],
+            "basisIdx": basis_idx,
             "self": self_series, "comp": comp_series,
             "penetration": penetration,
             # risk/trendLabel/flags는 수치 변화 폭이 커서 매주 지미가 직접 판단 후 수기 갱신 권장
