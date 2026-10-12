@@ -507,7 +507,7 @@
       document.getElementById('ss-gauge').innerHTML =
         '<div style="text-align:center;">'+
         '<div style="font-size:10px;color:var(--text3);font-family:\'IBM Plex Mono\',monospace;margin-bottom:4px;">3회 이상 유효방송 신상품 비중</div>'+
-        '<div style="font-size:9px;color:var(--text3);font-family:\'IBM Plex Mono\',monospace;margin-bottom:12px;">관찰기간 '+ss.matureMonths+'개월 경과 '+ss.total+'개 기준 (최근 런칭 '+ss.pending+'개 관찰중)</div>'+
+        '<div style="font-size:9px;color:var(--text3);font-family:\'IBM Plex Mono\',monospace;margin-bottom:12px;">판정완료 '+ss.total+'개 기준 (3회 미만·런칭 '+ss.matureMonths+'개월 이내 '+ss.pending+'개 관찰중)</div>'+
         '<div style="width:150px;height:150px;margin:0 auto;border-radius:50%;background:conic-gradient('+gc+' 0deg '+deg+'deg, var(--bg3) '+deg+'deg 360deg);display:flex;align-items:center;justify-content:center;">'+
           '<div style="width:112px;height:112px;border-radius:50%;background:var(--bg2);display:flex;flex-direction:column;align-items:center;justify-content:center;">'+
             '<div style="font-size:27px;font-weight:700;letter-spacing:-1px;color:'+gc+';font-family:\'IBM Plex Mono\',monospace;">'+ss.pct.toFixed(1)+'%</div>'+

@@ -312,8 +312,9 @@ def build_shin_settle(f, cols, target_q3=55, target_year=60, year_goal=70, min_w
       3) 유효방송 = 가중분 >= min_w(5분). 가중분 0~0.6분짜리 등록성 행과 협력사 케어용
          저가중분 새벽 편성이 '방송 1회'로 잡혀 정착률이 부풀려지는 것을 막는다.
          (새벽대라도 가중분 5분 이상 실방송은 재편성이 일어난 것이므로 카운트한다)
-      4) 관찰기간 = 런칭 후 mature_months(2개월) 경과 상품만 본지표에 집계.
-         최근 런칭은 3회를 채울 시간이 없었을 뿐이므로 'pending'으로 분리한다.
+      4) 판정 = 유효방송 3회를 채우면 런칭 시점과 관계없이 즉시 '성공'으로 집계(2026-10-12 변경, 신상품 페이지와 통일).
+         3회 미만이면서 런칭 후 mature_months(2개월)가 안 지난 상품만 'pending'(관찰중)으로 분리하고,
+         3회 미만이면서 2개월이 지난 상품은 '미달'로 분모에 포함한다.
     """
     valid = f[f[cols['WMIN']] >= min_w]
     shin_rows = f[f[cols['SHIN']] == '신상품']
@@ -330,14 +331,14 @@ def build_shin_settle(f, cols, target_q3=55, target_year=60, year_goal=70, min_w
     sp['ld'] = sp['name'].map(launch)
     sp['lm'] = sp['ld'].dt.month
     sp['cnt'] = sp['name'].map(lifecnt).fillna(0).astype(int)
-    sp['mature'] = sp['ld'] <= cutoff
+    sp['mature'] = (sp['ld'] <= cutoff) | (sp['cnt'] >= 3)   # 판정완료 = 3회 달성 or 런칭 2개월 경과
 
     allT = int(len(sp))
     mt = sp[sp['mature']]
     n = int(len(mt))
     base = {"targetQ3": target_q3, "targetYear": target_year, "yearGoal": year_goal,
             "minW": min_w, "matureMonths": mature_months,
-            "rule": f"유효방송 = 가중분 {min_w:.0f}분 이상 · 신상품 태그일 이후 · 런칭 {mature_months}개월 경과 상품만 집계",
+            "rule": f"유효방송 = 가중분 {min_w:.0f}분 이상 · 런칭 포함 3회 이상 = 성공(즉시 반영) · 3회 미만은 런칭 {mature_months}개월 경과 시 미달, 그 전엔 관찰중",
             "allTotal": allT, "pending": allT - n}
     if n == 0:
         base.update({"total": 0, "ge3": 0, "pct": 0.0, "allGe3": 0, "allPct": 0.0,
