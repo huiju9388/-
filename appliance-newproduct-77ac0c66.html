@@ -88,7 +88,26 @@
   .bad{color:#C42E45;font-weight:700;}
   .mono{font-family:'IBM Plex Mono',monospace;}
 
+  /* 신상품 성공·재촬영 요약 */
+  .kpi-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;}
+  .kpi-box{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;box-shadow:0 2px 8px rgba(30,40,64,0.05);}
+  .kpi-box .kl{font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-bottom:4px;}
+  .kpi-box .kv{font-size:20px;font-weight:700;letter-spacing:-0.5px;}
+  .kpi-box .ks{font-size:10.5px;color:var(--text3);margin-top:2px;line-height:1.5;}
+  .st-badge{font-size:10px;font-family:'IBM Plex Mono',monospace;padding:2px 8px;border-radius:10px;font-weight:700;white-space:nowrap;}
+  .st-success{background:rgba(14,158,106,0.12);color:#0A8558;}
+  .st-fail{background:rgba(214,58,82,0.10);color:#C42E45;}
+  .st-pending{background:rgba(138,151,176,0.15);color:#6B7280;}
+  .redo-chip{display:inline-block;font-size:9.5px;font-family:'IBM Plex Mono',monospace;padding:1px 6px;border-radius:4px;background:rgba(37,99,235,0.08);color:#2563EB;margin:1px 2px 1px 0;}
+  .trend-btn{font-size:10px;font-family:'IBM Plex Mono',monospace;padding:3px 9px;border-radius:5px;border:1px solid rgba(37,99,235,0.35);background:var(--blue-bg);color:var(--blue);cursor:pointer;white-space:nowrap;}
+  .trend-btn:hover{background:var(--blue);color:#fff;}
+  .detail-row td{background:#F6F8FC!important;padding:14px 18px!important;}
+  .seg-table{border-collapse:collapse;font-size:11px;min-width:520px;}
+  .seg-table th{font-size:9.5px;color:var(--text3);text-align:left;padding:5px 12px 5px 0;font-weight:600;font-family:'IBM Plex Mono',monospace;border-bottom:1px solid var(--border2);}
+  .seg-table td{padding:6px 12px 6px 0;border-bottom:1px solid var(--border);font-family:'IBM Plex Mono',monospace;background:transparent!important;}
+
   @media(max-width:900px){
+    .kpi-strip{grid-template-columns:repeat(2,1fr);}
     .md-ratio-grid{grid-template-columns:repeat(2,1fr);}
     .summary-grid{grid-template-columns:1fr;}
   }
@@ -278,7 +297,7 @@
       <button id="tab-redo" class="tab-btn" onclick="setTab('redo')">🎬 재촬영 (<span id="cnt-redo">68개 품목 · 114건</span>)</button>
     </div>
     <div class="sort-row" style="flex-wrap:wrap;">
-      <span class="sort-label">편성월</span>
+      <span class="sort-label" id="monthFilterLabel">런칭월</span>
       <div id="monthFilterRow" style="display:flex;gap:5px;"></div>
       <span class="sort-label" style="margin-left:14px;">매니저</span>
       <div id="mdFilterRow" style="display:flex;gap:5px;"></div>
@@ -289,8 +308,10 @@
       <button onclick="setSort('pm')"  id="sort-pm"  class="sort-btn">분당취급고 ↓</button>
       <button onclick="setSort('mr')"  id="sort-mr"  class="sort-btn">이익률 ↓</button>
       <button onclick="setSort('cnt')" id="sort-cnt" class="sort-btn">방송횟수 ↓</button>
+      <button onclick="setSort('redoCnt')" id="sort-redoCnt" class="sort-btn">재촬영 ↓</button>
     </div>
     <div class="note" id="tabNote" style="font-size:10.5px;color:var(--text3);margin-bottom:10px;"></div>
+    <div id="shinKpi"></div>
     <div id="tableArea"></div>
   </div>
 
@@ -301,9 +322,11 @@ let MD_DATA = [];
 let SHIN_DATA = [];
 let REDO_DATA = [];
 let currentTab = 'shin';
+let SHIN_RULE = null;
+const TREND_CHARTS = {};
 fetch('data/newproduct-data.json?v=' + Date.now()).then(r => r.json()).then(d => {
   MD_DATA = d.MD_DATA; SHIN_DATA = d.SHIN_DATA; REDO_DATA = d.REDO_DATA || [];
-  if (d.SUMMARY) renderSummary(d.SUMMARY);
+  if (d.SUMMARY) { renderSummary(d.SUMMARY); SHIN_RULE = d.SUMMARY.shinRule || null; }
   renderMdRatio(); renderFilters(); render();
 }).catch(e => console.error(e));
 
@@ -328,8 +351,12 @@ let currentMD = 'all';
 
 function renderFilters(){
   const ALL = SHIN_DATA.concat(REDO_DATA);
-  const lastMonth = Math.max(1, ...ALL.flatMap(p => p.months.map(Number)));
+  // 신상품 탭 = 런칭월 기준 / 재촬영 탭 = 편성월 기준
+  const lastMonth = currentTab==='shin'
+    ? Math.max(1, ...SHIN_DATA.map(p => Number(p.launchMonth)))
+    : Math.max(1, ...REDO_DATA.flatMap(p => p.months.map(Number)));
   const months = Array.from({length: lastMonth}, (_, i) => String(i + 1));
+  document.getElementById('monthFilterLabel').textContent = currentTab==='shin' ? '런칭월' : '편성월';
   const mdList = [...new Set(ALL.map(p=>p.md))];
   // MD_DATA 순서를 우선 따르고, 거기 없는 MD는 뒤에 추가
   const orderedMD = [...MD_DATA.map(d=>d.md), ...mdList.filter(m=>!MD_DATA.some(d=>d.md===m))];
@@ -408,18 +435,22 @@ function renderMdRatio(){
 
 function setSort(key){
   currentSort = key;
-  ['s','pm','mr','cnt'].forEach(k=>document.getElementById('sort-'+k).classList.remove('sort-active'));
+  ['s','pm','mr','cnt','redoCnt'].forEach(k=>document.getElementById('sort-'+k).classList.remove('sort-active'));
   document.getElementById('sort-'+key).classList.add('sort-active');
   render();
 }
 function setTab(t){
   currentTab = t;
   ['shin','redo'].forEach(k=>document.getElementById('tab-'+k).classList.toggle('active-tab', k===t));
-  render();
+  document.getElementById('sort-redoCnt').style.display = t==='shin' ? '' : 'none';
+  if(t==='redo' && currentSort==='redoCnt') setSort('s');
+  renderFilters(); render();
 }
 function filtered(src){
   let data = src;
-  if(currentMonth !== 'all') data = data.filter(p => p.months.includes(currentMonth));
+  if(currentMonth !== 'all') data = (src === SHIN_DATA)
+    ? data.filter(p => p.launchMonth === currentMonth)      // 신상품: 해당 월에 런칭한 상품만
+    : data.filter(p => p.months.includes(currentMonth));    // 재촬영: 해당 월에 편성된 상품
   if(currentMD !== 'all') data = data.filter(p => p.md === currentMD);
   return data;
 }
@@ -429,10 +460,12 @@ function render(){
   document.getElementById('cnt-shin').textContent = cntTxt(filtered(SHIN_DATA));
   document.getElementById('cnt-redo').textContent = cntTxt(filtered(REDO_DATA));
   document.getElementById('tabNote').innerHTML = currentTab==='shin'
-    ? '※ 취급고·분당취급고·이익률은 첫 신상품 태그일 이후의 라이프타임 누적 실적입니다. 편성월 필터는 "해당 월에 1회 이상 편성된 품목"을 추려서 보여줍니다 (월별로 실적이 쪼개지는 것은 아닙니다).'
-    : '※ 재녹화·재편집 태그가 붙은 방송만 집계한 실적입니다(2026년, 신상품 출신 포함). "재촬영 전→후 분당"은 첫 재촬영 방송일 기준 이전/이후 전체 방송의 분당취급고이며, 2026년 내 이전 방송이 없으면 — 로 표시합니다.';
-  if(currentTab==='redo') return renderRedo();
+    ? `※ 런칭월 필터는 <b>해당 월에 런칭(첫 신상품 태그 방송)한 상품만</b> 보여줍니다. 취급고·분당취급고·이익률은 런칭일 이후 라이프타임 누적입니다. ${SHIN_RULE ? SHIN_RULE.text + ' (' + SHIN_RULE.asOf.slice(5).replace('-','/') + ' 기준)' : ''} · 재촬영 횟수 = 런칭 후 재녹화·재편집 태그 방송 수(태그는 새 영상의 첫 방송에만 붙음)`
+    : '※ 재녹화·재편집 태그가 붙은 방송만 집계한 실적입니다(2026년, 신상품 출신 포함). 편성월 필터는 해당 월에 편성된 상품을 보여줍니다. "재촬영 전→후 분당"은 첫 재촬영 방송일 기준 이전/이후 전체 방송의 분당취급고이며, 2026년 내 이전 방송이 없으면 — 로 표시합니다.';
+  if(currentTab==='redo'){ document.getElementById('shinKpi').innerHTML=''; return renderRedo(); }
   const data = filtered(SHIN_DATA);
+  renderShinKpi(data);
+  Object.keys(TREND_CHARTS).forEach(k => { TREND_CHARTS[k].destroy(); delete TREND_CHARTS[k]; });  // 다시 그릴 때 이전 차트 정리
 
   const sorted = [...data].sort((a,b)=>b[currentSort]-a[currentSort]);
 
@@ -445,33 +478,127 @@ function render(){
     const catColor = CAT_COLORS[p.cat] || '#8A97B0';
     const mdColor  = MD_COLORS[p.md] || '#8A97B0';
     const mdLabel  = p.md==='정수란' ? '정수란 (前)' : p.md;
-    const monthsStr = p.months.map(m=>m+'월').join(',');
     const pmCls = p.pm >= 150 ? 'good' : p.pm < 100 ? 'bad' : '';
     const mrCls = p.mr >= 30 ? 'good' : p.mr < 20 ? 'bad' : '';
+    const redoCell = p.redoCnt
+      ? `<span class="mono" style="font-weight:700;color:#2563EB;">${p.redoCnt}회</span><div>${p.redos.map(r=>`<span class="redo-chip">${md(r.d)} ${r.tag}</span>`).join('')}</div>`
+      : '<span class="mono" style="color:var(--text3);">—</span>';
+    const key = 'p' + SHIN_DATA.indexOf(p);
     return `<tr>
       <td class="mono" style="color:var(--text3);">${i+1}</td>
       <td><span class="pcat-badge" style="background:${catColor}18;color:${catColor};">${p.cat}</span></td>
-      <td class="pname">${p.name}${p.launch?`<div style="font-size:9.5px;color:var(--text3);font-family:'IBM Plex Mono',monospace;">런칭 ${p.launch.slice(5).replace('-','/')}</div>`:''}</td>
+      <td class="pname">${p.name}<div style="font-size:9.5px;color:var(--text3);font-family:'IBM Plex Mono',monospace;">런칭 ${md(p.launch)}</div></td>
       <td><span class="pmd-badge" style="color:${mdColor};font-weight:600;">${mdLabel}</span></td>
+      <td>${stBadge(p.status)}<div class="mono" style="font-size:10px;color:var(--text3);margin-top:3px;">유효 ${p.validCnt}회</div></td>
+      <td>${redoCell}</td>
       <td class="mono">${p.cnt}회</td>
-      <td class="mono" style="color:var(--text3);">${monthsStr}</td>
       <td class="mono" style="font-weight:700;">${p.s.toFixed(3)}억</td>
       <td class="mono ${pmCls}">${p.pm.toFixed(1)}만</td>
       <td class="mono">${p.m.toFixed(3)}억</td>
       <td class="mono ${mrCls}">${p.mr.toFixed(1)}%</td>
-    </tr>`;
+      <td>${p.redoCnt ? `<button class="trend-btn" onclick="toggleTrend('${key}', ${SHIN_DATA.indexOf(p)})" id="btn-${key}">추이 ▸</button>` : ''}</td>
+    </tr>
+    <tr class="detail-row" id="row-${key}" style="display:none;"><td colspan="12"><div id="det-${key}"></div></td></tr>`;
   }).join('');
 
   document.getElementById('tableArea').innerHTML = `
     <table class="prod-table">
       <thead>
         <tr>
-          <th>#</th><th>카테고리</th><th>상품명</th><th>MD</th><th>방송(라이프타임)</th><th>편성월</th>
-          <th>취급고(라이프타임)</th><th>분당취급고</th><th>한계이익</th><th>이익률</th>
+          <th>#</th><th>카테고리</th><th>상품명</th><th>MD</th><th>성공여부</th><th>재촬영</th><th>방송</th>
+          <th>취급고(라이프타임)</th><th>분당취급고</th><th>한계이익</th><th>이익률</th><th></th>
         </tr>
       </thead>
       <tbody>${rows}</tbody>
     </table>`;
+}
+
+const md = d => d.slice(5).replace('-','/');
+function stBadge(st){
+  if(st==='success') return '<span class="st-badge st-success">✓ 성공</span>';
+  if(st==='fail')    return '<span class="st-badge st-fail">미달</span>';
+  return '<span class="st-badge st-pending">관찰중</span>';
+}
+
+// 필터 결과 기준 성공·재촬영 요약
+function renderShinKpi(data){
+  const n = data.length;
+  const ok = data.filter(p=>p.status==='success').length;
+  const fail = data.filter(p=>p.status==='fail').length;
+  const pend = n - ok - fail;
+  const judged = ok + fail;
+  const rate = judged ? (ok/judged*100) : 0;
+  const reshot = data.filter(p=>p.redoCnt>0);
+  const redoTotal = reshot.reduce((a,p)=>a+p.redoCnt,0);
+  // 재촬영 효과: 런칭 구간 분당 vs 첫 재촬영 이후 전체 분당 (둘 다 산출 가능한 상품만)
+  let up=0, down=0, bW=0, bS=0, aW=0, aS=0;
+  reshot.forEach(p=>{
+    const b = p.segs[0], after = p.segs.slice(1);
+    const aw = after.reduce((x,g)=>x+g.w,0), as = after.reduce((x,g)=>x+(g.pm!=null?g.pm*g.w:0),0);
+    if(b.pm==null || aw<5) return;
+    const apm = as/aw;
+    if(apm >= b.pm) up++; else down++;
+    bW+=b.w; bS+=b.pm*b.w; aW+=aw; aS+=as;
+  });
+  const bpm = bW? bS/bW : null, apm = aW? aS/aW : null;
+  const dlt = (bpm && apm) ? (apm/bpm-1)*100 : null;
+  const scope = currentMonth==='all' ? '전체 런칭' : currentMonth + '월 런칭';
+  document.getElementById('shinKpi').innerHTML = `
+    <div class="kpi-strip">
+      <div class="kpi-box"><div class="kl">${scope} 신상품</div><div class="kv">${n}개</div>
+        <div class="ks">성공 ${ok} · 미달 ${fail} · 관찰중 ${pend}</div></div>
+      <div class="kpi-box"><div class="kl">성공률 (3회 이상)</div><div class="kv" style="color:#0A8558;">${judged?rate.toFixed(1)+'%':'—'}</div>
+        <div class="ks">성공 ${ok} ÷ 판정완료 ${judged}${pend?` (관찰중 ${pend} 제외)`:''}</div></div>
+      <div class="kpi-box"><div class="kl">재촬영한 신상품</div><div class="kv" style="color:#2563EB;">${reshot.length}개 · ${redoTotal}회</div>
+        <div class="ks">${n? (reshot.length/n*100).toFixed(0)+'%가 재촬영 · 2회 이상 '+reshot.filter(p=>p.redoCnt>=2).length+'개' : ''}</div></div>
+      <div class="kpi-box"><div class="kl">재촬영 후 분당취급고</div>
+        <div class="kv" style="color:${dlt==null?'var(--text3)':dlt>=0?'#0A8558':'#C42E45'};">${dlt==null?'—':(dlt>=0?'+':'')+dlt.toFixed(1)+'%'}</div>
+        <div class="ks">${bpm?`런칭 구간 ${bpm.toFixed(1)}만 → 재촬영 후 ${apm.toFixed(1)}만 · 개선 ${up} / 하락 ${down}`:'재촬영 상품 없음'}</div></div>
+    </div>`;
+}
+
+// 재촬영 전후 추이 (구간표 + 방송별 분당취급고 차트)
+const SEG_COLORS = ['#6D3FC8','#2563EB','#0E9E6A','#C97A10','#D63A52'];
+function toggleTrend(key, idx){
+  const row = document.getElementById('row-'+key), btn = document.getElementById('btn-'+key);
+  const open = row.style.display === 'none';
+  row.style.display = open ? '' : 'none';
+  btn.textContent = open ? '추이 ▾' : '추이 ▸';
+  if(!open || TREND_CHARTS[key]) return;
+  const p = SHIN_DATA[idx];
+  const segRows = p.segs.map((g,i)=>{
+    const prev = i>0 ? p.segs[i-1].pm : null;
+    let d = '—';
+    if(prev!=null && g.pm!=null){ const v=(g.pm/prev-1)*100; d = `<span style="color:${v>=0?'#0A8558':'#C42E45'};font-weight:700;">${v>=0?'+':''}${v.toFixed(1)}%</span>`; }
+    return `<tr><td><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${SEG_COLORS[i%5]};margin-right:6px;"></span><b style="font-family:'Noto Sans KR';">${g.label}</b> <span style="color:var(--text3);">${g.tag}</span></td>
+      <td>${md(g.from)}~</td><td>${g.cnt}회</td><td>${g.s.toFixed(3)}억</td><td style="font-weight:700;">${g.pm!=null?g.pm.toFixed(1)+'만':'—'}</td><td>${d}</td></tr>`;
+  }).join('');
+  document.getElementById('det-'+key).innerHTML = `
+    <div style="display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap;">
+      <div>
+        <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:6px;">구간별 실적 (재촬영일 기준 분할)</div>
+        <table class="seg-table"><thead><tr><th>구간</th><th>시작</th><th>유효방송</th><th>취급고</th><th>분당취급고</th><th>직전 구간 대비</th></tr></thead><tbody>${segRows}</tbody></table>
+        <div style="font-size:10px;color:var(--text3);margin-top:6px;">편성월 ${p.months.map(m=>m+'월').join(',')} · 분당취급고는 구간 내 전체 방송 기준</div>
+      </div>
+      <div style="flex:1;min-width:380px;">
+        <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:6px;">방송별 분당취급고 추이 (유효방송 · 점선 = 재촬영)</div>
+        <div style="position:relative;height:190px;"><canvas id="cv-${key}"></canvas></div>
+      </div>
+    </div>`;
+  const redoIdx = [];
+  p.pts.forEach((x,i)=>{ if(i>0 && x.seg !== p.pts[i-1].seg) redoIdx.push(i); });
+  const vlines = { id:'vlines', afterDatasetsDraw(c){ const {ctx, chartArea:a, scales:{x}} = c; ctx.save(); ctx.setLineDash([4,4]); ctx.strokeStyle='#2563EB'; ctx.lineWidth=1;
+    redoIdx.forEach(i=>{ const px = (x.getPixelForValue(i-1)+x.getPixelForValue(i))/2; ctx.beginPath(); ctx.moveTo(px,a.top); ctx.lineTo(px,a.bottom); ctx.stroke(); }); ctx.restore(); } };
+  TREND_CHARTS[key] = new Chart(document.getElementById('cv-'+key), {
+    type:'line',
+    data:{ labels:p.pts.map(x=>md(x.d)), datasets:[{ data:p.pts.map(x=>x.pm), borderColor:'#9AA8C4', borderWidth:1.5, tension:0.25,
+      pointRadius:4, pointBackgroundColor:p.pts.map(x=>SEG_COLORS[x.seg%5]), pointBorderColor:p.pts.map(x=>SEG_COLORS[x.seg%5]),
+      segment:{ borderColor: c => SEG_COLORS[p.pts[c.p1DataIndex].seg % 5] } }] },
+    options:{ responsive:true, maintainAspectRatio:false, plugins:{ legend:{display:false},
+      tooltip:{ callbacks:{ label: c => `${c.parsed.y.toFixed(1)}만/분 · ${p.segs[p.pts[c.dataIndex].seg].label} · 가중분 ${p.pts[c.dataIndex].w}분` } } },
+      scales:{ y:{ title:{display:true,text:'분당취급고(만)',font:{size:10}}, ticks:{font:{size:10}} }, x:{ ticks:{font:{size:9},maxRotation:0,autoSkip:true,maxTicksLimit:12} } } },
+    plugins:[vlines]
+  });
 }
 
 function renderRedo(){

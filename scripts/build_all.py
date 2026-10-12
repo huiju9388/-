@@ -412,20 +412,64 @@ def build_newproduct(f, cols, shin_products):
                         "gy_s": round(gy_s/1e8,2), "gy_cnt": int(gy_cnt),
                         "gy_pct": round(100-shin_pct-redo_pct,1)})
 
+    # 성공 신상품 판정 (2026-10 확정): 런칭(첫 '신상품' 태그 방송) 포함 유효방송 3회 이상.
+    #   유효방송 = 가중분 MIN_W(5분) 이상 — build_shin_settle(개요 정착률)과 같은 기준이라 두 페이지 수치가 일치한다.
+    #   3회 미만이면서 런칭 후 MATURE_MONTHS(2개월)가 안 지난 상품은 '관찰중'으로 분리(아직 3회를 채울 시간이 없었음).
+    # 재촬영 횟수: 재녹화/재편집 태그는 새로 찍은 영상의 '첫 방송' 1건에만 붙으므로, 런칭 이후 태그 방송 수 = 재촬영 횟수.
+    MIN_W, MATURE_MONTHS = 5.0, 2
+    maxdt = f['dt'].max()
+    mature_cut = maxdt - pd.DateOffset(months=MATURE_MONTHS)
+
+    def seg_stat(sub):
+        s, w, mg = sub[cols['SALES']].sum(), sub[cols['WMIN']].sum(), sub[cols['MARGIN']].sum()
+        return {"cnt": int((sub[cols['WMIN']] >= MIN_W).sum()), "s": round(s/1e8, 3),
+                "w": round(w, 1), "pm": pm(s, w) if w >= MIN_W else None,
+                "pmm": pm(mg, w) if w >= MIN_W else None}
+
     SHIN_DATA = []
     for prod in launch.index:
-        psub = f[(f[cols['BRAND']] == prod) & f['_shin']]
+        psub = f[(f[cols['BRAND']] == prod) & f['_shin']].sort_values('dt')
         w, s, mg = psub[cols['WMIN']].sum(), psub[cols['SALES']].sum(), psub[cols['MARGIN']].sum()
         cat = psub[cols['CAT']].mode().iloc[0] if not psub[cols['CAT']].mode().empty else ''
         tagged = psub[psub[cols['SHIN']] == '신상품']
         md = tagged[cols['MD']].iloc[0] if len(tagged) else psub[cols['MD']].mode().iloc[0]
         months = sorted(psub['MONI'].unique().tolist())
         mr = round(mg/s*100, 1) if s else 0.0
-        SHIN_DATA.append({"name": prod, "cat": cat, "md": md, "launch": str(launch[prod].date()),
-                          "cnt": int(len(psub)), "w": round(w,1),
+        ld = launch[prod]
+        valid_cnt = int((psub[cols['WMIN']] >= MIN_W).sum())
+        if valid_cnt >= 3:
+            status = 'success'
+        elif ld <= mature_cut:
+            status = 'fail'
+        else:
+            status = 'pending'
+
+        # 재촬영 이력 + 구간별 실적(런칭 구간 → 재촬영1 구간 → 재촬영2 구간 ...)
+        redo_rows = psub[psub[cols['SHIN']].isin(REDO_TAGS)]
+        redos = [{"d": str(r['dt'].date()), "tag": r[cols['SHIN']]} for _, r in redo_rows.iterrows()]
+        cuts = [ld] + [r['dt'] for _, r in redo_rows.iterrows()] + [maxdt + pd.Timedelta(days=1)]
+        segs = []
+        for i in range(len(cuts) - 1):
+            sub = psub[(psub['dt'] >= cuts[i]) & (psub['dt'] < cuts[i + 1])]
+            st = seg_stat(sub)
+            st.update({"label": "런칭" if i == 0 else f"재촬영{i}",
+                       "from": str(cuts[i].date()), "tag": "신상품" if i == 0 else redos[i - 1]['tag']})
+            segs.append(st)
+        # 방송별 분당취급고(유효방송만) — 재촬영 전후 추이 차트용
+        pts = [{"d": str(r['dt'].date()), "pm": pm(r[cols['SALES']], r[cols['WMIN']]), "w": round(float(r[cols['WMIN']]), 1),
+                "seg": int(sum(1 for x in redo_rows['dt'] if x <= r['dt']))}
+               for _, r in psub.iterrows() if r[cols['WMIN']] >= MIN_W]
+
+        SHIN_DATA.append({"name": prod, "cat": cat, "md": md, "launch": str(ld.date()),
+                          "launchMonth": str(int(ld.month)),
+                          "cnt": int(len(psub)), "validCnt": valid_cnt, "status": status, "w": round(w,1),
                           "s": round(s/1e8,3), "pm": pm(s,w), "m": round(mg/1e8,3), "pmm": pm(mg,w),
-                          "mr": mr, "months": [str(x) for x in months]})
+                          "mr": mr, "months": [str(x) for x in months],
+                          "redoCnt": len(redos), "redos": redos, "segs": segs, "pts": pts})
     SHIN_DATA.sort(key=lambda x: (-x['s'], x['name']))
+    SHIN_RULE = {"minW": MIN_W, "matureMonths": MATURE_MONTHS, "asOf": str(maxdt.date()),
+                 "text": f"성공 = 런칭 포함 유효방송(가중분 {MIN_W:.0f}분 이상) 3회 이상 · "
+                         f"3회 미만이라도 런칭 후 {MATURE_MONTHS}개월이 안 지났으면 '관찰중'"}
 
     # 재촬영 상품별: 재녹화/재편집 태그 방송 실적 + 첫 재촬영일 전/후 분당취급고 비교
     REDO_DATA = []
@@ -455,7 +499,8 @@ def build_newproduct(f, cols, shin_products):
         if with_prod: d["prod_cnt"] = int(sub[cols['BRAND']].nunique())
         return d
     SUMMARY = {"shin": card(f[f['_shin']]), "redo": card(f[f['_redo']]),
-               "gy": card(f[~f['_shin'] & ~f['_redo']], with_prod=False)}
+               "gy": card(f[~f['_shin'] & ~f['_redo']], with_prod=False),
+               "shinRule": SHIN_RULE}
     return MD_DATA, SHIN_DATA, REDO_DATA, SUMMARY
 
 
