@@ -370,6 +370,158 @@
     <div id="kpi-card-margin" class="kpi-card green"></div>
   </div>
 </div>
+<!-- 한계이익 목표 달성 편성 시뮬레이션 -->
+<div class="section" id="simSection">
+  <div class="section-title">한계이익 목표 달성 편성 시뮬레이션 — 현재 효율 기준</div>
+  <div id="sim-basis" style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin:-6px 0 12px;"></div>
+  <div class="chart-wrap" style="padding:16px 18px;">
+    <div style="display:flex;flex-wrap:wrap;gap:22px;align-items:flex-end;margin-bottom:14px;">
+      <div>
+        <div style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-bottom:6px;"><span id="sim-cur-label">10월</span> 최종 편성비중</div>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <input type="range" id="sim-cur" min="8" max="25" step="0.1" style="width:180px;accent-color:#2563EB;">
+          <input type="number" id="sim-cur-num" min="0" max="40" step="0.1" style="width:64px;padding:4px 6px;border:1px solid var(--border2);border-radius:6px;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;">%
+        </div>
+        <div id="sim-presets" style="display:flex;gap:5px;margin-top:8px;flex-wrap:wrap;"></div>
+      </div>
+      <div>
+        <div style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-bottom:6px;">분당 한계이익 (가정)</div>
+        <div style="display:flex;align-items:center;gap:6px;">
+          <input type="number" id="sim-eff" min="20" max="80" step="0.1" style="width:72px;padding:4px 6px;border:1px solid var(--border2);border-radius:6px;font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:700;">만/분
+          <button class="sim-chip" id="sim-eff-reset" style="margin-left:4px;">현재 효율로</button>
+        </div>
+        <div id="sim-eff-note" style="font-size:9.5px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:8px;"></div>
+      </div>
+    </div>
+    <div id="sim-cards" style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px;"></div>
+    <div style="display:grid;grid-template-columns:1fr 1.15fr;gap:16px;align-items:start;">
+      <div>
+        <table class="sim-table" id="sim-table"></table>
+        <div id="sim-sens" style="margin-top:10px;font-size:10.5px;color:var(--text2);"></div>
+      </div>
+      <div>
+        <div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:6px;">월별 편성비중 — 실적 · 시뮬레이션 · 경영계획 · 작년</div>
+        <div style="position:relative;height:230px;"><canvas id="simChart"></canvas></div>
+      </div>
+    </div>
+    <div id="sim-foot" style="font-size:9.5px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-top:10px;line-height:1.6;"></div>
+  </div>
+</div>
+<style>
+  .sim-chip{font-size:10px;font-family:'IBM Plex Mono',monospace;padding:3px 9px;border-radius:12px;border:1px solid var(--border2);background:var(--bg3);color:var(--text2);cursor:pointer;}
+  .sim-chip.on{background:var(--blue-bg,rgba(37,99,235,0.1));color:#2563EB;border-color:rgba(37,99,235,0.45);font-weight:700;}
+  .sim-card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:11px 13px;}
+  .sim-card .l{font-size:9.5px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin-bottom:3px;}
+  .sim-card .v{font-size:21px;font-weight:700;letter-spacing:-0.5px;font-family:'IBM Plex Mono',monospace;}
+  .sim-card .s{font-size:10px;color:var(--text3);margin-top:2px;}
+  .sim-table{width:100%;border-collapse:collapse;font-size:11.5px;}
+  .sim-table th{font-size:9.5px;color:var(--text3);text-align:right;padding:6px 8px;border-bottom:1px solid var(--border2);font-family:'IBM Plex Mono',monospace;font-weight:600;}
+  .sim-table th:first-child,.sim-table td:first-child{text-align:left;}
+  .sim-table td{padding:7px 8px;border-bottom:1px solid var(--border);text-align:right;font-family:'IBM Plex Mono',monospace;}
+  @media(max-width:900px){ #sim-cards{grid-template-columns:repeat(2,1fr)!important;} #simSection .chart-wrap > div:nth-child(3){grid-template-columns:1fr!important;} }
+</style>
+<script>
+(function(){
+  // 작년(2025) 월별 편성비중 — 관리손익(경영기획팀 결산) 기준
+  var LY_SHARE = {1:18.9,2:16.2,3:13.3,4:11.7,5:15.4,6:14.9,7:14.6,8:16.5,9:16.5,10:15.1,11:10.9,12:10.9};
+  var num = function(v){ return parseFloat(String(v==null?'':v).replace(/,/g,'')) || 0; };
+  var r1 = function(n){ return (Math.round(n*10+1e-9)/10).toFixed(1); };  // 부동소수 오차 없이 소수 1자리 반올림
+  var fmt = function(n,d){ return n.toLocaleString(undefined,{minimumFractionDigits:d||0,maximumFractionDigits:d||0}); };
+  fetch('data/dashboard-data.json').then(function(r){return r.json();}).then(function(d){
+    var R = d.realizedMonthData||{}, P = d.planMonthData||{}, M = d.monthData||{}, WT = (d.weightTargets||{}).monthly||{}, cp = d.currentMonthProgress;
+    if(!cp || !WT[cp.month]) return;
+    var curM = cp.month;
+    var rMonths = Object.keys(R).map(Number).sort(function(a,b){return a-b;});
+    var target = Object.keys(P).reduce(function(a,m){return a+num(P[m].total.margin);},0);
+    var realized = rMonths.reduce(function(a,m){return a+num(R[m].total.margin);},0);
+    var need = target - realized;                                   // 억
+    // 현재 효율 = 최근 확정 2개월 실현 한계이익 ÷ 가중분
+    var eM = rMonths.slice(-2), eS=0, eW=0;
+    // 가중분은 실현 실적 시트 값(R.total.weight) 우선, 없으면 PGM 가중분
+    eM.forEach(function(m){ eS += num(R[m].total.margin); eW += R[m].total.weight ? num(R[m].total.weight) : (M[m] ? num(M[m].total.weight) : 0); });
+    var baseEff = eW ? eS*1e4/eW : 40;                              // 만/분
+    var usedW = M[curM] ? num(M[curM].total.weight) : 0;            // 진행월 사용 가중분
+    var elapsedMin = cp.daysElapsed*1440, curTotal = WT[curM].company;
+    var pace = elapsedMin ? usedW/elapsedMin*100 : 0;
+    var futM = []; for(var m=curM+1;m<=12;m++) futM.push(m);
+    var futTotal = futM.reduce(function(a,m){return a+WT[m].company;},0);
+    var planShare = function(m){ return WT[m] ? WT[m].team/WT[m].company*100 : null; };
+    var actShare = function(m){ return (M[m] && WT[m]) ? num(M[m].total.weight)/WT[m].company*100 : null; };
+
+    document.getElementById('sim-cur-label').textContent = curM + '월';
+    document.getElementById('sim-basis').textContent =
+      '연간 한계이익 목표 '+r1(target)+'억 − 1~'+rMonths[rMonths.length-1]+'월 실현 '+r1(realized)+'억 = 남은 목표 '+r1(need)+'억 · '+
+      curM+'월은 '+curM+'/'+cp.daysElapsed+'까지 '+fmt(usedW)+'분 사용(비중 '+pace.toFixed(1)+'%)';
+    document.getElementById('sim-eff-note').textContent = eM.join('·')+'월 실현 한계이익 ÷ 가중분 = '+baseEff.toFixed(1)+'만/분';
+
+    var presets = [[pace,'현재 속도'],[actShare(curM-1),(curM-1)+'월 수준'],[15,'15%'],[planShare(curM),'경영계획']];
+    var cur = document.getElementById('sim-cur'), curN = document.getElementById('sim-cur-num'), eff = document.getElementById('sim-eff');
+    cur.value = curN.value = (15).toFixed(1); eff.value = baseEff.toFixed(1);
+    function drawPresets(){
+      document.getElementById('sim-presets').innerHTML = presets.map(function(p,i){
+        var on = Math.abs(num(cur.value)-p[0])<0.05;
+        return '<button class="sim-chip'+(on?' on':'')+'" data-i="'+i+'">'+p[1]+' '+p[0].toFixed(1)+'%</button>'; }).join('');
+      Array.prototype.forEach.call(document.querySelectorAll('#sim-presets .sim-chip'), function(b){
+        b.onclick = function(){ var v = presets[+b.dataset.i][0]; cur.value = curN.value = v.toFixed(1); run(); }; });
+    }
+    var chart = null;
+    function req(e, curShare){
+      var needMin = need*1e4/e, curMin = curTotal*curShare/100;
+      return {needMin:needMin, curMin:curMin, futShare:(needMin-curMin)/futTotal*100};
+    }
+    function run(){
+      drawPresets();
+      // 입력칸이 현재 효율(반올림 표시값)과 같으면 반올림 전 원값으로 계산
+      var s = num(cur.value), e = (eff.value === baseEff.toFixed(1)) ? baseEff : (num(eff.value) || baseEff);
+      var r = req(e, s), restMin = r.curMin - usedW, restDays = (new Date(2026,curM,0).getDate()) - cp.daysElapsed;
+      var restShare = restDays>0 ? restMin/(restDays*1440)*100 : 0;
+      var fs = r.futShare, ok = fs <= 100;
+      var lyAvg = futM.reduce(function(a,m){return a+LY_SHARE[m];},0)/futM.length;
+      var plAvg = futM.reduce(function(a,m){return a+planShare(m);},0)/futM.length;
+      var col = fs <= plAvg ? '#0A8558' : fs <= lyAvg ? '#C97A10' : '#D63A52';
+      document.getElementById('sim-cards').innerHTML =
+        '<div class="sim-card"><div class="l">남은 한계이익 목표</div><div class="v">'+r1(need)+'억</div><div class="s">월 '+r1(need/(futM.length+1))+'억 · '+curM+'~12월</div></div>'+
+        '<div class="sim-card"><div class="l">'+curM+'~12월 필요 편성</div><div class="v">'+fmt(r.needMin)+'분</div><div class="s">기간 평균 비중 '+(r.needMin/(curTotal+futTotal)*100).toFixed(1)+'%</div></div>'+
+        '<div class="sim-card" style="border-color:'+col+'55;"><div class="l">'+futM[0]+'~12월 필요 비중 (월)</div><div class="v" style="color:'+col+';">'+fs.toFixed(1)+'%</div><div class="s">경영계획 '+plAvg.toFixed(1)+'% · 작년 '+lyAvg.toFixed(1)+'%</div></div>'+
+        '<div class="sim-card"><div class="l">'+curM+'월 남은 '+restDays+'일 필요 비중</div><div class="v">'+(restMin<0?'—':restShare.toFixed(1)+'%')+'</div><div class="s">'+(restMin<0?'이미 '+fmt(-restMin)+'분 초과 사용':fmt(restMin)+'분 (현재 속도 '+pace.toFixed(1)+'%)')+'</div></div>';
+      var rows = [[curM, s, r.curMin]].concat(futM.map(function(m){ return [m, fs, WT[m].company*fs/100]; }));
+      document.getElementById('sim-table').innerHTML =
+        '<thead><tr><th>월</th><th>편성비중</th><th>편성</th><th>한계이익</th><th>경영계획</th><th>작년</th></tr></thead><tbody>'+
+        rows.map(function(x){ return '<tr><td><b>'+x[0]+'월</b></td><td style="font-weight:700;color:'+(x[0]===curM?'#2563EB':col)+';">'+x[1].toFixed(1)+'%</td><td>'+fmt(x[2])+'분</td><td>'+r1(x[2]*e/1e4)+'억</td><td style="color:var(--text3);">'+planShare(x[0]).toFixed(1)+'%</td><td style="color:var(--text3);">'+LY_SHARE[x[0]].toFixed(1)+'%</td></tr>'; }).join('')+
+        '<tr style="font-weight:700;"><td>합계</td><td></td><td>'+fmt(r.needMin)+'분</td><td>'+r1(need)+'억</td><td></td><td></td></tr></tbody>';
+      var sens = [e-2, e, e+2].map(function(x){ return '분당 '+x.toFixed(1)+'만 → <b>'+req(x,s).futShare.toFixed(1)+'%</b>'; });
+      document.getElementById('sim-sens').innerHTML = '효율 민감도 ('+futM[0]+'~12월 필요 비중): ' + sens.join(' · ');
+      // 차트
+      var labels=[], act=[], sim=[], plan=[], ly=[];
+      for(var m=1;m<=12;m++){
+        labels.push(m+'월');
+        act.push(m<curM ? +actShare(m).toFixed(1) : (m===curM ? +pace.toFixed(1) : null));
+        sim.push(m===curM ? +s.toFixed(1) : (m>curM ? +fs.toFixed(1) : null));
+        plan.push(+planShare(m).toFixed(1)); ly.push(LY_SHARE[m]);
+      }
+      var data = { labels:labels, datasets:[
+        {type:'bar', label:'실적(진행월은 현재 속도)', data:act, backgroundColor:'rgba(138,151,176,0.55)', borderRadius:3, maxBarThickness:22},
+        {type:'bar', label:'시뮬레이션 필요 비중', data:sim, backgroundColor:labels.map(function(_,i){ return i+1===curM ? 'rgba(37,99,235,0.75)' : col; }), borderRadius:3, maxBarThickness:22},
+        {type:'line', label:'경영계획', data:plan, borderColor:'#C97A10', borderDash:[5,4], borderWidth:1.5, pointRadius:0, tension:0},
+        {type:'line', label:'작년', data:ly, borderColor:'#6D3FC8', borderWidth:1.5, pointRadius:2, tension:0.2}
+      ]};
+      if(chart){ chart.data = data; chart.update(); return; }
+      chart = new Chart(document.getElementById('simChart'), { data:data, options:{ responsive:true, maintainAspectRatio:false,
+        plugins:{ legend:{ position:'bottom', labels:{ boxWidth:10, font:{size:10} } }, tooltip:{ callbacks:{ label:function(c){ return c.dataset.label+': '+c.parsed.y+'%'; } } } },
+        scales:{ y:{ beginAtZero:true, ticks:{ callback:function(v){return v+'%';}, font:{size:10} } }, x:{ ticks:{font:{size:10}} } } } });
+    }
+    cur.oninput = function(){ curN.value = num(cur.value).toFixed(1); run(); };
+    curN.oninput = function(){ cur.value = curN.value; run(); };
+    eff.oninput = run;
+    document.getElementById('sim-eff-reset').onclick = function(){ eff.value = baseEff.toFixed(1); run(); };
+    document.getElementById('sim-foot').innerHTML =
+      '※ 편성비중 = 가전팀 가중분 ÷ 전사 방송시간(일수×1,440분) · 남은 목표 = 26년 경영계획 연간 한계이익 − 실현실적(배송완료 확정), 시트 원값(백만원) 기준 · 현재 효율 = 실현 실적 시트의 한계이익 ÷ 가중분 · '+
+      '효율은 편성을 늘려도 동일하다고 가정(편성 확대 시 효율이 낮아질 수 있음) · '+futM[0]+'~12월은 같은 비중으로 균등 배분 · 작년 비중은 2025 관리손익 기준';
+    run();
+  }).catch(function(e){ console.error('sim error', e); });
+})();
+</script>
+
 <!-- 협력사 편성 집중도 -->
 <div class="section">
   <div class="section-title">협력사 편성 집중도 — 1~10월(~10/11) 누적 · 가중분 기준</div>
@@ -637,6 +789,7 @@
 
       // ---- 목표(26년 경영계획) ----
       var target = d.kpiTarget || {sales:1235, revenue:403, margin:323, grossProfit:403};
+      var k1 = function(n){ return (Math.round(n*10 + (n>=0?1e-9:-1e-9))/10).toFixed(1); };  // 부동소수 오차 없는 소수 1자리 반올림
       var lastM = months[months.length-1];
       var completed = months.filter(function(m){ return m !== lastM; });
       if (completed.length === 0) completed = months; // 데이터가 1개월뿐일 때 대비
@@ -710,11 +863,11 @@
         var diffLabel = diff >= 0 ? ('부족 ' + diff.toFixed(0) + '억') : ('초과 ' + Math.abs(diff).toFixed(0) + '억');
         return {
           html: '<div class="kpi-name">' + label + '</div>' +
-            '<div class="kpi-row"><div class="kpi-actual">' + actual.toFixed(1) + '억</div><div class="kpi-pct">' + pct.toFixed(1) + '%</div></div>' +
+            '<div class="kpi-row"><div class="kpi-actual">' + k1(actual) + '억</div><div class="kpi-pct">' + pct.toFixed(1) + '%</div></div>' +
             '<div class="prog-track"><div class="prog-fill" style="width:' + Math.min(pct,100).toFixed(1) + '%"></div></div>' +
-            '<div class="kpi-target" style="margin-bottom:10px;">' + periodLabel + ' 계획 ' + periodTarget.toFixed(1) + '억 · 연간계획 ' + targetVal.toLocaleString() + '억 · 연말 추정 ' + yearEnd.toFixed(0) + '억(목표 편성비중 반영) · ' + diffLabel + '</div>' +
+            '<div class="kpi-target" style="margin-bottom:10px;">' + periodLabel + ' 계획 ' + k1(periodTarget) + '억 · 연간계획 ' + (targetVal % 1 ? k1(targetVal) : targetVal.toLocaleString()) + '억 · 연말 추정 ' + yearEnd.toFixed(0) + '억(목표 편성비중 반영) · ' + diffLabel + '</div>' +
             '<div class="need-row"><span class="need-label">월 필요 ' + label.replace(' (VAT포함)','').replace(' (V-)','') + '</span>' +
-            '<span class="need-val">' + needMonthly.toFixed(1) + '억 <span style="color:#8A97B0;font-size:10px;">/ 현재 월평균 ' + avgMonthly.toFixed(1) + '억</span></span></div>',
+            '<span class="need-val">' + k1(needMonthly) + '억 <span style="color:#8A97B0;font-size:10px;">/ 현재 월평균 ' + k1(avgMonthly) + '억</span></span></div>',
           needMonthly: needMonthly
         };
       }
