@@ -3627,6 +3627,15 @@
     "grossProfit": "36.6억",
     "margin": "31.6억"
    }
+  },
+  "9": {
+   "label": "9월",
+   "total": {
+    "sales": "106.1억",
+    "revenue": "38.3억",
+    "grossProfit": "38.3억",
+    "margin": "32.4억"
+   }
   }
  },
  "planMonthData": {
@@ -3740,8 +3749,8 @@
   }
  },
  "currentMonthProgress": {
-  "month": 9,
-  "daysElapsed": 30,
-  "daysInMonth": 30
+  "month": 10,
+  "daysElapsed": 11,
+  "daysInMonth": 31
  }
 }
