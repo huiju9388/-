@@ -351,16 +351,16 @@
 <div class="main-wrap" style="padding:28px 24px 60px;"><div class="header" style="margin-bottom:28px;">
   <div>
     <h1>월별 실적 상세</h1>
-    <div class="sub">SK스토아 가전팀 · 2026년 1~10월(~10/11) 누적 · VAT포함</div>
+    <div class="sub">SK스토아 가전팀 · 2026년 1~10월(~10/18) 누적 · VAT포함</div>
   </div>
   <div class="header-right">
     <span class="tag vat">VAT INCLUDED</span>
-    <span class="tag">1~10월(~10/11)</span>
+    <span class="tag">1~10월(~10/18)</span>
   </div>
 </div>
 <!-- 월 누적 실적 -->
 <div class="section">
-  <div class="section-title">월별 누적 실적 상세 (VAT포함 · 10월은 10/11까지 진행중)</div>
+  <div class="section-title">월별 누적 실적 상세 (VAT포함 · 10월은 10/18까지 진행중)</div>
   <div style="display:flex;gap:6px;margin-bottom:14px;">
     <button onclick="showMonth('all')" id="tab-all" class="tab-btn active-tab">전체</button>
     <button onclick="showMonth('1')" id="tab-1" class="tab-btn">1월</button>
@@ -390,7 +390,7 @@
 <div class="divider"></div><div class="footer">SK스토아 가전팀 · 구글시트 PGM 실적 기준 · VAT포함 · 월 컬럼 기준 집계</div>
 </div><!-- /main-wrap --><script>
 var MONTH_CLOSED = false;  // 해당 월 마감 여부(월말 데이터 반영 시 true)
-var CUR_MONTH_DAYS = {elapsed:11, total:31}; // 진행중월 경과일수 — 편성비중·팀목표비중 목표분을 경과일 비례로 환산(MONTH_CLOSED=false일 때만)
+var CUR_MONTH_DAYS = {elapsed:18, total:31}; // 진행중월 경과일수 — 편성비중·팀목표비중 목표분을 경과일 비례로 환산(MONTH_CLOSED=false일 때만)
 var monthData = {};
 var weightTargets = null;
 fetch('data/dashboard-data.json', {cache:'no-store'}).then(r=>r.json()).then(d=>{
