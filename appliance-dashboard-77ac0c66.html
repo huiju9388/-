@@ -356,7 +356,7 @@
   </div>
   <div class="header-right">
     <span class="tag vat">VAT INCLUDED</span>
-    <span class="tag">1~10월(~10/25)</span>
+    <span class="tag">1~11월(~11/1)</span>
   </div>
 </div>
 <!-- KPI 섹션 -->
@@ -429,17 +429,23 @@
   var fmt = function(n,d){ return n.toLocaleString(undefined,{minimumFractionDigits:d||0,maximumFractionDigits:d||0}); };
   fetch('data/dashboard-data.json').then(function(r){return r.json();}).then(function(d){
     var R = d.realizedMonthData||{}, P = d.planMonthData||{}, M = d.monthData||{}, WT = (d.weightTargets||{}).monthly||{}, cp = d.currentMonthProgress;
+    // 진행월이 마감(경과일=월일수)되고 다음 달 진행 정보가 있으면 다음 달을 시뮬레이션 기준월로 사용
+    if(cp && cp.next && cp.daysElapsed >= cp.daysInMonth) cp = cp.next;
     if(!cp || !WT[cp.month]) return;
     var curM = cp.month;
     var rMonths = Object.keys(R).map(Number).sort(function(a,b){return a-b;});
     var target = Object.keys(P).reduce(function(a,m){return a+num(P[m].total.margin);},0);
     var realized = rMonths.reduce(function(a,m){return a+num(R[m].total.margin);},0);
-    var need = target - realized;                                   // 억
+    var need0 = target - realized;                                  // 억 (실현실적 기준 남은 목표)
     // 현재 효율 = 최근 확정 2개월 실현 한계이익 ÷ 가중분
     var eM = rMonths.slice(-2), eS=0, eW=0;
     // 가중분은 실현 실적 시트 값(R.total.weight) 우선, 없으면 PGM 가중분
     eM.forEach(function(m){ eS += num(R[m].total.margin); eW += R[m].total.weight ? num(R[m].total.weight) : (M[m] ? num(M[m].total.weight) : 0); });
     var baseEff = eW ? eS*1e4/eW : 40;                              // 만/분
+    // 실현실적 미반영 마감월(예: 10월) — PGM 실제 가중분 × 현재 효율로 기여분 반영
+    var gapM = []; for(var g=rMonths[rMonths.length-1]+1; g<curM; g++) gapM.push(g);
+    var gapW = gapM.reduce(function(a,m){ return a + (M[m] ? num(M[m].total.weight) : 0); }, 0);
+    var need = need0 - gapW*baseEff/1e4;
     var usedW = M[curM] ? num(M[curM].total.weight) : 0;            // 진행월 사용 가중분
     var elapsedMin = cp.daysElapsed*1440, curTotal = WT[curM].company;
     var pace = elapsedMin ? usedW/elapsedMin*100 : 0;
@@ -450,13 +456,17 @@
 
     document.getElementById('sim-cur-label').textContent = curM + '월';
     document.getElementById('sim-basis').textContent =
-      '연간 한계이익 목표 '+r1(target)+'억 − 1~'+rMonths[rMonths.length-1]+'월 실현 '+r1(realized)+'억 = 남은 목표 '+r1(need)+'억 · '+
+      '연간 한계이익 목표 '+r1(target)+'억 − 1~'+rMonths[rMonths.length-1]+'월 실현 '+r1(realized)+'억'+
+      (gapM.length ? ' − '+gapM.join('·')+'월 추정 '+r1(gapW*baseEff/1e4)+'억('+fmt(gapW)+'분 × 현재 효율, 비중 '+gapM.map(function(m){return actShare(m).toFixed(1)+'%';}).join('·')+')' : '')+
+      ' = 남은 목표 '+r1(need)+'억 · '+
       curM+'월은 '+curM+'/'+cp.daysElapsed+'까지 '+fmt(usedW)+'분 사용(비중 '+pace.toFixed(1)+'%)';
     document.getElementById('sim-eff-note').textContent = eM.join('·')+'월 실현 한계이익 ÷ 가중분 = '+baseEff.toFixed(1)+'만/분';
 
-    var presets = [[pace,'현재 속도'],[actShare(curM-1),(curM-1)+'월 수준'],[15,'15%'],[planShare(curM),'경영계획']];
+    var futLabel = futM.length>1 ? futM[0]+'~12월' : futM[0]+'월';
+    var evenShare = (need0*1e4/baseEff - gapW)/(curTotal+futTotal)*100;   // 진행월~12월 같은 비중
+    var presets = [[evenShare,'균등 배분'],[pace,'현재 속도'],[actShare(curM-1),(curM-1)+'월 수준'],[15,'15%'],[planShare(curM),'경영계획']];
     var cur = document.getElementById('sim-cur'), curN = document.getElementById('sim-cur-num'), eff = document.getElementById('sim-eff');
-    cur.value = curN.value = (15).toFixed(1); eff.value = baseEff.toFixed(1);
+    cur.value = curN.value = evenShare.toFixed(1); eff.value = baseEff.toFixed(1);
     function drawPresets(){
       document.getElementById('sim-presets').innerHTML = presets.map(function(p,i){
         var on = Math.abs(num(cur.value)-p[0])<0.05;
@@ -466,13 +476,14 @@
     }
     var chart = null;
     function req(e, curShare){
-      var needMin = need*1e4/e, curMin = curTotal*curShare/100;
+      var needMin = need0*1e4/e - gapW, curMin = curTotal*curShare/100;
       return {needMin:needMin, curMin:curMin, futShare:(needMin-curMin)/futTotal*100};
     }
     function run(){
       drawPresets();
       // 입력칸이 현재 효율(반올림 표시값)과 같으면 반올림 전 원값으로 계산
-      var s = num(cur.value), e = (eff.value === baseEff.toFixed(1)) ? baseEff : (num(eff.value) || baseEff);
+      var s = (curN.value === evenShare.toFixed(1)) ? evenShare : num(cur.value), e = (eff.value === baseEff.toFixed(1)) ? baseEff : (num(eff.value) || baseEff);
+      var needE = need0 - gapW*e/1e4;
       var r = req(e, s), restMin = r.curMin - usedW, restDays = (new Date(2026,curM,0).getDate()) - cp.daysElapsed;
       var restShare = restDays>0 ? restMin/(restDays*1440)*100 : 0;
       var fs = r.futShare, ok = fs <= 100;
@@ -480,17 +491,17 @@
       var plAvg = futM.reduce(function(a,m){return a+planShare(m);},0)/futM.length;
       var col = fs <= plAvg ? '#0A8558' : fs <= lyAvg ? '#C97A10' : '#D63A52';
       document.getElementById('sim-cards').innerHTML =
-        '<div class="sim-card"><div class="l">남은 한계이익 목표</div><div class="v">'+r1(need)+'억</div><div class="s">월 '+r1(need/(futM.length+1))+'억 · '+curM+'~12월</div></div>'+
+        '<div class="sim-card"><div class="l">남은 한계이익 목표</div><div class="v">'+r1(needE)+'억</div><div class="s">월 '+r1(needE/(futM.length+1))+'억 · '+curM+'~12월</div></div>'+
         '<div class="sim-card"><div class="l">'+curM+'~12월 필요 편성</div><div class="v">'+fmt(r.needMin)+'분</div><div class="s">기간 평균 비중 '+(r.needMin/(curTotal+futTotal)*100).toFixed(1)+'%</div></div>'+
-        '<div class="sim-card" style="border-color:'+col+'55;"><div class="l">'+futM[0]+'~12월 필요 비중 (월)</div><div class="v" style="color:'+col+';">'+fs.toFixed(1)+'%</div><div class="s">경영계획 '+plAvg.toFixed(1)+'% · 작년 '+lyAvg.toFixed(1)+'%</div></div>'+
+        '<div class="sim-card" style="border-color:'+col+'55;"><div class="l">'+futLabel+' 필요 비중'+(futM.length>1?' (월)':'')+'</div><div class="v" style="color:'+col+';">'+fs.toFixed(1)+'%</div><div class="s">경영계획 '+plAvg.toFixed(1)+'% · 작년 '+lyAvg.toFixed(1)+'%</div></div>'+
         '<div class="sim-card"><div class="l">'+curM+'월 남은 '+restDays+'일 필요 비중</div><div class="v">'+(restMin<0?'—':restShare.toFixed(1)+'%')+'</div><div class="s">'+(restMin<0?'이미 '+fmt(-restMin)+'분 초과 사용':fmt(restMin)+'분 (현재 속도 '+pace.toFixed(1)+'%)')+'</div></div>';
       var rows = [[curM, s, r.curMin]].concat(futM.map(function(m){ return [m, fs, WT[m].company*fs/100]; }));
       document.getElementById('sim-table').innerHTML =
         '<thead><tr><th>월</th><th>편성비중</th><th>편성</th><th>한계이익</th><th>경영계획</th><th>작년</th></tr></thead><tbody>'+
         rows.map(function(x){ return '<tr><td><b>'+x[0]+'월</b></td><td style="font-weight:700;color:'+(x[0]===curM?'#2563EB':col)+';">'+x[1].toFixed(1)+'%</td><td>'+fmt(x[2])+'분</td><td>'+r1(x[2]*e/1e4)+'억</td><td style="color:var(--text3);">'+planShare(x[0]).toFixed(1)+'%</td><td style="color:var(--text3);">'+LY_SHARE[x[0]].toFixed(1)+'%</td></tr>'; }).join('')+
-        '<tr style="font-weight:700;"><td>합계</td><td></td><td>'+fmt(r.needMin)+'분</td><td>'+r1(need)+'억</td><td></td><td></td></tr></tbody>';
+        '<tr style="font-weight:700;"><td>합계</td><td></td><td>'+fmt(r.needMin)+'분</td><td>'+r1(needE)+'억</td><td></td><td></td></tr></tbody>';
       var sens = [e-2, e, e+2].map(function(x){ return '분당 '+x.toFixed(1)+'만 → <b>'+req(x,s).futShare.toFixed(1)+'%</b>'; });
-      document.getElementById('sim-sens').innerHTML = '효율 민감도 ('+futM[0]+'~12월 필요 비중): ' + sens.join(' · ');
+      document.getElementById('sim-sens').innerHTML = '효율 민감도 ('+futLabel+' 필요 비중): ' + sens.join(' · ');
       // 차트
       var labels=[], act=[], sim=[], plan=[], ly=[];
       for(var m=1;m<=12;m++){
@@ -516,7 +527,7 @@
     document.getElementById('sim-eff-reset').onclick = function(){ eff.value = baseEff.toFixed(1); run(); };
     document.getElementById('sim-foot').innerHTML =
       '※ 편성비중 = 가전팀 가중분 ÷ 전사 방송시간(일수×1,440분) · 남은 목표 = 26년 경영계획 연간 한계이익 − 실현실적(배송완료 확정), 시트 원값(백만원) 기준 · 현재 효율 = 실현 실적 시트의 한계이익 ÷ 가중분 · '+
-      '효율은 편성을 늘려도 동일하다고 가정(편성 확대 시 효율이 낮아질 수 있음) · '+futM[0]+'~12월은 같은 비중으로 균등 배분 · 작년 비중은 2025 관리손익 기준';
+      '효율은 편성을 늘려도 동일하다고 가정(편성 확대 시 효율이 낮아질 수 있음) · '+futLabel+(futM.length>1?'은 같은 비중으로 균등 배분':'은 남은 필요분 전부 배정')+' · 진행월 실적은 PGM 가중분, 실현실적 미반영 마감월은 PGM 가중분 × 현재 효율로 추정 · 작년 비중은 2025 관리손익 기준';
     run();
   }).catch(function(e){ console.error('sim error', e); });
 })();
@@ -524,7 +535,7 @@
 
 <!-- 협력사 편성 집중도 -->
 <div class="section">
-  <div class="section-title">협력사 편성 집중도 — 1~10월(~10/25) 누적 · 가중분 기준</div>
+  <div class="section-title">협력사 편성 집중도 — 1~11월(~11/1) 누적 · 가중분 기준</div>
   <div id="vc-summary" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px;"></div>
   <div style="display:grid;grid-template-columns:1.35fr 1fr;gap:14px;">
     <div class="chart-wrap">
@@ -553,7 +564,7 @@
 
 <!-- 신상품 운영 3회 이상 비중 -->
 <div class="section">
-  <div class="section-title">신상품 운영 3회 이상 비중(정착률) — 1~10월(~10/25) 런칭 기준</div>
+  <div class="section-title">신상품 운영 3회 이상 비중(정착률) — 1~11월(~11/1) 런칭 기준</div>
   <div id="ss-rule" style="font-size:10px;color:var(--text3);font-family:'IBM Plex Mono',monospace;margin:-6px 0 12px;"></div>
   <div style="display:grid;grid-template-columns:1fr 1.6fr;gap:14px;">
     <div class="chart-wrap" id="ss-gauge"></div>
@@ -731,20 +742,21 @@
   <div id="weeklyCompareBody"><div style="color:var(--text3);font-size:12px;padding:12px 0;">주간 비교 데이터 로딩 중...</div></div>
   <div class="insight-grid" id="weeklyCompareInsights">
     <div class="insight good">
-      <div class="insight-title">✓ 개선된 점 (10월3주차 · 10/19~10/25, 직전주=10월2주차)</div>
+      <div class="insight-title">✓ 개선된 점 (10월4주차 · 10/26~11/1, 직전주=10월3주차)</div>
       <ul class="insight-body">
-        <li>분당한계이익 42.3→44.3만(+4.7%)으로 2주 연속 상승 — 한계이익 감소폭(-13.4%)이 취급고 감소폭(-18.8%)보다 작음</li>
-        <li>주방용품 편성 -2.9%에도 취급고 2.95→3.08억(+4.5%), 분당취급고 120.2→129.2만(+7.5%), 분당한계이익 46.2만으로 카테고리 최고</li>
-        <li>생활가전 분당한계이익 41.5→43.4만(+4.6%) — 취급고는 줄었지만 이익 효율 개선</li>
+        <li>4주 만에 편성 반등 1,263→1,521분(+20.5%) — 취급고 15.66→20.42억(+30.4%), 한계이익 5.60→7.28억(+30.1%)으로 편성 증가율보다 실적 증가율이 큼</li>
+        <li>분당취급고 124.1→134.2만(+8.1%), 분당한계이익 44.3→47.9만(+8.1%) — 분당한계이익 3주 연속 상승</li>
+        <li>생활가전 편성 612→1,021분(+66.8%)에도 분당취급고 117.8→133.0만(+12.9%), 분당한계이익 43.4→48.2만으로 효율 동반 개선 — 취급고 7.21→13.58억(+88.4%)</li>
+        <li>주방용품 분당취급고 129.2→143.3만(+10.9%), 분당한계이익 48.7만으로 카테고리 최고</li>
       </ul>
     </div>
     <div class="insight bad">
-      <div class="insight-title">✗ 부족한 점 / 주의 (10월3주차 · 10/19~10/25)</div>
+      <div class="insight-title">✗ 부족한 점 / 주의 (10월4주차 · 10/26~11/1)</div>
       <ul class="insight-body">
-        <li>팀 편성 3주 연속 감소(1,942→1,528→1,263분) — 취급고 15.66억(-18.8%), 한계이익 5.60억(-13.4%)으로 10월 주간 최저</li>
-        <li>생활가전 편성 822→612분(-25.6%)에 취급고 9.68→7.21억(-25.6%) — 분당취급고 117.8만으로 정체, 팀 평균(124.1만) 하회</li>
-        <li>대형가전 분당취급고 148.1→102.5만(-30.8%), 취급고 1.41→0.67억 — 소량이라 변동성 큼</li>
-        <li>10월 누적 편성비중 18.2%(~10/18)→16.6%(~10/25) — 이 속도로 마감하면 11~12월 월 12.2% 필요(개요 상단 시뮬레이션 참고)</li>
+        <li>생활가전 쏠림 심화 — 팀 편성 중 생활가전 67%(1,021분), 주방가전 347→273분(-21.4%)·주방용품 238→179분(-25.0%)으로 축소</li>
+        <li>주방가전 취급고 4.71→3.58억(-24.0%), 분당취급고 135.7→131.2만(-3.3%)으로 소폭 하락</li>
+        <li>대형가전 편성 65→15분, 분당한계이익 44.0→26.2만 — 소량이라 변동성 큼</li>
+        <li>10월 최종 편성비중 16.0%(7,125분) — 연간 한계이익 목표 달성에는 11·12월 월 12.5% 필요(경영계획 9.8~9.9%, 개요 상단 시뮬레이션 참고)</li>
       </ul>
     </div>
   </div>
@@ -752,7 +764,7 @@
 
 <div class="divider"></div>  <!-- 신상품 & 재촬영 실적 -->
   <div class="section">
-    <div class="section-title">신상품 · 재촬영 실적 (2026년 1~10월(~10/25) 누적 · VAT포함)</div>
+    <div class="section-title">신상품 · 재촬영 실적 (2026년 1~11월(~11/1) 누적 · VAT포함)</div>
 
     <!-- 요약 카드 3개 -->
     <div id="shin-summary-cards" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;"></div>
