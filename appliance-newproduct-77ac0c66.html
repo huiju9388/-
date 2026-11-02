@@ -306,6 +306,7 @@
       <span class="sort-label">정렬</span>
       <button onclick="setSort('s')"   id="sort-s"   class="sort-btn sort-active">취급고 ↓</button>
       <button onclick="setSort('pm')"  id="sort-pm"  class="sort-btn">분당취급고 ↓</button>
+      <button onclick="setSort('pmm')" id="sort-pmm" class="sort-btn">분당한계이익 ↓</button>
       <button onclick="setSort('mr')"  id="sort-mr"  class="sort-btn">이익률 ↓</button>
       <button onclick="setSort('cnt')" id="sort-cnt" class="sort-btn">방송횟수 ↓</button>
       <button onclick="setSort('redoCnt')" id="sort-redoCnt" class="sort-btn">재촬영 ↓</button>
@@ -326,6 +327,8 @@ let SHIN_RULE = null;
 const TREND_CHARTS = {};
 fetch('data/newproduct-data.json?v=' + Date.now()).then(r => r.json()).then(d => {
   MD_DATA = d.MD_DATA; SHIN_DATA = d.SHIN_DATA; REDO_DATA = d.REDO_DATA || [];
+  // 분당한계이익(만/분) = 한계이익 ÷ 가중분 — 데이터에 없으면 계산
+  [...SHIN_DATA, ...REDO_DATA].forEach(p => { if (p.pmm == null) p.pmm = p.w ? Math.round(p.m*1e5/p.w)/10 : null; });
   if (d.SUMMARY) { renderSummary(d.SUMMARY); SHIN_RULE = d.SUMMARY.shinRule || null; }
   renderMdRatio(); renderFilters(); render();
 }).catch(e => console.error(e));
@@ -435,7 +438,7 @@ function renderMdRatio(){
 
 function setSort(key){
   currentSort = key;
-  ['s','pm','mr','cnt','redoCnt'].forEach(k=>document.getElementById('sort-'+k).classList.remove('sort-active'));
+  ['s','pm','pmm','mr','cnt','redoCnt'].forEach(k=>document.getElementById('sort-'+k).classList.remove('sort-active'));
   document.getElementById('sort-'+key).classList.add('sort-active');
   render();
 }
@@ -460,7 +463,7 @@ function render(){
   document.getElementById('cnt-shin').textContent = cntTxt(filtered(SHIN_DATA));
   document.getElementById('cnt-redo').textContent = cntTxt(filtered(REDO_DATA));
   document.getElementById('tabNote').innerHTML = currentTab==='shin'
-    ? `※ 런칭월 필터는 <b>해당 월에 런칭(첫 신상품 태그 방송)한 상품만</b> 보여줍니다. 취급고·분당취급고·이익률은 런칭일 이후 라이프타임 누적입니다. ${SHIN_RULE ? SHIN_RULE.text + ' (' + SHIN_RULE.asOf.slice(5).replace('-','/') + ' 기준)' : ''} · 재촬영 횟수 = 런칭 후 재녹화·재편집 태그 방송 수(태그는 새 영상의 첫 방송에만 붙음)`
+    ? `※ 런칭월 필터는 <b>해당 월에 런칭(첫 신상품 태그 방송)한 상품만</b> 보여줍니다. 취급고·분당취급고·한계이익·분당한계이익·이익률은 런칭일 이후 라이프타임 누적입니다. ${SHIN_RULE ? SHIN_RULE.text + ' (' + SHIN_RULE.asOf.slice(5).replace('-','/') + ' 기준)' : ''} · 재촬영 횟수 = 런칭 후 재녹화·재편집 태그 방송 수(태그는 새 영상의 첫 방송에만 붙음)`
     : '※ 재녹화·재편집 태그가 붙은 방송만 집계한 실적입니다(2026년, 신상품 출신 포함). 편성월 필터는 해당 월에 편성된 상품을 보여줍니다. "재촬영 전→후 분당"은 첫 재촬영 방송일 기준 이전/이후 전체 방송의 분당취급고이며, 2026년 내 이전 방송이 없으면 — 로 표시합니다.';
   if(currentTab==='redo'){ document.getElementById('shinKpi').innerHTML=''; return renderRedo(); }
   const data = filtered(SHIN_DATA);
@@ -495,10 +498,11 @@ function render(){
       <td class="mono" style="font-weight:700;">${p.s.toFixed(3)}억</td>
       <td class="mono ${pmCls}">${p.pm.toFixed(1)}만</td>
       <td class="mono">${p.m.toFixed(3)}억</td>
+      <td class="mono ${pmmCls(p.pmm)}">${pmmTxt(p.pmm)}</td>
       <td class="mono ${mrCls}">${p.mr.toFixed(1)}%</td>
       <td>${p.redoCnt ? `<button class="trend-btn" onclick="toggleTrend('${key}', ${SHIN_DATA.indexOf(p)})" id="btn-${key}">추이 ▸</button>` : ''}</td>
     </tr>
-    <tr class="detail-row" id="row-${key}" style="display:none;"><td colspan="12"><div id="det-${key}"></div></td></tr>`;
+    <tr class="detail-row" id="row-${key}" style="display:none;"><td colspan="13"><div id="det-${key}"></div></td></tr>`;
   }).join('');
 
   document.getElementById('tableArea').innerHTML = `
@@ -506,7 +510,7 @@ function render(){
       <thead>
         <tr>
           <th>#</th><th>카테고리</th><th>상품명</th><th>MD</th><th>성공여부</th><th>재촬영</th><th>방송</th>
-          <th>취급고(라이프타임)</th><th>분당취급고</th><th>한계이익</th><th>이익률</th><th></th>
+          <th>취급고(라이프타임)</th><th>분당취급고</th><th>한계이익</th><th>분당한계이익</th><th>이익률</th><th></th>
         </tr>
       </thead>
       <tbody>${rows}</tbody>
@@ -514,6 +518,8 @@ function render(){
 }
 
 const md = d => d.slice(5).replace('-','/');
+const pmmTxt = v => v!=null ? v.toFixed(1)+'만' : '—';
+const pmmCls = v => v==null ? '' : v >= 45 ? 'good' : v < 35 ? 'bad' : '';
 function stBadge(st){
   if(st==='success') return '<span class="st-badge st-success">✓ 성공</span>';
   if(st==='fail')    return '<span class="st-badge st-fail">미달</span>';
@@ -571,13 +577,13 @@ function toggleTrend(key, idx){
     let d = '—';
     if(prev!=null && g.pm!=null){ const v=(g.pm/prev-1)*100; d = `<span style="color:${v>=0?'#0A8558':'#C42E45'};font-weight:700;">${v>=0?'+':''}${v.toFixed(1)}%</span>`; }
     return `<tr><td><span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${SEG_COLORS[i%5]};margin-right:6px;"></span><b style="font-family:'Noto Sans KR';">${g.label}</b> <span style="color:var(--text3);">${g.tag}</span></td>
-      <td>${md(g.from)}~</td><td>${g.cnt}회</td><td>${g.s.toFixed(3)}억</td><td style="font-weight:700;">${g.pm!=null?g.pm.toFixed(1)+'만':'—'}</td><td>${d}</td></tr>`;
+      <td>${md(g.from)}~</td><td>${g.cnt}회</td><td>${g.s.toFixed(3)}억</td><td style="font-weight:700;">${g.pm!=null?g.pm.toFixed(1)+'만':'—'}</td><td>${pmmTxt(g.pmm)}</td><td>${d}</td></tr>`;
   }).join('');
   document.getElementById('det-'+key).innerHTML = `
     <div style="display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap;">
       <div>
         <div style="font-size:11px;font-weight:700;color:var(--text2);margin-bottom:6px;">구간별 실적 (재촬영일 기준 분할)</div>
-        <table class="seg-table"><thead><tr><th>구간</th><th>시작</th><th>유효방송</th><th>취급고</th><th>분당취급고</th><th>직전 구간 대비</th></tr></thead><tbody>${segRows}</tbody></table>
+        <table class="seg-table"><thead><tr><th>구간</th><th>시작</th><th>유효방송</th><th>취급고</th><th>분당취급고</th><th>분당한계이익</th><th>직전 구간 대비</th></tr></thead><tbody>${segRows}</tbody></table>
         <div style="font-size:10px;color:var(--text3);margin-top:6px;">편성월 ${p.months.map(m=>m+'월').join(',')} · 분당취급고는 구간 내 전체 방송 기준</div>
       </div>
       <div style="flex:1;min-width:380px;">
@@ -630,6 +636,8 @@ function renderRedo(){
       <td class="mono" style="color:var(--text3);">${p.months.map(m=>m+'월').join(',')}</td>
       <td class="mono" style="font-weight:700;">${p.s.toFixed(3)}억</td>
       <td class="mono ${pmCls}">${p.pm.toFixed(1)}만</td>
+      <td class="mono">${p.m.toFixed(3)}억</td>
+      <td class="mono ${pmmCls(p.pmm)}">${pmmTxt(p.pmm)}</td>
       <td class="mono">${p.mr.toFixed(1)}%</td>
       <td class="mono" style="font-size:11px;">${ba}</td>
     </tr>`;
@@ -639,7 +647,7 @@ function renderRedo(){
       <thead>
         <tr>
           <th>#</th><th>카테고리</th><th>상품명</th><th>MD</th><th>재촬영 방송</th><th>편성월</th>
-          <th>취급고(재촬영분)</th><th>분당취급고</th><th>이익률</th><th>재촬영 전→후 분당</th>
+          <th>취급고(재촬영분)</th><th>분당취급고</th><th>한계이익</th><th>분당한계이익</th><th>이익률</th><th>재촬영 전→후 분당</th>
         </tr>
       </thead>
       <tbody>${rows}</tbody>
