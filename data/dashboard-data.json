@@ -3922,6 +3922,16 @@
     "margin": "32.35억",
     "weight": "8,040분"
    }
+  },
+  "10": {
+   "label": "10월",
+   "total": {
+    "sales": "87.7억",
+    "revenue": "34.0억",
+    "grossProfit": "34.0억",
+    "margin": "29.32억",
+    "weight": "7,094분"
+   }
   }
  },
  "planMonthData": {
