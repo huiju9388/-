@@ -762,7 +762,9 @@ def main():
             dfc['DATE'] = pd.to_datetime(dfc['DATE'], errors='coerce')
             dfc = dfc[dfc['DATE'] <= today]
             dfc['가중분'] = pd.to_numeric(dfc['가중분'], errors='coerce').fillna(0)
-            dfc['brand'] = dfc['당사브랜드'].fillna(dfc['브랜드'])
+            # 2026-11 시트 개편으로 '당사브랜드'·'PGM명' 컬럼 삭제 — 있으면 사용, 없으면 '브랜드'만 사용
+            dfc['brand'] = dfc['당사브랜드'].fillna(dfc['브랜드']) if '당사브랜드' in dfc.columns else dfc['브랜드']
+            if 'PGM명' not in dfc.columns: dfc['PGM명'] = ''
             dfc['MON'] = dfc['DATE'].dt.month
             dfc['DOW'] = dfc['DATE'].dt.dayofweek
             dfc['HOUR'] = pd.to_numeric(dfc['HOUR'], errors='coerce').fillna(0).astype(int)
